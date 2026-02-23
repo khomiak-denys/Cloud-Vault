@@ -4,24 +4,48 @@ import 'package:flutter/material.dart';
 
 import '../models/file_action_option.dart';
 import '../models/recent_file_item.dart';
+import 'file_info_modal.dart';
 import '../utils/interaction_styles.dart';
 import '../widgets/file_action_row.dart';
 
 Future<void> showFileActionsModal(BuildContext context, RecentFileItem file) async {
+  final hostContext = context;
   final isStarred = file.badgeIcon == Icons.star;
   final actions = <FileActionOption>[
     FileActionOption(
       icon: isStarred ? Icons.star_border : Icons.star_outline,
       label: isStarred ? 'Прибрати зірочку' : 'Додати зірочку',
+      actionId: 'star',
     ),
-    const FileActionOption(icon: Icons.download_outlined, label: 'Завантажити'),
-    const FileActionOption(icon: Icons.share_outlined, label: 'Поділитися'),
-    const FileActionOption(icon: Icons.copy_outlined, label: 'Копіювати в...'),
-    const FileActionOption(icon: Icons.edit_outlined, label: 'Перейменувати'),
-    const FileActionOption(icon: Icons.info_outline, label: 'Інформація'),
+    const FileActionOption(
+      icon: Icons.download_outlined,
+      label: 'Завантажити',
+      actionId: 'download',
+    ),
+    const FileActionOption(
+      icon: Icons.share_outlined,
+      label: 'Поділитися',
+      actionId: 'share',
+    ),
+    const FileActionOption(
+      icon: Icons.copy_outlined,
+      label: 'Копіювати в...',
+      actionId: 'copy',
+    ),
+    const FileActionOption(
+      icon: Icons.edit_outlined,
+      label: 'Перейменувати',
+      actionId: 'rename',
+    ),
+    const FileActionOption(
+      icon: Icons.info_outline,
+      label: 'Інформація',
+      actionId: 'info',
+    ),
     const FileActionOption(
       icon: Icons.delete_outline,
       label: 'Видалити',
+      actionId: 'delete',
       color: Color(0xFFFF626D),
     ),
   ];
@@ -31,7 +55,7 @@ Future<void> showFileActionsModal(BuildContext context, RecentFileItem file) asy
     barrierLabel: 'File actions',
     barrierDismissible: true,
     barrierColor: Colors.black.withValues(alpha: 0.40),
-    pageBuilder: (context, animation, secondaryAnimation) {
+    pageBuilder: (dialogContext, animation, secondaryAnimation) {
       return Material(
         type: MaterialType.transparency,
         child: Stack(
@@ -49,7 +73,7 @@ Future<void> showFileActionsModal(BuildContext context, RecentFileItem file) asy
               child: ConstrainedBox(
                 constraints: BoxConstraints(
                   maxWidth: 430,
-                  maxHeight: MediaQuery.sizeOf(context).height * 0.62,
+                  maxHeight: MediaQuery.sizeOf(dialogContext).height * 0.62,
                 ),
                 child: Container(
                   width: double.infinity,
@@ -76,7 +100,7 @@ Future<void> showFileActionsModal(BuildContext context, RecentFileItem file) asy
                               ),
                             ),
                             IconButton(
-                              onPressed: () => Navigator.of(context).pop(),
+                              onPressed: () => Navigator.of(dialogContext).pop(),
                               style: ButtonStyle(
                                 overlayColor: pressOnlyOverlay(
                                   const Color(0x3397A5BD),
@@ -93,14 +117,19 @@ Future<void> showFileActionsModal(BuildContext context, RecentFileItem file) asy
                         ...actions.map(
                           (action) => FileActionRow(
                             action: action,
-                            onTap: () => Navigator.of(context).pop(),
+                            onTap: () async {
+                              Navigator.of(dialogContext).pop();
+                              if (action.actionId == 'info') {
+                                await showFileInfoModal(hostContext, file);
+                              }
+                            },
                           ),
                         ),
                         const SizedBox(height: 12),
                         SizedBox(
                           width: double.infinity,
                           child: TextButton(
-                            onPressed: () => Navigator.of(context).pop(),
+                            onPressed: () => Navigator.of(dialogContext).pop(),
                             style: TextButton.styleFrom(
                               backgroundColor: const Color(0xFF22314A),
                               foregroundColor: const Color(0xFFCDD6E5),
