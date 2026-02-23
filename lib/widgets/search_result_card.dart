@@ -29,24 +29,14 @@ class SearchResultCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        item.title,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                    if (item.badgeIcon != null) ...[
-                      const SizedBox(width: 8),
-                      Icon(item.badgeIcon, size: 20, color: item.badgeColor),
-                    ],
-                  ],
+                Text(
+                  item.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -62,6 +52,16 @@ class SearchResultCard extends StatelessWidget {
               ],
             ),
           ),
+          if (item.badgeIcon != null) ...[
+            SizedBox(
+              width: 24,
+              height: 24,
+              child: Center(
+                child: Icon(item.badgeIcon, size: 20, color: item.badgeColor),
+              ),
+            ),
+            const SizedBox(width: 8),
+          ],
           IconButton(
             onPressed: onMoreTap,
             icon: const Icon(Icons.more_vert, color: Color(0xFF95A4BE)),
