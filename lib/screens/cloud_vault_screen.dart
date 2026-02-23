@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../data/mock_data.dart';
 import '../modals/add_vault_modal.dart';
 import '../modals/file_actions_modal.dart';
+import '../utils/tab_navigation.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/recent_file_card.dart';
 import '../widgets/top_summary_card.dart';
@@ -120,7 +121,10 @@ class CloudVaultScreen extends StatelessWidget {
                           ),
                         ),
                       ),
-                      const BottomNavBar(),
+                      BottomNavBar(
+                        activeIndex: 0,
+                        onTap: (index) => handleBottomNavTap(context, 0, index),
+                      ),
                     ],
                   ),
                 ),
