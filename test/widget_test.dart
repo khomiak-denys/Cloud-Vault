@@ -3,11 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:cloud_vault/app.dart';
 
 void main() {
-  testWidgets('CloudVault screen renders', (WidgetTester tester) async {
+  testWidgets('Search screen renders', (WidgetTester tester) async {
     await tester.pumpWidget(const CloudVaultApp());
 
-    expect(find.text('CloudVault'), findsOneWidget);
-    expect(find.text('Мої сховища'), findsOneWidget);
-    expect(find.text('Google Drive'), findsOneWidget);
+    expect(find.text('Пошук'), findsWidgets);
+    expect(find.text('Знайдено 2 файлів'), findsOneWidget);
+    expect(find.text('Презентація проекту.pptx'), findsOneWidget);
   });
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'screens/cloud_vault_screen.dart';
+import 'screens/search_screen.dart';
 
 class CloudVaultApp extends StatelessWidget {
   const CloudVaultApp({super.key});
@@ -15,7 +15,7 @@ class CloudVaultApp extends StatelessWidget {
         scaffoldBackgroundColor: const Color(0xFF00071A),
         fontFamily: 'SF Pro Display',
       ),
-      home: const CloudVaultScreen(),
+      home: const SearchScreen(),
     );
   }
 }
