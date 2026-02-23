@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_vault/l10n/app_localizations.dart';
 
 import '../data/mock_data.dart';
 import '../modals/file_actions_modal.dart';
@@ -17,7 +18,7 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final TextEditingController _controller = TextEditingController(text: 'ре');
+  final TextEditingController _controller = TextEditingController();
   SearchCategory _category = SearchCategory.all;
 
   @override
@@ -28,15 +29,20 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final outerBg = isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE7ECF4);
     final shellBg = isDark ? const Color(0xFF00081C) : const Color(0xFFF8FBFF);
     final headerBg = isDark ? const Color(0xFF0E1B34) : Colors.white;
     final headerTitle = isDark ? Colors.white : const Color(0xFF0F172A);
     final inputBg = isDark ? const Color(0xFF24344B) : const Color(0xFFEFF3FA);
-    final inputBorder = isDark ? const Color(0xFF34547A) : const Color(0xFFDCE5F2);
+    final inputBorder = isDark
+        ? const Color(0xFF34547A)
+        : const Color(0xFFDCE5F2);
     final muted = isDark ? const Color(0xFF95A4BE) : const Color(0xFF64748B);
-    final resultLabel = isDark ? const Color(0xFF93A0B6) : const Color(0xFF64748B);
+    final resultLabel = isDark
+        ? const Color(0xFF93A0B6)
+        : const Color(0xFF64748B);
 
     final results = _filteredFiles();
 
@@ -64,7 +70,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Пошук',
+                              l10n.search,
                               style: TextStyle(
                                 fontSize: 46,
                                 fontWeight: FontWeight.w700,
@@ -73,7 +79,9 @@ class _SearchScreenState extends State<SearchScreen> {
                             ),
                             const SizedBox(height: 14),
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 14),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                              ),
                               decoration: BoxDecoration(
                                 color: inputBg,
                                 borderRadius: BorderRadius.circular(18),
@@ -88,11 +96,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  Icon(
-                                    Icons.search,
-                                    color: muted,
-                                    size: 30,
-                                  ),
+                                  Icon(Icons.search, color: muted, size: 30),
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: TextField(
@@ -104,10 +108,8 @@ class _SearchScreenState extends State<SearchScreen> {
                                       ),
                                       decoration: InputDecoration(
                                         border: InputBorder.none,
-                                        hintText: 'Пошук файлів',
-                                        hintStyle: TextStyle(
-                                          color: muted,
-                                        ),
+                                        hintText: l10n.searchHint,
+                                        hintStyle: TextStyle(color: muted),
                                       ),
                                     ),
                                   ),
@@ -117,10 +119,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                         _controller.clear();
                                         setState(() {});
                                       },
-                                      icon: Icon(
-                                        Icons.close,
-                                        color: muted,
-                                      ),
+                                      icon: Icon(Icons.close, color: muted),
                                       style: IconButton.styleFrom(
                                         overlayColor: Colors.transparent,
                                       ),
@@ -134,24 +133,36 @@ class _SearchScreenState extends State<SearchScreen> {
                               child: Row(
                                 children: [
                                   _CategoryChip(
-                                    label: 'Всі',
+                                    label: l10n.all,
                                     isActive: _category == SearchCategory.all,
-                                    onTap: () => setState(() => _category = SearchCategory.all),
+                                    onTap: () => setState(
+                                      () => _category = SearchCategory.all,
+                                    ),
                                   ),
                                   _CategoryChip(
-                                    label: 'Документи',
-                                    isActive: _category == SearchCategory.documents,
-                                    onTap: () => setState(() => _category = SearchCategory.documents),
+                                    label: l10n.documents,
+                                    isActive:
+                                        _category == SearchCategory.documents,
+                                    onTap: () => setState(
+                                      () =>
+                                          _category = SearchCategory.documents,
+                                    ),
                                   ),
                                   _CategoryChip(
-                                    label: 'Зображення',
-                                    isActive: _category == SearchCategory.images,
-                                    onTap: () => setState(() => _category = SearchCategory.images),
+                                    label: l10n.images,
+                                    isActive:
+                                        _category == SearchCategory.images,
+                                    onTap: () => setState(
+                                      () => _category = SearchCategory.images,
+                                    ),
                                   ),
                                   _CategoryChip(
-                                    label: 'Відео',
-                                    isActive: _category == SearchCategory.videos,
-                                    onTap: () => setState(() => _category = SearchCategory.videos),
+                                    label: l10n.videos,
+                                    isActive:
+                                        _category == SearchCategory.videos,
+                                    onTap: () => setState(
+                                      () => _category = SearchCategory.videos,
+                                    ),
                                   ),
                                 ],
                               ),
@@ -166,7 +177,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Знайдено ${results.length} файлів',
+                                l10n.foundFiles(results.length),
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: resultLabel,
@@ -180,10 +191,13 @@ class _SearchScreenState extends State<SearchScreen> {
                                   itemBuilder: (context, index) {
                                     final file = results[index];
                                     return Padding(
-                                      padding: const EdgeInsets.only(bottom: 12),
+                                      padding: const EdgeInsets.only(
+                                        bottom: 12,
+                                      ),
                                       child: SearchResultCard(
                                         item: file,
-                                        onMoreTap: () => showFileActionsModal(context, file),
+                                        onMoreTap: () =>
+                                            showFileActionsModal(context, file),
                                       ),
                                     );
                                   },
@@ -216,14 +230,25 @@ class _SearchScreenState extends State<SearchScreen> {
       final categoryMatches = switch (_category) {
         SearchCategory.all => true,
         SearchCategory.documents => ['pptx', 'xlsx', 'pdf'].contains(extension),
-        SearchCategory.images => ['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(extension),
-        SearchCategory.videos => ['mp4', 'mov', 'avi', 'mkv'].contains(extension),
+        SearchCategory.images => [
+          'jpg',
+          'jpeg',
+          'png',
+          'gif',
+          'webp',
+        ].contains(extension),
+        SearchCategory.videos => [
+          'mp4',
+          'mov',
+          'avi',
+          'mkv',
+        ].contains(extension),
       };
 
       final queryMatches = query.isEmpty
           ? true
           : file.title.toLowerCase().contains(query) ||
-              file.subtitle.toLowerCase().contains(query);
+                file.subtitle.toLowerCase().contains(query);
 
       return categoryMatches && queryMatches;
     }).toList();
@@ -255,14 +280,12 @@ class _CategoryChip extends StatelessWidget {
       child: TextButton(
         onPressed: onTap,
         style: TextButton.styleFrom(
-          backgroundColor:
-              isActive
-                  ? const Color(0xFF2662E7)
-                  : (isDark ? const Color(0xFF24344B) : const Color(0xFFEFF3FA)),
-          foregroundColor:
-              isActive
-                  ? Colors.white
-                  : (isDark ? const Color(0xFFC5CFDC) : const Color(0xFF475569)),
+          backgroundColor: isActive
+              ? const Color(0xFF2662E7)
+              : (isDark ? const Color(0xFF24344B) : const Color(0xFFEFF3FA)),
+          foregroundColor: isActive
+              ? Colors.white
+              : (isDark ? const Color(0xFFC5CFDC) : const Color(0xFF475569)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(22),
           ),
@@ -271,10 +294,7 @@ class _CategoryChip extends StatelessWidget {
         ),
         child: Text(
           label,
-          style: const TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w700,
-          ),
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
         ),
       ),
     );

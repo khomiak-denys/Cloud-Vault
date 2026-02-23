@@ -1,11 +1,16 @@
 import 'dart:ui';
 
+import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import '../models/recent_file_item.dart';
 import '../utils/interaction_styles.dart';
 
-Future<void> showFileInfoModal(BuildContext context, RecentFileItem file) async {
+Future<void> showFileInfoModal(
+  BuildContext context,
+  RecentFileItem file,
+) async {
+  final l10n = AppLocalizations.of(context)!;
   await showGeneralDialog<void>(
     context: context,
     barrierLabel: 'File info',
@@ -36,7 +41,9 @@ Future<void> showFileInfoModal(BuildContext context, RecentFileItem file) async 
                   padding: const EdgeInsets.fromLTRB(24, 22, 24, 24),
                   decoration: const BoxDecoration(
                     color: Color(0xFF0D1B35),
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(30),
+                    ),
                   ),
                   child: SingleChildScrollView(
                     child: Column(
@@ -44,9 +51,9 @@ Future<void> showFileInfoModal(BuildContext context, RecentFileItem file) async 
                       children: [
                         Row(
                           children: [
-                            const Expanded(
+                            Expanded(
                               child: Text(
-                                'Інформація про файл',
+                                l10n.fileInfo,
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w700,
@@ -114,19 +121,19 @@ Future<void> showFileInfoModal(BuildContext context, RecentFileItem file) async 
                         const SizedBox(height: 26),
                         _InfoTile(
                           icon: Icons.sd_storage_outlined,
-                          label: 'Розмір',
+                          label: l10n.size,
                           value: file.sizeLabel,
                         ),
                         const SizedBox(height: 12),
                         _InfoTile(
                           icon: Icons.calendar_today_outlined,
-                          label: 'Змінено',
+                          label: l10n.modified,
                           value: file.modifiedLabel,
                         ),
                         const SizedBox(height: 12),
                         _InfoTile(
                           icon: Icons.description_outlined,
-                          label: 'Шлях',
+                          label: l10n.path,
                           value: file.pathLabel,
                         ),
                         const SizedBox(height: 26),
@@ -143,8 +150,8 @@ Future<void> showFileInfoModal(BuildContext context, RecentFileItem file) async 
                               ),
                               overlayColor: Colors.transparent,
                             ),
-                            child: const Text(
-                              'Закрити',
+                            child: Text(
+                              l10n.close,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,

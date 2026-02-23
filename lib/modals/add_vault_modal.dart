@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import '../data/mock_data.dart';
@@ -7,6 +8,7 @@ import '../widgets/add_vault_option_tile.dart';
 import '../utils/interaction_styles.dart';
 
 Future<void> showAddVaultModal(BuildContext context) async {
+  final l10n = AppLocalizations.of(context)!;
   await showGeneralDialog<void>(
     context: context,
     barrierLabel: 'Add vault',
@@ -25,7 +27,9 @@ Future<void> showAddVaultModal(BuildContext context) async {
                   child: ClipRect(
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                      child: Container(color: Colors.black.withValues(alpha: 0.2)),
+                      child: Container(
+                        color: Colors.black.withValues(alpha: 0.2),
+                      ),
                     ),
                   ),
                 ),
@@ -55,11 +59,12 @@ Future<void> showAddVaultModal(BuildContext context) async {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Expanded(
+                                    Expanded(
                                       child: Text(
-                                        'Додати сховище',
+                                        l10n.addStorage,
                                         style: TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.w700,
@@ -67,7 +72,8 @@ Future<void> showAddVaultModal(BuildContext context) async {
                                       ),
                                     ),
                                     IconButton(
-                                      onPressed: () => Navigator.of(context).pop(),
+                                      onPressed: () =>
+                                          Navigator.of(context).pop(),
                                       style: ButtonStyle(
                                         overlayColor: pressOnlyOverlay(
                                           const Color(0x3397A5BD),
@@ -80,9 +86,12 @@ Future<void> showAddVaultModal(BuildContext context) async {
                                     ),
                                   ],
                                 ),
-                                const Divider(color: Color(0xFF263A59), height: 24),
-                                const Text(
-                                  'Виберіть хмарне сховище, яке ви хочете\nпідключити',
+                                const Divider(
+                                  color: Color(0xFF263A59),
+                                  height: 24,
+                                ),
+                                Text(
+                                  l10n.chooseCloudStorage,
                                   style: TextStyle(
                                     fontSize: 13,
                                     color: Color(0xFF94A2BB),
@@ -95,19 +104,22 @@ Future<void> showAddVaultModal(BuildContext context) async {
                                   shrinkWrap: true,
                                   physics: const NeverScrollableScrollPhysics(),
                                   itemCount: addVaultOptions.length,
-                                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: 2,
-                                    crossAxisSpacing: 12,
-                                    mainAxisSpacing: 12,
-                                    mainAxisExtent: 116,
-                                  ),
+                                  gridDelegate:
+                                      const SliverGridDelegateWithFixedCrossAxisCount(
+                                        crossAxisCount: 2,
+                                        crossAxisSpacing: 12,
+                                        mainAxisSpacing: 12,
+                                        mainAxisExtent: 116,
+                                      ),
                                   itemBuilder: (context, index) {
                                     final option = addVaultOptions[index];
                                     final isSelected = selectedIndex == index;
                                     return AddVaultOptionTile(
                                       option: option,
                                       isSelected: isSelected,
-                                      onTap: () => setModalState(() => selectedIndex = index),
+                                      onTap: () => setModalState(
+                                        () => selectedIndex = index,
+                                      ),
                                     );
                                   },
                                 ),
@@ -119,26 +131,30 @@ Future<void> showAddVaultModal(BuildContext context) async {
                                         ? null
                                         : () => Navigator.of(context).pop(),
                                     style: ButtonStyle(
-                                      backgroundColor: const WidgetStatePropertyAll(
-                                        Color(0xFF2448A3),
-                                      ),
-                                      foregroundColor: const WidgetStatePropertyAll(
-                                        Colors.white,
-                                      ),
+                                      backgroundColor:
+                                          const WidgetStatePropertyAll(
+                                            Color(0xFF2448A3),
+                                          ),
+                                      foregroundColor:
+                                          const WidgetStatePropertyAll(
+                                            Colors.white,
+                                          ),
                                       overlayColor: pressOnlyOverlay(
                                         const Color(0x33FFFFFF),
                                       ),
                                       shape: WidgetStatePropertyAll(
                                         RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(16),
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
                                         ),
                                       ),
                                       padding: const WidgetStatePropertyAll(
                                         EdgeInsets.symmetric(vertical: 14),
                                       ),
                                     ),
-                                    child: const Text(
-                                      'Підключити',
+                                    child: Text(
+                                      l10n.connect,
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w700,

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:cloud_vault/l10n/app_localizations.dart';
 
 import 'screens/search_screen.dart';
+import 'state/locale_controller.dart';
 import 'state/theme_controller.dart';
 
 class CloudVaultApp extends StatelessWidget {
@@ -9,11 +12,19 @@ class CloudVaultApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: appThemeController,
+      animation: Listenable.merge([appThemeController, appLocaleController]),
       builder: (context, _) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'CloudVault',
+          locale: appLocaleController.locale,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: AppLocalizations.supportedLocales,
           themeMode: appThemeController.themeMode,
           theme: ThemeData(
             brightness: Brightness.light,

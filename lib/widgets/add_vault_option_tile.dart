@@ -30,7 +30,9 @@ class AddVaultOptionTile extends StatelessWidget {
           color: const Color(0xFF0D1D38),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected ? const Color(0xFF4A90FF) : const Color(0xFF334866),
+            color: isSelected
+                ? const Color(0xFF4A90FF)
+                : const Color(0xFF334866),
             width: isSelected ? 1.6 : 1,
           ),
         ),

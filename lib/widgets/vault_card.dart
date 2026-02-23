@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_vault/l10n/app_localizations.dart';
 
 import '../models/vault_item.dart';
 import 'progress_track.dart';
@@ -10,12 +11,17 @@ class VaultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardBg = isDark ? const Color(0xFF1F2D44) : Colors.white;
     final border = isDark ? const Color(0xFF32435C) : const Color(0xFFDCE5F2);
     final iconTile = isDark ? const Color(0xFF22406A) : const Color(0xFFE6EEFC);
-    final secondary = isDark ? const Color(0xFFA8B0C0) : const Color(0xFF64748B);
-    final usageLabel = isDark ? const Color(0xFF94A1B8) : const Color(0xFF64748B);
+    final secondary = isDark
+        ? const Color(0xFFA8B0C0)
+        : const Color(0xFF64748B);
+    final usageLabel = isDark
+        ? const Color(0xFF94A1B8)
+        : const Color(0xFF64748B);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 2),
@@ -77,7 +83,7 @@ class VaultCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Використано',
+                l10n.used,
                 style: TextStyle(
                   color: usageLabel,
                   fontSize: 13,

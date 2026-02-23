@@ -15,8 +15,9 @@ class ProgressTrack extends StatelessWidget {
         borderRadius: BorderRadius.circular(100),
         child: LinearProgressIndicator(
           value: value,
-          backgroundColor:
-              isDark ? const Color(0xFF45526B) : const Color(0xFFD6DEEA),
+          backgroundColor: isDark
+              ? const Color(0xFF45526B)
+              : const Color(0xFFD6DEEA),
           valueColor: AlwaysStoppedAnimation<Color>(color),
         ),
       ),

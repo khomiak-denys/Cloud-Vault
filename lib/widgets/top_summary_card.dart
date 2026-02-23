@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_vault/l10n/app_localizations.dart';
 
 import 'progress_track.dart';
 
@@ -7,6 +8,7 @@ class TopSummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -24,11 +26,11 @@ class TopSummaryCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Expanded(
+                Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'CloudVault',
                         style: TextStyle(
                           fontSize: 24,
@@ -39,7 +41,7 @@ class TopSummaryCard extends StatelessWidget {
                       ),
                       SizedBox(height: 4),
                       Text(
-                        'Керуйте всіма хмарами',
+                        l10n.manageClouds,
                         style: TextStyle(
                           fontSize: 12,
                           color: Color(0xFFD4DEFF),
@@ -71,14 +73,14 @@ class TopSummaryCard extends StatelessWidget {
                 color: Colors.white.withValues(alpha: 0.10),
                 borderRadius: BorderRadius.circular(24),
               ),
-              child: const Column(
+              child: Column(
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
                         child: Text(
-                          'Всього використано',
+                          l10n.totalUsed,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(

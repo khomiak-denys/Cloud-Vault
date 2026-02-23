@@ -1,17 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_vault/l10n/app_localizations.dart';
 
 class BottomNavBar extends StatelessWidget {
-  const BottomNavBar({
-    super.key,
-    this.activeIndex = 0,
-    this.onTap,
-  });
+  const BottomNavBar({super.key, this.activeIndex = 0, this.onTap});
 
   final int activeIndex;
   final ValueChanged<int>? onTap;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     const itemWidth = 92.4;
     const indicatorWidth = 44.0;
@@ -31,7 +29,9 @@ class BottomNavBar extends StatelessWidget {
           final totalNavWidth = itemWidth * 4;
           final leftInset = (constraints.maxWidth - totalNavWidth) / 2;
           final indicatorLeft =
-              leftInset + (itemWidth * activeIndex) + (itemWidth - indicatorWidth) / 2;
+              leftInset +
+              (itemWidth * activeIndex) +
+              (itemWidth - indicatorWidth) / 2;
 
           return Stack(
             children: [
@@ -56,7 +56,7 @@ class BottomNavBar extends StatelessWidget {
                     width: itemWidth,
                     child: _NavItem(
                       icon: Icons.home_outlined,
-                      label: 'Головна',
+                      label: l10n.navHome,
                       isActive: activeIndex == 0,
                       onTap: () => onTap?.call(0),
                     ),
@@ -65,7 +65,7 @@ class BottomNavBar extends StatelessWidget {
                     width: itemWidth,
                     child: _NavItem(
                       icon: Icons.search_outlined,
-                      label: 'Пошук',
+                      label: l10n.navSearch,
                       isActive: activeIndex == 1,
                       onTap: () => onTap?.call(1),
                     ),
@@ -74,7 +74,7 @@ class BottomNavBar extends StatelessWidget {
                     width: itemWidth,
                     child: _NavItem(
                       icon: Icons.bar_chart_outlined,
-                      label: 'Аналітика',
+                      label: l10n.navAnalytics,
                       isActive: activeIndex == 2,
                       onTap: () => onTap?.call(2),
                     ),
@@ -83,7 +83,7 @@ class BottomNavBar extends StatelessWidget {
                     width: itemWidth,
                     child: _NavItem(
                       icon: Icons.settings_outlined,
-                      label: 'Налаштування',
+                      label: l10n.navSettings,
                       isActive: activeIndex == 3,
                       onTap: () => onTap?.call(3),
                     ),

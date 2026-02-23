@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import '../data/mock_data.dart';
@@ -12,13 +13,18 @@ class AnalyticsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final outerBg = isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE7ECF4);
     final shellBg = isDark ? const Color(0xFF00081C) : const Color(0xFFF8FBFF);
     final headerBg = isDark ? const Color(0xFF0F1D36) : Colors.white;
-    final headerBorder = isDark ? const Color(0xFF1E2E46) : const Color(0xFFDCE5F2);
+    final headerBorder = isDark
+        ? const Color(0xFF1E2E46)
+        : const Color(0xFFDCE5F2);
     final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final subtitleColor = isDark ? const Color(0xFF93A1B7) : const Color(0xFF64748B);
+    final subtitleColor = isDark
+        ? const Color(0xFF93A1B7)
+        : const Color(0xFF64748B);
 
     final totalUsed = storageUsageItems.fold<double>(
       0,
@@ -63,7 +69,7 @@ class AnalyticsScreen extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Аналітика',
+                              l10n.analytics,
                               style: TextStyle(
                                 fontSize: 26,
                                 fontWeight: FontWeight.w700,
@@ -72,7 +78,7 @@ class AnalyticsScreen extends StatelessWidget {
                             ),
                             SizedBox(height: 2),
                             Text(
-                              'Статистика використання сховищ',
+                              l10n.analyticsSubtitle,
                               style: TextStyle(
                                 fontSize: 13,
                                 color: subtitleColor,
@@ -93,7 +99,7 @@ class AnalyticsScreen extends StatelessWidget {
                                     child: _StatCard(
                                       isDark: isDark,
                                       icon: Icons.storage,
-                                      label: 'Всього простору',
+                                      label: l10n.totalSpace,
                                       value: formatBytes(totalSpace),
                                       iconColor: const Color(0xFF2563EB),
                                       iconBg: const Color(0xFFDBEAFE),
@@ -104,7 +110,7 @@ class AnalyticsScreen extends StatelessWidget {
                                     child: _StatCard(
                                       isDark: isDark,
                                       icon: Icons.task_alt,
-                                      label: 'Використано',
+                                      label: l10n.usedSpace,
                                       value: formatBytes(totalUsed),
                                       iconColor: const Color(0xFF16A34A),
                                       iconBg: const Color(0xFFDCFCE7),
@@ -115,7 +121,7 @@ class AnalyticsScreen extends StatelessWidget {
                                     child: _StatCard(
                                       isDark: isDark,
                                       icon: Icons.trending_up,
-                                      label: 'Вільно',
+                                      label: l10n.freeSpace,
                                       value: formatBytes(totalFree),
                                       iconColor: const Color(0xFF9333EA),
                                       iconBg: const Color(0xFFF3E8FF),
@@ -133,17 +139,21 @@ class AnalyticsScreen extends StatelessWidget {
                               ],
                               _SectionCard(
                                 isDark: isDark,
-                                title: 'Розподіл по сховищах',
+                                title: l10n.distributionByStorage,
                                 child: Column(
                                   children: [
                                     SizedBox(
                                       height: 220,
-                                      child: _PieUsageChart(items: storageUsageItems),
+                                      child: _PieUsageChart(
+                                        items: storageUsageItems,
+                                      ),
                                     ),
                                     const SizedBox(height: 10),
                                     ...storageUsageItems.map(
                                       (item) => Padding(
-                                        padding: const EdgeInsets.only(bottom: 8),
+                                        padding: const EdgeInsets.only(
+                                          bottom: 8,
+                                        ),
                                         child: Row(
                                           children: [
                                             Container(
@@ -182,20 +192,19 @@ class AnalyticsScreen extends StatelessWidget {
                               const SizedBox(height: 16),
                               _SectionCard(
                                 isDark: isDark,
-                                title: 'Використання vs Вільний простір',
+                                title: l10n.usageVsFree,
                                 child: _BarUsageChart(items: storageUsageItems),
                               ),
                               const SizedBox(height: 16),
                               _SectionCard(
                                 isDark: isDark,
-                                title: 'Рекомендації',
-                                child: const Column(
+                                title: l10n.recommendations,
+                                child: Column(
                                   children: [
                                     _TipCard(
                                       emoji: '💡',
-                                      title: 'Оптимізуйте Dropbox',
-                                      body:
-                                          'Ваш Dropbox заповнений на 90%. Видаліть старі файли або оновіть тариф.',
+                                      title: l10n.tipOptimizeDropboxTitle,
+                                      body: l10n.tipOptimizeDropboxBody,
                                       bg: Color(0xFF182A4A),
                                       titleColor: Color(0xFFEAF2FF),
                                       bodyColor: Color(0xFF98A8BF),
@@ -203,9 +212,8 @@ class AnalyticsScreen extends StatelessWidget {
                                     SizedBox(height: 10),
                                     _TipCard(
                                       emoji: '✨',
-                                      title: 'Використовуйте iCloud',
-                                      body:
-                                          'У вас є 4.2 ГБ вільного місця в iCloud. Перемістіть туди великі файли.',
+                                      title: l10n.tipUseIcloudTitle,
+                                      body: l10n.tipUseIcloudBody,
                                       bg: Color(0xFF18323A),
                                       titleColor: Color(0xFFEAF2FF),
                                       bodyColor: Color(0xFF98A8BF),
@@ -308,6 +316,7 @@ class _WarningCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final names = storages.map((s) => s.name).join(', ');
 
     return Container(
@@ -334,7 +343,7 @@ class _WarningCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Увага!',
+                  l10n.warning,
                   style: TextStyle(
                     color: isDark ? Color(0xFFFFBE8D) : Color(0xFF9A3412),
                     fontWeight: FontWeight.w700,
@@ -342,7 +351,7 @@ class _WarningCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 2),
                 Text(
-                  '$names майже заповнені. Розгляньте можливість очистки або розширення.',
+                  l10n.warningBody(names),
                   style: TextStyle(
                     color: isDark ? Color(0xFFFFCDA8) : Color(0xFF9A3412),
                     fontSize: 12,
@@ -469,6 +478,7 @@ class _BarUsageChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final maxValue = items
         .map((e) => e.totalBytes / (1024 * 1024 * 1024))
         .reduce(math.max);
@@ -533,11 +543,17 @@ class _BarUsageChart extends StatelessWidget {
           );
         }),
         const SizedBox(height: 4),
-        const Row(
+        Row(
           children: [
-            _LegendItem(color: Color(0xFF3B82F6), text: 'Використано (ГБ)'),
-            SizedBox(width: 14),
-            _LegendItem(color: Color(0xFF10B981), text: 'Вільно (ГБ)'),
+            _LegendItem(
+              color: const Color(0xFF3B82F6),
+              text: '${l10n.usedSpace} (GB)',
+            ),
+            const SizedBox(width: 14),
+            _LegendItem(
+              color: const Color(0xFF10B981),
+              text: '${l10n.freeSpace} (GB)',
+            ),
           ],
         ),
       ],
@@ -559,10 +575,7 @@ class _LegendItem extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           text,
-          style: const TextStyle(
-            color: Color(0xFF93A1B7),
-            fontSize: 12,
-          ),
+          style: const TextStyle(color: Color(0xFF93A1B7), fontSize: 12),
         ),
       ],
     );
