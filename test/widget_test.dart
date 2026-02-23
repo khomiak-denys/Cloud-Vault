@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 
-import 'package:cloud_vault/main.dart';
+import 'package:cloud_vault/app.dart';
 
 void main() {
   testWidgets('CloudVault screen renders', (WidgetTester tester) async {
