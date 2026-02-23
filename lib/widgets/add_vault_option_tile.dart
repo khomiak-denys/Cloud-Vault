@@ -25,7 +25,7 @@ class AddVaultOptionTile extends StatelessWidget {
       highlightColor: const Color(0x22000000),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
           color: const Color(0xFF0D1D38),
           borderRadius: BorderRadius.circular(20),
@@ -38,22 +38,22 @@ class AddVaultOptionTile extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Container(
-              height: 56,
-              width: 56,
+              height: 48,
+              width: 48,
               decoration: BoxDecoration(
                 color: option.iconBackground ?? const Color(0xFF16325E),
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
                 option.icon,
                 color: option.iconColor ?? Colors.white,
-                size: 30,
+                size: 26,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Text(
               option.title,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700),
+              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
             ),
           ],
         ),

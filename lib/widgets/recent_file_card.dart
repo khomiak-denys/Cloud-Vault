@@ -52,7 +52,7 @@ class RecentFileCard extends StatelessWidget {
               ],
             ),
           ),
-          if (item.badgeIcon != null) ...[
+          if (item.badgeIcon == Icons.star) ...[
             SizedBox(
               width: 24,
               height: 24,
