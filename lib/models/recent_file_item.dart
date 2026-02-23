@@ -6,6 +6,10 @@ class RecentFileItem {
     required this.subtitle,
     required this.icon,
     required this.iconColor,
+    required this.storageName,
+    required this.sizeLabel,
+    required this.modifiedLabel,
+    required this.pathLabel,
     this.badgeIcon,
     this.badgeColor,
   });
@@ -14,6 +18,10 @@ class RecentFileItem {
   final String subtitle;
   final IconData icon;
   final Color iconColor;
+  final String storageName;
+  final String sizeLabel;
+  final String modifiedLabel;
+  final String pathLabel;
   final IconData? badgeIcon;
   final Color? badgeColor;
 }
