@@ -12,6 +12,14 @@ class AnalyticsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final outerBg = isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE7ECF4);
+    final shellBg = isDark ? const Color(0xFF00081C) : const Color(0xFFF8FBFF);
+    final headerBg = isDark ? const Color(0xFF0F1D36) : Colors.white;
+    final headerBorder = isDark ? const Color(0xFF1E2E46) : const Color(0xFFDCE5F2);
+    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final subtitleColor = isDark ? const Color(0xFF93A1B7) : const Color(0xFF64748B);
+
     final totalUsed = storageUsageItems.fold<double>(
       0,
       (acc, item) => acc + item.usedBytes,
@@ -28,14 +36,14 @@ class AnalyticsScreen extends StatelessWidget {
 
     return Scaffold(
       body: Container(
-        color: const Color(0xFF2D2D2D),
+        color: outerBg,
         child: SafeArea(
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 430),
               child: Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00081C),
+                  color: shellBg,
                   borderRadius: BorderRadius.circular(36),
                 ),
                 child: ClipRRect(
@@ -44,14 +52,14 @@ class AnalyticsScreen extends StatelessWidget {
                     children: [
                       Container(
                         width: double.infinity,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF0F1D36),
+                        decoration: BoxDecoration(
+                          color: headerBg,
                           border: Border(
-                            bottom: BorderSide(color: Color(0xFF1E2E46)),
+                            bottom: BorderSide(color: headerBorder),
                           ),
                         ),
                         padding: const EdgeInsets.fromLTRB(16, 24, 16, 14),
-                        child: const Column(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
@@ -59,7 +67,7 @@ class AnalyticsScreen extends StatelessWidget {
                               style: TextStyle(
                                 fontSize: 26,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.white,
+                                color: titleColor,
                               ),
                             ),
                             SizedBox(height: 2),
@@ -67,7 +75,7 @@ class AnalyticsScreen extends StatelessWidget {
                               'Статистика використання сховищ',
                               style: TextStyle(
                                 fontSize: 13,
-                                color: Color(0xFF93A1B7),
+                                color: subtitleColor,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -83,6 +91,7 @@ class AnalyticsScreen extends StatelessWidget {
                                 children: [
                                   Expanded(
                                     child: _StatCard(
+                                      isDark: isDark,
                                       icon: Icons.storage,
                                       label: 'Всього простору',
                                       value: formatBytes(totalSpace),
@@ -93,6 +102,7 @@ class AnalyticsScreen extends StatelessWidget {
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: _StatCard(
+                                      isDark: isDark,
                                       icon: Icons.task_alt,
                                       label: 'Використано',
                                       value: formatBytes(totalUsed),
@@ -103,6 +113,7 @@ class AnalyticsScreen extends StatelessWidget {
                                   const SizedBox(width: 10),
                                   Expanded(
                                     child: _StatCard(
+                                      isDark: isDark,
                                       icon: Icons.trending_up,
                                       label: 'Вільно',
                                       value: formatBytes(totalFree),
@@ -114,10 +125,14 @@ class AnalyticsScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 16),
                               if (almostFullStorages.isNotEmpty) ...[
-                                _WarningCard(storages: almostFullStorages),
+                                _WarningCard(
+                                  storages: almostFullStorages,
+                                  isDark: isDark,
+                                ),
                                 const SizedBox(height: 16),
                               ],
                               _SectionCard(
+                                isDark: isDark,
                                 title: 'Розподіл по сховищах',
                                 child: Column(
                                   children: [
@@ -166,13 +181,15 @@ class AnalyticsScreen extends StatelessWidget {
                               ),
                               const SizedBox(height: 16),
                               _SectionCard(
+                                isDark: isDark,
                                 title: 'Використання vs Вільний простір',
                                 child: _BarUsageChart(items: storageUsageItems),
                               ),
                               const SizedBox(height: 16),
-                              const _SectionCard(
+                              _SectionCard(
+                                isDark: isDark,
                                 title: 'Рекомендації',
-                                child: Column(
+                                child: const Column(
                                   children: [
                                     _TipCard(
                                       emoji: '💡',
@@ -218,6 +235,7 @@ class AnalyticsScreen extends StatelessWidget {
 
 class _StatCard extends StatelessWidget {
   const _StatCard({
+    required this.isDark,
     required this.icon,
     required this.label,
     required this.value,
@@ -225,6 +243,7 @@ class _StatCard extends StatelessWidget {
     required this.iconBg,
   });
 
+  final bool isDark;
   final IconData icon;
   final String label;
   final String value;
@@ -236,9 +255,11 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F2D44),
+        color: isDark ? const Color(0xFF1F2D44) : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF31435C)),
+        border: Border.all(
+          color: isDark ? const Color(0xFF31435C) : const Color(0xFFDCE5F2),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -257,9 +278,9 @@ class _StatCard extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
-              color: Color(0xFF93A1B7),
+              color: isDark ? Color(0xFF93A1B7) : Color(0xFF64748B),
             ),
           ),
           const SizedBox(height: 2),
@@ -267,9 +288,9 @@ class _StatCard extends StatelessWidget {
             value,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 12,
-              color: Colors.white,
+              color: isDark ? Colors.white : Color(0xFF0F172A),
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -280,9 +301,10 @@ class _StatCard extends StatelessWidget {
 }
 
 class _WarningCard extends StatelessWidget {
-  const _WarningCard({required this.storages});
+  const _WarningCard({required this.storages, required this.isDark});
 
   final List<StorageUsageItem> storages;
+  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
@@ -292,9 +314,11 @@ class _WarningCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF352416),
+        color: isDark ? const Color(0xFF352416) : const Color(0xFFFFF7ED),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF7C4520)),
+        border: Border.all(
+          color: isDark ? const Color(0xFF7C4520) : const Color(0xFFFED7AA),
+        ),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,18 +333,18 @@ class _WarningCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Увага!',
                   style: TextStyle(
-                    color: Color(0xFFFFBE8D),
+                    color: isDark ? Color(0xFFFFBE8D) : Color(0xFF9A3412),
                     fontWeight: FontWeight.w700,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   '$names майже заповнені. Розгляньте можливість очистки або розширення.',
-                  style: const TextStyle(
-                    color: Color(0xFFFFCDA8),
+                  style: TextStyle(
+                    color: isDark ? Color(0xFFFFCDA8) : Color(0xFF9A3412),
                     fontSize: 12,
                     height: 1.35,
                   ),
@@ -335,10 +359,15 @@ class _WarningCard extends StatelessWidget {
 }
 
 class _SectionCard extends StatelessWidget {
-  const _SectionCard({required this.title, required this.child});
+  const _SectionCard({
+    required this.title,
+    required this.child,
+    required this.isDark,
+  });
 
   final String title;
   final Widget child;
+  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
@@ -346,17 +375,19 @@ class _SectionCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F2D44),
+        color: isDark ? const Color(0xFF1F2D44) : Colors.white,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF31435C)),
+        border: Border.all(
+          color: isDark ? const Color(0xFF31435C) : const Color(0xFFDCE5F2),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
             title,
-            style: const TextStyle(
-              color: Colors.white,
+            style: TextStyle(
+              color: isDark ? Colors.white : Color(0xFF0F172A),
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),

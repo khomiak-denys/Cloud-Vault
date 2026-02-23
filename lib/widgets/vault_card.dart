@@ -10,13 +10,20 @@ class VaultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xFF1F2D44) : Colors.white;
+    final border = isDark ? const Color(0xFF32435C) : const Color(0xFFDCE5F2);
+    final iconTile = isDark ? const Color(0xFF22406A) : const Color(0xFFE6EEFC);
+    final secondary = isDark ? const Color(0xFFA8B0C0) : const Color(0xFF64748B);
+    final usageLabel = isDark ? const Color(0xFF94A1B8) : const Color(0xFF64748B);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 2),
       padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F2D44),
+        color: cardBg,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFF32435C)),
+        border: Border.all(color: border),
       ),
       child: Column(
         children: [
@@ -27,7 +34,7 @@ class VaultCard extends StatelessWidget {
                 width: 68,
                 height: 68,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF22406A),
+                  color: iconTile,
                   borderRadius: BorderRadius.circular(18),
                 ),
                 child: Icon(item.icon, color: Colors.white, size: 36),
@@ -48,9 +55,9 @@ class VaultCard extends StatelessWidget {
                     const SizedBox(height: 2),
                     Text(
                       item.usageText,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 11,
-                        color: Color(0xFFA8B0C0),
+                        color: secondary,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -69,10 +76,10 @@ class VaultCard extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 'Використано',
                 style: TextStyle(
-                  color: Color(0xFF94A1B8),
+                  color: usageLabel,
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),

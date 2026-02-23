@@ -14,16 +14,21 @@ class CloudVaultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final outerBg = isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE7ECF4);
+    final shellBg = isDark ? const Color(0xFF00081C) : const Color(0xFFF8FBFF);
+    final sectionTitle = isDark ? Colors.white : const Color(0xFF0F172A);
+
     return Scaffold(
       body: Container(
-        color: const Color(0xFF2D2D2D),
+        color: outerBg,
         child: SafeArea(
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 430),
               child: Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00081C),
+                  color: shellBg,
                   borderRadius: BorderRadius.circular(36),
                 ),
                 child: ClipRRect(
@@ -40,7 +45,7 @@ class CloudVaultScreen extends StatelessWidget {
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    const Expanded(
+                                    Expanded(
                                       child: Text(
                                         'Мої сховища',
                                         overflow: TextOverflow.ellipsis,
@@ -48,6 +53,7 @@ class CloudVaultScreen extends StatelessWidget {
                                           fontSize: 18,
                                           fontWeight: FontWeight.w700,
                                           letterSpacing: -0.5,
+                                          color: sectionTitle,
                                         ),
                                       ),
                                     ),
@@ -86,7 +92,7 @@ class CloudVaultScreen extends StatelessWidget {
                                       .toList(),
                                 ),
                               ),
-                              const Padding(
+                              Padding(
                                 padding: EdgeInsets.fromLTRB(24, 28, 24, 14),
                                 child: Align(
                                   alignment: Alignment.centerLeft,
@@ -95,6 +101,7 @@ class CloudVaultScreen extends StatelessWidget {
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w700,
+                                      color: sectionTitle,
                                     ),
                                   ),
                                 ),

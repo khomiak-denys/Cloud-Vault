@@ -8,13 +8,15 @@ class ProgressTrack extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SizedBox(
       height: 14,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(100),
         child: LinearProgressIndicator(
           value: value,
-          backgroundColor: const Color(0xFF45526B),
+          backgroundColor:
+              isDark ? const Color(0xFF45526B) : const Color(0xFFD6DEEA),
           valueColor: AlwaysStoppedAnimation<Color>(color),
         ),
       ),

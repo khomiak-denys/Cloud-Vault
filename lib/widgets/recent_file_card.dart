@@ -14,12 +14,18 @@ class RecentFileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final cardBg = isDark ? const Color(0xFF1F2D44) : Colors.white;
+    final border = isDark ? const Color(0xFF31435C) : const Color(0xFFDCE5F2);
+    final subtitle = isDark ? const Color(0xFF97A5BB) : const Color(0xFF64748B);
+    final more = isDark ? const Color(0xFF95A4BE) : const Color(0xFF64748B);
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       decoration: BoxDecoration(
-        color: const Color(0xFF1F2D44),
+        color: cardBg,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFF31435C)),
+        border: Border.all(color: border),
       ),
       child: Row(
         children: [
@@ -43,9 +49,9 @@ class RecentFileCard extends StatelessWidget {
                   item.subtitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
-                    color: Color(0xFF97A5BB),
+                    color: subtitle,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -65,9 +71,9 @@ class RecentFileCard extends StatelessWidget {
           const SizedBox(width: 10),
           GestureDetector(
             onTap: onMoreTap,
-            child: const Padding(
+            child: Padding(
               padding: EdgeInsets.all(8),
-              child: Icon(Icons.more_vert, color: Color(0xFF95A4BE)),
+              child: Icon(Icons.more_vert, color: more),
             ),
           ),
         ],
