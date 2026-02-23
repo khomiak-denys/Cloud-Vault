@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import '../models/file_action_option.dart';
@@ -8,43 +9,47 @@ import 'file_info_modal.dart';
 import '../utils/interaction_styles.dart';
 import '../widgets/file_action_row.dart';
 
-Future<void> showFileActionsModal(BuildContext context, RecentFileItem file) async {
+Future<void> showFileActionsModal(
+  BuildContext context,
+  RecentFileItem file,
+) async {
   final hostContext = context;
+  final l10n = AppLocalizations.of(context)!;
   final isStarred = file.badgeIcon == Icons.star;
   final actions = <FileActionOption>[
     FileActionOption(
       icon: isStarred ? Icons.star_border : Icons.star_outline,
-      label: isStarred ? 'Прибрати зірочку' : 'Додати зірочку',
+      label: isStarred ? l10n.fileActionsRemoveStar : l10n.fileActionsAddStar,
       actionId: 'star',
     ),
-    const FileActionOption(
+    FileActionOption(
       icon: Icons.download_outlined,
-      label: 'Завантажити',
+      label: l10n.fileActionsDownload,
       actionId: 'download',
     ),
-    const FileActionOption(
+    FileActionOption(
       icon: Icons.share_outlined,
-      label: 'Поділитися',
+      label: l10n.fileActionsShare,
       actionId: 'share',
     ),
-    const FileActionOption(
+    FileActionOption(
       icon: Icons.copy_outlined,
-      label: 'Копіювати в...',
+      label: l10n.fileActionsCopyTo,
       actionId: 'copy',
     ),
-    const FileActionOption(
+    FileActionOption(
       icon: Icons.edit_outlined,
-      label: 'Перейменувати',
+      label: l10n.fileActionsRename,
       actionId: 'rename',
     ),
-    const FileActionOption(
+    FileActionOption(
       icon: Icons.info_outline,
-      label: 'Інформація',
+      label: l10n.fileActionsInfo,
       actionId: 'info',
     ),
-    const FileActionOption(
+    FileActionOption(
       icon: Icons.delete_outline,
-      label: 'Видалити',
+      label: l10n.fileActionsDelete,
       actionId: 'delete',
       color: Color(0xFFFF626D),
     ),
@@ -80,7 +85,9 @@ Future<void> showFileActionsModal(BuildContext context, RecentFileItem file) asy
                   padding: const EdgeInsets.fromLTRB(22, 20, 22, 14),
                   decoration: const BoxDecoration(
                     color: Color(0xFF0D1B35),
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(28),
+                    ),
                   ),
                   child: SingleChildScrollView(
                     child: Column(
@@ -100,7 +107,8 @@ Future<void> showFileActionsModal(BuildContext context, RecentFileItem file) asy
                               ),
                             ),
                             IconButton(
-                              onPressed: () => Navigator.of(dialogContext).pop(),
+                              onPressed: () =>
+                                  Navigator.of(dialogContext).pop(),
                               style: ButtonStyle(
                                 overlayColor: pressOnlyOverlay(
                                   const Color(0x3397A5BD),
@@ -139,8 +147,8 @@ Future<void> showFileActionsModal(BuildContext context, RecentFileItem file) asy
                               ),
                               overlayColor: Colors.transparent,
                             ),
-                            child: const Text(
-                              'Скасувати',
+                            child: Text(
+                              l10n.cancel,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,

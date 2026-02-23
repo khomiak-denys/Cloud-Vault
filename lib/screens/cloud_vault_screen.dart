@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_vault/l10n/app_localizations.dart';
 
 import '../data/mock_data.dart';
 import '../modals/add_vault_modal.dart';
@@ -14,6 +15,7 @@ class CloudVaultScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final outerBg = isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE7ECF4);
     final shellBg = isDark ? const Color(0xFF00081C) : const Color(0xFFF8FBFF);
@@ -41,13 +43,19 @@ class CloudVaultScreen extends StatelessWidget {
                             children: [
                               const TopSummaryCard(),
                               Padding(
-                                padding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+                                padding: const EdgeInsets.fromLTRB(
+                                  24,
+                                  24,
+                                  24,
+                                  8,
+                                ),
                                 child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
                                   children: [
                                     Expanded(
                                       child: Text(
-                                        'Мої сховища',
+                                        l10n.myStorages,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
                                           fontSize: 18,
@@ -59,17 +67,23 @@ class CloudVaultScreen extends StatelessWidget {
                                     ),
                                     const SizedBox(width: 10),
                                     TextButton.icon(
-                                      onPressed: () => showAddVaultModal(context),
+                                      onPressed: () =>
+                                          showAddVaultModal(context),
                                       style: TextButton.styleFrom(
-                                        foregroundColor: const Color(0xFF4BA2FF),
-                                        padding: const EdgeInsets.symmetric(horizontal: 6),
+                                        foregroundColor: const Color(
+                                          0xFF4BA2FF,
+                                        ),
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                        ),
                                         minimumSize: const Size(0, 0),
-                                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        tapTargetSize:
+                                            MaterialTapTargetSize.shrinkWrap,
                                         overlayColor: Colors.transparent,
                                       ),
                                       icon: const Icon(Icons.add, size: 22),
-                                      label: const Text(
-                                        'Додати',
+                                      label: Text(
+                                        l10n.add,
                                         style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w600,
@@ -80,12 +94,16 @@ class CloudVaultScreen extends StatelessWidget {
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                ),
                                 child: Column(
                                   children: vaultItems
                                       .map(
                                         (item) => Padding(
-                                          padding: const EdgeInsets.only(bottom: 2),
+                                          padding: const EdgeInsets.only(
+                                            bottom: 2,
+                                          ),
                                           child: VaultCard(item: item),
                                         ),
                                       )
@@ -97,7 +115,7 @@ class CloudVaultScreen extends StatelessWidget {
                                 child: Align(
                                   alignment: Alignment.centerLeft,
                                   child: Text(
-                                    'Нещодавні файли',
+                                    l10n.recentFiles,
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w700,
@@ -107,16 +125,23 @@ class CloudVaultScreen extends StatelessWidget {
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                ),
                                 child: Column(
                                   children: recentFileItems
                                       .map(
                                         (file) => Padding(
-                                          padding: const EdgeInsets.only(bottom: 12),
+                                          padding: const EdgeInsets.only(
+                                            bottom: 12,
+                                          ),
                                           child: RecentFileCard(
                                             item: file,
                                             onMoreTap: () =>
-                                                showFileActionsModal(context, file),
+                                                showFileActionsModal(
+                                                  context,
+                                                  file,
+                                                ),
                                           ),
                                         ),
                                       )

@@ -5,7 +5,11 @@ import '../screens/cloud_vault_screen.dart';
 import '../screens/search_screen.dart';
 import '../screens/settings_screen.dart';
 
-void handleBottomNavTap(BuildContext context, int currentIndex, int targetIndex) {
+void handleBottomNavTap(
+  BuildContext context,
+  int currentIndex,
+  int targetIndex,
+) {
   if (currentIndex == targetIndex) {
     return;
   }
@@ -22,10 +26,8 @@ void handleBottomNavTap(BuildContext context, int currentIndex, int targetIndex)
     PageRouteBuilder<void>(
       transitionDuration: const Duration(milliseconds: 180),
       reverseTransitionDuration: const Duration(milliseconds: 180),
-      pageBuilder: (context, animation, secondaryAnimation) => FadeTransition(
-        opacity: animation,
-        child: targetScreen,
-      ),
+      pageBuilder: (context, animation, secondaryAnimation) =>
+          FadeTransition(opacity: animation, child: targetScreen),
     ),
   );
 }

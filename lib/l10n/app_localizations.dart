@@ -1,0 +1,602 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:intl/intl.dart' as intl;
+
+import 'app_localizations_en.dart';
+import 'app_localizations_uk.dart';
+
+// ignore_for_file: type=lint
+
+/// Callers can lookup localized strings with an instance of AppLocalizations
+/// returned by `AppLocalizations.of(context)`.
+///
+/// Applications need to include `AppLocalizations.delegate()` in their app's
+/// `localizationDelegates` list, and the locales they support in the app's
+/// `supportedLocales` list. For example:
+///
+/// ```dart
+/// import 'l10n/app_localizations.dart';
+///
+/// return MaterialApp(
+///   localizationsDelegates: AppLocalizations.localizationsDelegates,
+///   supportedLocales: AppLocalizations.supportedLocales,
+///   home: MyApplicationHome(),
+/// );
+/// ```
+///
+/// ## Update pubspec.yaml
+///
+/// Please make sure to update your pubspec.yaml to include the following
+/// packages:
+///
+/// ```yaml
+/// dependencies:
+///   # Internationalization support.
+///   flutter_localizations:
+///     sdk: flutter
+///   intl: any # Use the pinned version from flutter_localizations
+///
+///   # Rest of dependencies
+/// ```
+///
+/// ## iOS Applications
+///
+/// iOS applications define key application metadata, including supported
+/// locales, in an Info.plist file that is built into the application bundle.
+/// To configure the locales supported by your app, you’ll need to edit this
+/// file.
+///
+/// First, open your project’s ios/Runner.xcworkspace Xcode workspace file.
+/// Then, in the Project Navigator, open the Info.plist file under the Runner
+/// project’s Runner folder.
+///
+/// Next, select the Information Property List item, select Add Item from the
+/// Editor menu, then select Localizations from the pop-up menu.
+///
+/// Select and expand the newly-created Localizations item then, for each
+/// locale your application supports, add a new item and select the locale
+/// you wish to add from the pop-up menu in the Value field. This list should
+/// be consistent with the languages listed in the AppLocalizations.supportedLocales
+/// property.
+abstract class AppLocalizations {
+  AppLocalizations(String locale)
+    : localeName = intl.Intl.canonicalizedLocale(locale.toString());
+
+  final String localeName;
+
+  static AppLocalizations? of(BuildContext context) {
+    return Localizations.of<AppLocalizations>(context, AppLocalizations);
+  }
+
+  static const LocalizationsDelegate<AppLocalizations> delegate =
+      _AppLocalizationsDelegate();
+
+  /// A list of this localizations delegate along with the default localizations
+  /// delegates.
+  ///
+  /// Returns a list of localizations delegates containing this delegate along with
+  /// GlobalMaterialLocalizations.delegate, GlobalCupertinoLocalizations.delegate,
+  /// and GlobalWidgetsLocalizations.delegate.
+  ///
+  /// Additional delegates can be added by appending to this list in
+  /// MaterialApp. This list does not have to be used at all if a custom list
+  /// of delegates is preferred or required.
+  static const List<LocalizationsDelegate<dynamic>> localizationsDelegates =
+      <LocalizationsDelegate<dynamic>>[
+        delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ];
+
+  /// A list of this localizations delegate's supported locales.
+  static const List<Locale> supportedLocales = <Locale>[
+    Locale('en'),
+    Locale('uk'),
+  ];
+
+  /// No description provided for @appTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'CloudVault'**
+  String get appTitle;
+
+  /// No description provided for @navHome.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get navHome;
+
+  /// No description provided for @navSearch.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get navSearch;
+
+  /// No description provided for @navAnalytics.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get navAnalytics;
+
+  /// No description provided for @navSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get navSettings;
+
+  /// No description provided for @manageClouds.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage all clouds'**
+  String get manageClouds;
+
+  /// No description provided for @totalUsed.
+  ///
+  /// In en, this message translates to:
+  /// **'Total used'**
+  String get totalUsed;
+
+  /// No description provided for @myStorages.
+  ///
+  /// In en, this message translates to:
+  /// **'My storages'**
+  String get myStorages;
+
+  /// No description provided for @add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get add;
+
+  /// No description provided for @used.
+  ///
+  /// In en, this message translates to:
+  /// **'Used'**
+  String get used;
+
+  /// No description provided for @recentFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Recent files'**
+  String get recentFiles;
+
+  /// No description provided for @addStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'Add storage'**
+  String get addStorage;
+
+  /// No description provided for @chooseCloudStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose cloud storage you want to connect'**
+  String get chooseCloudStorage;
+
+  /// No description provided for @connect.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect'**
+  String get connect;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @search.
+  ///
+  /// In en, this message translates to:
+  /// **'Search'**
+  String get search;
+
+  /// No description provided for @searchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search files'**
+  String get searchHint;
+
+  /// No description provided for @all.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get all;
+
+  /// No description provided for @documents.
+  ///
+  /// In en, this message translates to:
+  /// **'Documents'**
+  String get documents;
+
+  /// No description provided for @images.
+  ///
+  /// In en, this message translates to:
+  /// **'Images'**
+  String get images;
+
+  /// No description provided for @videos.
+  ///
+  /// In en, this message translates to:
+  /// **'Videos'**
+  String get videos;
+
+  /// No description provided for @foundFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Found {count} files'**
+  String foundFiles(Object count);
+
+  /// No description provided for @analytics.
+  ///
+  /// In en, this message translates to:
+  /// **'Analytics'**
+  String get analytics;
+
+  /// No description provided for @analyticsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage usage statistics'**
+  String get analyticsSubtitle;
+
+  /// No description provided for @totalSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'Total space'**
+  String get totalSpace;
+
+  /// No description provided for @usedSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'Used'**
+  String get usedSpace;
+
+  /// No description provided for @freeSpace.
+  ///
+  /// In en, this message translates to:
+  /// **'Free'**
+  String get freeSpace;
+
+  /// No description provided for @warning.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning!'**
+  String get warning;
+
+  /// No description provided for @warningBody.
+  ///
+  /// In en, this message translates to:
+  /// **'{storages} are almost full. Consider cleanup or upgrade.'**
+  String warningBody(Object storages);
+
+  /// No description provided for @distributionByStorage.
+  ///
+  /// In en, this message translates to:
+  /// **'Distribution by storages'**
+  String get distributionByStorage;
+
+  /// No description provided for @usageVsFree.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage vs free space'**
+  String get usageVsFree;
+
+  /// No description provided for @recommendations.
+  ///
+  /// In en, this message translates to:
+  /// **'Recommendations'**
+  String get recommendations;
+
+  /// No description provided for @tipOptimizeDropboxTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Optimize Dropbox'**
+  String get tipOptimizeDropboxTitle;
+
+  /// No description provided for @tipOptimizeDropboxBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Dropbox is 90% full. Delete old files or upgrade plan.'**
+  String get tipOptimizeDropboxBody;
+
+  /// No description provided for @tipUseIcloudTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Use iCloud'**
+  String get tipUseIcloudTitle;
+
+  /// No description provided for @tipUseIcloudBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You have 4.2 GB free in iCloud. Move large files there.'**
+  String get tipUseIcloudBody;
+
+  /// No description provided for @settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Settings'**
+  String get settings;
+
+  /// No description provided for @connectedStorages.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected storages'**
+  String get connectedStorages;
+
+  /// No description provided for @connected.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected'**
+  String get connected;
+
+  /// No description provided for @account.
+  ///
+  /// In en, this message translates to:
+  /// **'ACCOUNT'**
+  String get account;
+
+  /// No description provided for @preferences.
+  ///
+  /// In en, this message translates to:
+  /// **'PREFERENCES'**
+  String get preferences;
+
+  /// No description provided for @other.
+  ///
+  /// In en, this message translates to:
+  /// **'OTHER'**
+  String get other;
+
+  /// No description provided for @profile.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile'**
+  String get profile;
+
+  /// No description provided for @language.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// No description provided for @chooseLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose app language'**
+  String get chooseLanguage;
+
+  /// No description provided for @languageUkrainian.
+  ///
+  /// In en, this message translates to:
+  /// **'Ukrainian'**
+  String get languageUkrainian;
+
+  /// No description provided for @languageEnglish.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// No description provided for @notifications.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications;
+
+  /// No description provided for @darkTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark theme'**
+  String get darkTheme;
+
+  /// No description provided for @privacy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy'**
+  String get privacy;
+
+  /// No description provided for @helpSupport.
+  ///
+  /// In en, this message translates to:
+  /// **'Help & support'**
+  String get helpSupport;
+
+  /// No description provided for @logout.
+  ///
+  /// In en, this message translates to:
+  /// **'Log out'**
+  String get logout;
+
+  /// No description provided for @enabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get enabled;
+
+  /// No description provided for @disabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Disabled'**
+  String get disabled;
+
+  /// No description provided for @premiumPlan.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium plan'**
+  String get premiumPlan;
+
+  /// No description provided for @premiumValidUntil.
+  ///
+  /// In en, this message translates to:
+  /// **'Valid until 23 Feb 2027'**
+  String get premiumValidUntil;
+
+  /// No description provided for @pro.
+  ///
+  /// In en, this message translates to:
+  /// **'PRO'**
+  String get pro;
+
+  /// No description provided for @profileName.
+  ///
+  /// In en, this message translates to:
+  /// **'Ivan Petrenko'**
+  String get profileName;
+
+  /// No description provided for @profileEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'ivan.petrenko@email.com'**
+  String get profileEmail;
+
+  /// No description provided for @appVersion.
+  ///
+  /// In en, this message translates to:
+  /// **'CloudVault v1.0.0'**
+  String get appVersion;
+
+  /// No description provided for @themeEnabledToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark theme enabled'**
+  String get themeEnabledToast;
+
+  /// No description provided for @themeDisabledToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Light theme enabled'**
+  String get themeDisabledToast;
+
+  /// No description provided for @notificationsEnabledToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications enabled'**
+  String get notificationsEnabledToast;
+
+  /// No description provided for @notificationsDisabledToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications disabled'**
+  String get notificationsDisabledToast;
+
+  /// No description provided for @disconnectedToast.
+  ///
+  /// In en, this message translates to:
+  /// **'{storage} disconnected'**
+  String disconnectedToast(Object storage);
+
+  /// No description provided for @fileActionsRemoveStar.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove star'**
+  String get fileActionsRemoveStar;
+
+  /// No description provided for @fileActionsAddStar.
+  ///
+  /// In en, this message translates to:
+  /// **'Add star'**
+  String get fileActionsAddStar;
+
+  /// No description provided for @fileActionsDownload.
+  ///
+  /// In en, this message translates to:
+  /// **'Download'**
+  String get fileActionsDownload;
+
+  /// No description provided for @fileActionsShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get fileActionsShare;
+
+  /// No description provided for @fileActionsCopyTo.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy to...'**
+  String get fileActionsCopyTo;
+
+  /// No description provided for @fileActionsRename.
+  ///
+  /// In en, this message translates to:
+  /// **'Rename'**
+  String get fileActionsRename;
+
+  /// No description provided for @fileActionsInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Information'**
+  String get fileActionsInfo;
+
+  /// No description provided for @fileActionsDelete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get fileActionsDelete;
+
+  /// No description provided for @fileInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'File information'**
+  String get fileInfo;
+
+  /// No description provided for @size.
+  ///
+  /// In en, this message translates to:
+  /// **'Size'**
+  String get size;
+
+  /// No description provided for @modified.
+  ///
+  /// In en, this message translates to:
+  /// **'Modified'**
+  String get modified;
+
+  /// No description provided for @path.
+  ///
+  /// In en, this message translates to:
+  /// **'Path'**
+  String get path;
+
+  /// No description provided for @close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+}
+
+class _AppLocalizationsDelegate
+    extends LocalizationsDelegate<AppLocalizations> {
+  const _AppLocalizationsDelegate();
+
+  @override
+  Future<AppLocalizations> load(Locale locale) {
+    return SynchronousFuture<AppLocalizations>(lookupAppLocalizations(locale));
+  }
+
+  @override
+  bool isSupported(Locale locale) =>
+      <String>['en', 'uk'].contains(locale.languageCode);
+
+  @override
+  bool shouldReload(_AppLocalizationsDelegate old) => false;
+}
+
+AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when only language code is specified.
+  switch (locale.languageCode) {
+    case 'en':
+      return AppLocalizationsEn();
+    case 'uk':
+      return AppLocalizationsUk();
+  }
+
+  throw FlutterError(
+    'AppLocalizations.delegate failed to load unsupported locale "$locale". This is likely '
+    'an issue with the localizations generation tool. Please file an issue '
+    'on GitHub with a reproducible sample app and the gen-l10n configuration '
+    'that was used.',
+  );
+}

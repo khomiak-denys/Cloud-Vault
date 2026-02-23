@@ -3,11 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/file_action_option.dart';
 
 class FileActionRow extends StatelessWidget {
-  const FileActionRow({
-    super.key,
-    required this.action,
-    required this.onTap,
-  });
+  const FileActionRow({super.key, required this.action, required this.onTap});
 
   final FileActionOption action;
   final VoidCallback onTap;

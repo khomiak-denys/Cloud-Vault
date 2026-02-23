@@ -149,7 +149,10 @@ String formatBytes(double bytes) {
   if (bytes == 0) return '0 Б';
   const k = 1024.0;
   const sizes = ['Б', 'КБ', 'МБ', 'ГБ', 'ТБ'];
-  final i = (bytes == 0 ? 0 : (math.log(bytes) / math.log(k)).floor()).clamp(0, 4);
+  final i = (bytes == 0 ? 0 : (math.log(bytes) / math.log(k)).floor()).clamp(
+    0,
+    4,
+  );
   final converted = bytes / (math.pow(k, i) as double);
   final rounded = converted.toStringAsFixed(2);
   return '${double.parse(rounded)} ${sizes[i]}';
