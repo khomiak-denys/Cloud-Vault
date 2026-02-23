@@ -1,7 +1,10 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 
 import '../models/add_vault_option.dart';
 import '../models/recent_file_item.dart';
+import '../models/storage_usage_item.dart';
 import '../models/vault_item.dart';
 
 const vaultItems = <VaultItem>[
@@ -110,3 +113,44 @@ const addVaultOptions = <AddVaultOption>[
   ),
   AddVaultOption(title: 'Box', icon: Icons.inbox),
 ];
+
+const storageUsageItems = <StorageUsageItem>[
+  StorageUsageItem(
+    id: 'gdrive-1',
+    name: 'Google Drive',
+    color: Color(0xFF4285F4),
+    totalBytes: 15 * 1024 * 1024 * 1024,
+    usedBytes: 12.3 * 1024 * 1024 * 1024,
+  ),
+  StorageUsageItem(
+    id: 'onedrive-1',
+    name: 'OneDrive',
+    color: Color(0xFF0078D4),
+    totalBytes: 5 * 1024 * 1024 * 1024,
+    usedBytes: 2.1 * 1024 * 1024 * 1024,
+  ),
+  StorageUsageItem(
+    id: 'dropbox-1',
+    name: 'Dropbox',
+    color: Color(0xFF0061FF),
+    totalBytes: 2 * 1024 * 1024 * 1024,
+    usedBytes: 1.8 * 1024 * 1024 * 1024,
+  ),
+  StorageUsageItem(
+    id: 'icloud-1',
+    name: 'iCloud',
+    color: Color(0xFF3693F3),
+    totalBytes: 5 * 1024 * 1024 * 1024,
+    usedBytes: 0.8 * 1024 * 1024 * 1024,
+  ),
+];
+
+String formatBytes(double bytes) {
+  if (bytes == 0) return '0 Б';
+  const k = 1024.0;
+  const sizes = ['Б', 'КБ', 'МБ', 'ГБ', 'ТБ'];
+  final i = (bytes == 0 ? 0 : (math.log(bytes) / math.log(k)).floor()).clamp(0, 4);
+  final converted = bytes / (math.pow(k, i) as double);
+  final rounded = converted.toStringAsFixed(2);
+  return '${double.parse(rounded)} ${sizes[i]}';
+}
