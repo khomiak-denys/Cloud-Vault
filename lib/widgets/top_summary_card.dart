@@ -34,6 +34,7 @@ class TopSummaryCard extends StatelessWidget {
                           fontSize: 24,
                           fontWeight: FontWeight.w700,
                           letterSpacing: -0.8,
+                          color: Colors.white,
                         ),
                       ),
                       SizedBox(height: 4),
@@ -93,6 +94,7 @@ class TopSummaryCard extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
+                          color: Colors.white,
                         ),
                       ),
                     ],

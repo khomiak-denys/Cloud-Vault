@@ -28,18 +28,28 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final outerBg = isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE7ECF4);
+    final shellBg = isDark ? const Color(0xFF00081C) : const Color(0xFFF8FBFF);
+    final headerBg = isDark ? const Color(0xFF0E1B34) : Colors.white;
+    final headerTitle = isDark ? Colors.white : const Color(0xFF0F172A);
+    final inputBg = isDark ? const Color(0xFF24344B) : const Color(0xFFEFF3FA);
+    final inputBorder = isDark ? const Color(0xFF34547A) : const Color(0xFFDCE5F2);
+    final muted = isDark ? const Color(0xFF95A4BE) : const Color(0xFF64748B);
+    final resultLabel = isDark ? const Color(0xFF93A0B6) : const Color(0xFF64748B);
+
     final results = _filteredFiles();
 
     return Scaffold(
       body: Container(
-        color: const Color(0xFF2D2D2D),
+        color: outerBg,
         child: SafeArea(
           child: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 430),
               child: Container(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF00081C),
+                  color: shellBg,
                   borderRadius: BorderRadius.circular(36),
                 ),
                 child: ClipRRect(
@@ -48,25 +58,26 @@ class _SearchScreenState extends State<SearchScreen> {
                     children: [
                       Container(
                         width: double.infinity,
-                        color: const Color(0xFF0E1B34),
+                        color: headerBg,
                         padding: const EdgeInsets.fromLTRB(16, 26, 16, 18),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Пошук',
                               style: TextStyle(
                                 fontSize: 46,
                                 fontWeight: FontWeight.w700,
+                                color: headerTitle,
                               ),
                             ),
                             const SizedBox(height: 14),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 14),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF24344B),
+                                color: inputBg,
                                 borderRadius: BorderRadius.circular(18),
-                                border: Border.all(color: const Color(0xFF34547A)),
+                                border: Border.all(color: inputBorder),
                                 boxShadow: const [
                                   BoxShadow(
                                     color: Color(0xA700040A),
@@ -77,9 +88,9 @@ class _SearchScreenState extends State<SearchScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.search,
-                                    color: Color(0xFF95A4BE),
+                                    color: muted,
                                     size: 30,
                                   ),
                                   const SizedBox(width: 10),
@@ -91,11 +102,11 @@ class _SearchScreenState extends State<SearchScreen> {
                                         fontSize: 18,
                                         fontWeight: FontWeight.w600,
                                       ),
-                                      decoration: const InputDecoration(
+                                      decoration: InputDecoration(
                                         border: InputBorder.none,
                                         hintText: 'Пошук файлів',
                                         hintStyle: TextStyle(
-                                          color: Color(0xFF95A4BE),
+                                          color: muted,
                                         ),
                                       ),
                                     ),
@@ -106,9 +117,9 @@ class _SearchScreenState extends State<SearchScreen> {
                                         _controller.clear();
                                         setState(() {});
                                       },
-                                      icon: const Icon(
+                                      icon: Icon(
                                         Icons.close,
-                                        color: Color(0xFF95A4BE),
+                                        color: muted,
                                       ),
                                       style: IconButton.styleFrom(
                                         overlayColor: Colors.transparent,
@@ -156,9 +167,9 @@ class _SearchScreenState extends State<SearchScreen> {
                             children: [
                               Text(
                                 'Знайдено ${results.length} файлів',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 16,
-                                  color: Color(0xFF93A0B6),
+                                  color: resultLabel,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -238,15 +249,20 @@ class _CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.only(right: 10),
       child: TextButton(
         onPressed: onTap,
         style: TextButton.styleFrom(
           backgroundColor:
-              isActive ? const Color(0xFF2662E7) : const Color(0xFF24344B),
+              isActive
+                  ? const Color(0xFF2662E7)
+                  : (isDark ? const Color(0xFF24344B) : const Color(0xFFEFF3FA)),
           foregroundColor:
-              isActive ? Colors.white : const Color(0xFFC5CFDC),
+              isActive
+                  ? Colors.white
+                  : (isDark ? const Color(0xFFC5CFDC) : const Color(0xFF475569)),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(22),
           ),
