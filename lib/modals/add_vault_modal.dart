@@ -3,7 +3,7 @@ import 'dart:ui';
 import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
-import '../data/mock_data.dart';
+import '../data/add_vault_mock_data.dart';
 import '../widgets/add_vault_option_tile.dart';
 import '../utils/interaction_styles.dart';
 

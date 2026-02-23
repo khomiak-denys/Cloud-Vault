@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_vault/l10n/app_localizations.dart';
 
-import '../data/mock_data.dart';
+import '../data/vault_mock_data.dart';
 import '../modals/add_vault_modal.dart';
 import '../modals/language_modal.dart';
 import '../state/locale_controller.dart';
 import '../state/theme_controller.dart';
 import '../utils/tab_navigation.dart';
+import '../widgets/app_page_header.dart';
 import '../widgets/bottom_nav_bar.dart';
+import '../widgets/mobile_screen_shell.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -69,9 +71,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final outerBg = isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE7ECF4);
-    final shellBg = isDark ? const Color(0xFF00081C) : Colors.white;
-    final headerBg = isDark ? const Color(0xFF0F1D36) : Colors.white;
     final borderColor = isDark
         ? const Color(0xFF1E2E46)
         : const Color(0xFFDCE5F2);
@@ -157,354 +156,289 @@ class _SettingsScreenState extends State<SettingsScreen> {
     ];
 
     return Scaffold(
-      body: Container(
-        color: outerBg,
-        child: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 430),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: shellBg,
-                  borderRadius: BorderRadius.circular(36),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(36),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.fromLTRB(16, 24, 16, 20),
-                        decoration: BoxDecoration(
-                          color: headerBg,
-                          border: Border(
-                            bottom: BorderSide(color: borderColor),
-                          ),
+      body: MobileScreenShell(
+        child: Column(
+          children: [
+            AppPageHeader(
+              title: l10n.settings,
+              padding: const EdgeInsets.fromLTRB(16, 24, 16, 20),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF2654E8), Color(0xFF2446B8)],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
-                        child: Text(
-                          l10n.settings,
-                          style: TextStyle(
-                            fontSize: 26,
-                            fontWeight: FontWeight.w700,
-                            color: titleColor,
-                          ),
-                        ),
+                        borderRadius: BorderRadius.circular(20),
                       ),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      child: Column(
+                        children: [
+                          Row(
                             children: [
-                              Container(
-                                width: double.infinity,
-                                padding: const EdgeInsets.fromLTRB(
-                                  16,
-                                  16,
-                                  16,
-                                  16,
+                              const CircleAvatar(
+                                radius: 42,
+                                backgroundColor: Color(0xFF4A6DD8),
+                                child: Text(
+                                  '👤',
+                                  style: TextStyle(fontSize: 36),
                                 ),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFF2654E8),
-                                      Color(0xFF2446B8),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
+                              ),
+                              SizedBox(width: 14),
+                              Expanded(
                                 child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Row(
-                                      children: [
-                                        const CircleAvatar(
-                                          radius: 42,
-                                          backgroundColor: Color(0xFF4A6DD8),
-                                          child: Text(
-                                            '👤',
-                                            style: TextStyle(fontSize: 36),
-                                          ),
-                                        ),
-                                        SizedBox(width: 14),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              Text(
-                                                l10n.profileName,
-                                                style: TextStyle(
-                                                  fontSize: 22,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: Colors.white,
-                                                ),
-                                              ),
-                                              SizedBox(height: 4),
-                                              Text(
-                                                l10n.profileEmail,
-                                                style: TextStyle(
-                                                  fontSize: 13,
-                                                  color: Color(0xFFD6E2FF),
-                                                  fontWeight: FontWeight.w500,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
+                                    Text(
+                                      l10n.profileName,
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.w700,
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                    const SizedBox(height: 16),
-                                    Container(
-                                      width: double.infinity,
-                                      padding: const EdgeInsets.fromLTRB(
-                                        14,
-                                        12,
-                                        14,
-                                        12,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.14,
-                                        ),
-                                        borderRadius: BorderRadius.circular(14),
-                                      ),
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  l10n.premiumPlan,
-                                                  style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.w600,
-                                                    color: Colors.white,
-                                                  ),
-                                                ),
-                                                SizedBox(height: 3),
-                                                Text(
-                                                  l10n.premiumValidUntil,
-                                                  style: TextStyle(
-                                                    fontSize: 12,
-                                                    color: Color(0xFFD6E2FF),
-                                                    fontWeight: FontWeight.w500,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          DecoratedBox(
-                                            decoration: BoxDecoration(
-                                              color: Color(0xFFFACD0A),
-                                              borderRadius: BorderRadius.all(
-                                                Radius.circular(999),
-                                              ),
-                                            ),
-                                            child: Padding(
-                                              padding: EdgeInsets.symmetric(
-                                                horizontal: 12,
-                                                vertical: 5,
-                                              ),
-                                              child: Text(
-                                                l10n.pro,
-                                                style: TextStyle(
-                                                  color: Color(0xFF6B4D00),
-                                                  fontWeight: FontWeight.w700,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ],
+                                    SizedBox(height: 4),
+                                    Text(
+                                      l10n.profileEmail,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Color(0xFFD6E2FF),
+                                        fontWeight: FontWeight.w500,
                                       ),
                                     ),
                                   ],
-                                ),
-                              ),
-                              const SizedBox(height: 18),
-                              Container(
-                                width: double.infinity,
-                                decoration: BoxDecoration(
-                                  color: cardBg,
-                                  borderRadius: BorderRadius.circular(18),
-                                  border: Border.all(color: cardBorder),
-                                ),
-                                child: Column(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.fromLTRB(
-                                        16,
-                                        14,
-                                        16,
-                                        12,
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Text(
-                                            l10n.connectedStorages,
-                                            style: TextStyle(
-                                              fontSize: 22,
-                                              fontWeight: FontWeight.w700,
-                                              color: titleColor,
-                                            ),
-                                          ),
-                                          TextButton.icon(
-                                            onPressed: () =>
-                                                showAddVaultModal(context),
-                                            style: TextButton.styleFrom(
-                                              overlayColor: Colors.transparent,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                    horizontal: 4,
-                                                  ),
-                                            ),
-                                            icon: const Icon(
-                                              Icons.add,
-                                              color: Color(0xFF4BA2FF),
-                                            ),
-                                            label: Text(
-                                              l10n.add,
-                                              style: TextStyle(
-                                                color: Color(0xFF4BA2FF),
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    Divider(height: 1, color: borderColor),
-                                    ...vaultItems.asMap().entries.map((entry) {
-                                      final index = entry.key;
-                                      final storage = entry.value;
-
-                                      return Column(
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.fromLTRB(
-                                              16,
-                                              14,
-                                              16,
-                                              14,
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                Container(
-                                                  width: 58,
-                                                  height: 58,
-                                                  decoration: BoxDecoration(
-                                                    color: iconTileBg,
-                                                    borderRadius:
-                                                        BorderRadius.circular(
-                                                          16,
-                                                        ),
-                                                  ),
-                                                  child: Icon(
-                                                    storage.icon,
-                                                    color: Colors.white,
-                                                    size: 30,
-                                                  ),
-                                                ),
-                                                const SizedBox(width: 14),
-                                                Expanded(
-                                                  child: Column(
-                                                    crossAxisAlignment:
-                                                        CrossAxisAlignment
-                                                            .start,
-                                                    children: [
-                                                      Text(
-                                                        storage.title,
-                                                        style: const TextStyle(
-                                                          fontSize: 19,
-                                                          fontWeight:
-                                                              FontWeight.w700,
-                                                        ),
-                                                      ),
-                                                      const SizedBox(height: 2),
-                                                      Text(
-                                                        l10n.connected,
-                                                        style: TextStyle(
-                                                          fontSize: 12,
-                                                          color: secondaryColor,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                        ),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                IconButton(
-                                                  onPressed: () =>
-                                                      _handleDisconnect(
-                                                        storage.title,
-                                                      ),
-                                                  icon: const Icon(
-                                                    Icons.delete_outline,
-                                                    color: Color(0xFFFF626D),
-                                                    size: 28,
-                                                  ),
-                                                  style: IconButton.styleFrom(
-                                                    overlayColor:
-                                                        Colors.transparent,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          if (index != vaultItems.length - 1)
-                                            Divider(
-                                              height: 1,
-                                              color: borderColor,
-                                            ),
-                                        ],
-                                      );
-                                    }),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 20),
-                              ...sections.map(
-                                (section) => Padding(
-                                  padding: const EdgeInsets.only(bottom: 18),
-                                  child: _SettingsSectionCard(
-                                    section: section,
-                                    isDark: isDark,
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: EdgeInsets.symmetric(vertical: 6),
-                                child: Align(
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    l10n.appVersion,
-                                    style: TextStyle(
-                                      color: sectionLabelColor,
-                                      fontSize: 13,
-                                    ),
-                                  ),
                                 ),
                               ),
                             ],
                           ),
+                          const SizedBox(height: 16),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withValues(alpha: 0.14),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        l10n.premiumPlan,
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      SizedBox(height: 3),
+                                      Text(
+                                        l10n.premiumValidUntil,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Color(0xFFD6E2FF),
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                DecoratedBox(
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFFFACD0A),
+                                    borderRadius: BorderRadius.all(
+                                      Radius.circular(999),
+                                    ),
+                                  ),
+                                  child: Padding(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 5,
+                                    ),
+                                    child: Text(
+                                      l10n.pro,
+                                      style: TextStyle(
+                                        color: Color(0xFF6B4D00),
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: cardBg,
+                        borderRadius: BorderRadius.circular(18),
+                        border: Border.all(color: cardBorder),
+                      ),
+                      child: Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  l10n.connectedStorages,
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w700,
+                                    color: titleColor,
+                                  ),
+                                ),
+                                TextButton.icon(
+                                  onPressed: () => showAddVaultModal(context),
+                                  style: TextButton.styleFrom(
+                                    overlayColor: Colors.transparent,
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                  ),
+                                  icon: const Icon(
+                                    Icons.add,
+                                    color: Color(0xFF4BA2FF),
+                                  ),
+                                  label: Text(
+                                    l10n.add,
+                                    style: TextStyle(
+                                      color: Color(0xFF4BA2FF),
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          Divider(height: 1, color: borderColor),
+                          ...vaultItems.asMap().entries.map((entry) {
+                            final index = entry.key;
+                            final storage = entry.value;
+
+                            return Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    16,
+                                    14,
+                                    16,
+                                    14,
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        width: 58,
+                                        height: 58,
+                                        decoration: BoxDecoration(
+                                          color: iconTileBg,
+                                          borderRadius: BorderRadius.circular(
+                                            16,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          storage.icon,
+                                          color: Colors.white,
+                                          size: 30,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 14),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              storage.title,
+                                              style: const TextStyle(
+                                                fontSize: 19,
+                                                fontWeight: FontWeight.w700,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 2),
+                                            Text(
+                                              l10n.connected,
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: secondaryColor,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      IconButton(
+                                        onPressed: () =>
+                                            _handleDisconnect(storage.title),
+                                        icon: const Icon(
+                                          Icons.delete_outline,
+                                          color: Color(0xFFFF626D),
+                                          size: 28,
+                                        ),
+                                        style: IconButton.styleFrom(
+                                          overlayColor: Colors.transparent,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (index != vaultItems.length - 1)
+                                  Divider(height: 1, color: borderColor),
+                              ],
+                            );
+                          }),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    ...sections.map(
+                      (section) => Padding(
+                        padding: const EdgeInsets.only(bottom: 18),
+                        child: _SettingsSectionCard(
+                          section: section,
+                          isDark: isDark,
                         ),
                       ),
-                      BottomNavBar(
-                        activeIndex: 3,
-                        onTap: (index) => handleBottomNavTap(context, 3, index),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(vertical: 6),
+                      child: Align(
+                        alignment: Alignment.center,
+                        child: Text(
+                          l10n.appVersion,
+                          style: TextStyle(
+                            color: sectionLabelColor,
+                            fontSize: 13,
+                          ),
+                        ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ),
+            BottomNavBar(
+              activeIndex: 3,
+              onTap: (index) => handleBottomNavTap(context, 3, index),
+            ),
+          ],
         ),
       ),
     );

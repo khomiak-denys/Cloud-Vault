@@ -3,10 +3,13 @@ import 'dart:math' as math;
 import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
-import '../data/mock_data.dart';
+import '../data/storage_formatters.dart';
+import '../data/storage_usage_mock_data.dart';
 import '../models/storage_usage_item.dart';
 import '../utils/tab_navigation.dart';
+import '../widgets/app_page_header.dart';
 import '../widgets/bottom_nav_bar.dart';
+import '../widgets/mobile_screen_shell.dart';
 
 class AnalyticsScreen extends StatelessWidget {
   const AnalyticsScreen({super.key});
@@ -15,16 +18,6 @@ class AnalyticsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final outerBg = isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE7ECF4);
-    final shellBg = isDark ? const Color(0xFF00081C) : const Color(0xFFF8FBFF);
-    final headerBg = isDark ? const Color(0xFF0F1D36) : Colors.white;
-    final headerBorder = isDark
-        ? const Color(0xFF1E2E46)
-        : const Color(0xFFDCE5F2);
-    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final subtitleColor = isDark
-        ? const Color(0xFF93A1B7)
-        : const Color(0xFF64748B);
 
     final totalUsed = storageUsageItems.fold<double>(
       0,
@@ -41,200 +34,151 @@ class AnalyticsScreen extends StatelessWidget {
         .toList();
 
     return Scaffold(
-      body: Container(
-        color: outerBg,
-        child: SafeArea(
-          child: Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 430),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: shellBg,
-                  borderRadius: BorderRadius.circular(36),
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(36),
-                  child: Column(
-                    children: [
-                      Container(
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: headerBg,
-                          border: Border(
-                            bottom: BorderSide(color: headerBorder),
+      body: MobileScreenShell(
+        child: Column(
+          children: [
+            AppPageHeader(
+              title: l10n.analytics,
+              subtitle: l10n.analyticsSubtitle,
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: _StatCard(
+                            isDark: isDark,
+                            icon: Icons.storage,
+                            label: l10n.totalSpace,
+                            value: formatBytes(totalSpace),
+                            iconColor: const Color(0xFF2563EB),
+                            iconBg: const Color(0xFFDBEAFE),
                           ),
                         ),
-                        padding: const EdgeInsets.fromLTRB(16, 24, 16, 14),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              l10n.analytics,
-                              style: TextStyle(
-                                fontSize: 26,
-                                fontWeight: FontWeight.w700,
-                                color: titleColor,
-                              ),
-                            ),
-                            SizedBox(height: 2),
-                            Text(
-                              l10n.analyticsSubtitle,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: subtitleColor,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _StatCard(
+                            isDark: isDark,
+                            icon: Icons.task_alt,
+                            label: l10n.usedSpace,
+                            value: formatBytes(totalUsed),
+                            iconColor: const Color(0xFF16A34A),
+                            iconBg: const Color(0xFFDCFCE7),
+                          ),
                         ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: _StatCard(
+                            isDark: isDark,
+                            icon: Icons.trending_up,
+                            label: l10n.freeSpace,
+                            value: formatBytes(totalFree),
+                            iconColor: const Color(0xFF9333EA),
+                            iconBg: const Color(0xFFF3E8FF),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    if (almostFullStorages.isNotEmpty) ...[
+                      _WarningCard(
+                        storages: almostFullStorages,
+                        isDark: isDark,
                       ),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            children: [
-                              Row(
+                      const SizedBox(height: 16),
+                    ],
+                    _SectionCard(
+                      isDark: isDark,
+                      title: l10n.distributionByStorage,
+                      child: Column(
+                        children: [
+                          SizedBox(
+                            height: 220,
+                            child: _PieUsageChart(items: storageUsageItems),
+                          ),
+                          const SizedBox(height: 10),
+                          ...storageUsageItems.map(
+                            (item) => Padding(
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
                                 children: [
-                                  Expanded(
-                                    child: _StatCard(
-                                      isDark: isDark,
-                                      icon: Icons.storage,
-                                      label: l10n.totalSpace,
-                                      value: formatBytes(totalSpace),
-                                      iconColor: const Color(0xFF2563EB),
-                                      iconBg: const Color(0xFFDBEAFE),
+                                  Container(
+                                    width: 10,
+                                    height: 10,
+                                    decoration: BoxDecoration(
+                                      color: item.color,
+                                      shape: BoxShape.circle,
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
+                                  const SizedBox(width: 8),
                                   Expanded(
-                                    child: _StatCard(
-                                      isDark: isDark,
-                                      icon: Icons.task_alt,
-                                      label: l10n.usedSpace,
-                                      value: formatBytes(totalUsed),
-                                      iconColor: const Color(0xFF16A34A),
-                                      iconBg: const Color(0xFFDCFCE7),
+                                    child: Text(
+                                      item.name,
+                                      style: const TextStyle(
+                                        color: Color(0xFFA8B5C9),
+                                        fontSize: 13,
+                                      ),
                                     ),
                                   ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: _StatCard(
-                                      isDark: isDark,
-                                      icon: Icons.trending_up,
-                                      label: l10n.freeSpace,
-                                      value: formatBytes(totalFree),
-                                      iconColor: const Color(0xFF9333EA),
-                                      iconBg: const Color(0xFFF3E8FF),
+                                  Text(
+                                    formatBytes(item.usedBytes),
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 16),
-                              if (almostFullStorages.isNotEmpty) ...[
-                                _WarningCard(
-                                  storages: almostFullStorages,
-                                  isDark: isDark,
-                                ),
-                                const SizedBox(height: 16),
-                              ],
-                              _SectionCard(
-                                isDark: isDark,
-                                title: l10n.distributionByStorage,
-                                child: Column(
-                                  children: [
-                                    SizedBox(
-                                      height: 220,
-                                      child: _PieUsageChart(
-                                        items: storageUsageItems,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 10),
-                                    ...storageUsageItems.map(
-                                      (item) => Padding(
-                                        padding: const EdgeInsets.only(
-                                          bottom: 8,
-                                        ),
-                                        child: Row(
-                                          children: [
-                                            Container(
-                                              width: 10,
-                                              height: 10,
-                                              decoration: BoxDecoration(
-                                                color: item.color,
-                                                shape: BoxShape.circle,
-                                              ),
-                                            ),
-                                            const SizedBox(width: 8),
-                                            Expanded(
-                                              child: Text(
-                                                item.name,
-                                                style: const TextStyle(
-                                                  color: Color(0xFFA8B5C9),
-                                                  fontSize: 13,
-                                                ),
-                                              ),
-                                            ),
-                                            Text(
-                                              formatBytes(item.usedBytes),
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.w600,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              const SizedBox(height: 16),
-                              _SectionCard(
-                                isDark: isDark,
-                                title: l10n.usageVsFree,
-                                child: _BarUsageChart(items: storageUsageItems),
-                              ),
-                              const SizedBox(height: 16),
-                              _SectionCard(
-                                isDark: isDark,
-                                title: l10n.recommendations,
-                                child: Column(
-                                  children: [
-                                    _TipCard(
-                                      emoji: '💡',
-                                      title: l10n.tipOptimizeDropboxTitle,
-                                      body: l10n.tipOptimizeDropboxBody,
-                                      bg: Color(0xFF182A4A),
-                                      titleColor: Color(0xFFEAF2FF),
-                                      bodyColor: Color(0xFF98A8BF),
-                                    ),
-                                    SizedBox(height: 10),
-                                    _TipCard(
-                                      emoji: '✨',
-                                      title: l10n.tipUseIcloudTitle,
-                                      body: l10n.tipUseIcloudBody,
-                                      bg: Color(0xFF18323A),
-                                      titleColor: Color(0xFFEAF2FF),
-                                      bodyColor: Color(0xFF98A8BF),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
-                        ),
+                        ],
                       ),
-                      BottomNavBar(
-                        activeIndex: 2,
-                        onTap: (index) => handleBottomNavTap(context, 2, index),
+                    ),
+                    const SizedBox(height: 16),
+                    _SectionCard(
+                      isDark: isDark,
+                      title: l10n.usageVsFree,
+                      child: _BarUsageChart(items: storageUsageItems),
+                    ),
+                    const SizedBox(height: 16),
+                    _SectionCard(
+                      isDark: isDark,
+                      title: l10n.recommendations,
+                      child: Column(
+                        children: [
+                          _TipCard(
+                            emoji: '💡',
+                            title: l10n.tipOptimizeDropboxTitle,
+                            body: l10n.tipOptimizeDropboxBody,
+                            bg: Color(0xFF182A4A),
+                            titleColor: Color(0xFFEAF2FF),
+                            bodyColor: Color(0xFF98A8BF),
+                          ),
+                          SizedBox(height: 10),
+                          _TipCard(
+                            emoji: '✨',
+                            title: l10n.tipUseIcloudTitle,
+                            body: l10n.tipUseIcloudBody,
+                            bg: Color(0xFF18323A),
+                            titleColor: Color(0xFFEAF2FF),
+                            bodyColor: Color(0xFF98A8BF),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ),
-          ),
+            BottomNavBar(
+              activeIndex: 2,
+              onTap: (index) => handleBottomNavTap(context, 2, index),
+            ),
+          ],
         ),
       ),
     );
