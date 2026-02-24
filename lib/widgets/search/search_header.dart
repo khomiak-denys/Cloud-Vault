@@ -30,6 +30,7 @@ class SearchHeader extends StatelessWidget {
     required this.onQueryChanged,
     required this.onClearTap,
     required this.onCategoryChanged,
+    this.showTitle = true,
   });
 
   final String title;
@@ -40,6 +41,7 @@ class SearchHeader extends StatelessWidget {
   final ValueChanged<String> onQueryChanged;
   final VoidCallback onClearTap;
   final ValueChanged<SearchCategory> onCategoryChanged;
+  final bool showTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -48,19 +50,21 @@ class SearchHeader extends StatelessWidget {
     return Container(
       width: double.infinity,
       color: colors.headerBackground,
-      padding: const EdgeInsets.fromLTRB(16, 26, 16, 18),
+      padding: EdgeInsets.fromLTRB(16, showTitle ? 26 : 12, 16, 18),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 46,
-              fontWeight: FontWeight.w700,
-              color: colors.primaryText,
+          if (showTitle) ...[
+            Text(
+              title,
+              style: TextStyle(
+                fontSize: 46,
+                fontWeight: FontWeight.w700,
+                color: colors.primaryText,
+              ),
             ),
-          ),
-          const SizedBox(height: 14),
+            const SizedBox(height: 14),
+          ],
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14),
             decoration: BoxDecoration(
