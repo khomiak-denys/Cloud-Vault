@@ -12,6 +12,7 @@ class AuthScreenFrame extends StatelessWidget {
     required this.formChildren,
     required this.bottomAction,
     this.badgeIcon = Icons.cloud_outlined,
+    this.extraCompactHeader = false,
   });
 
   final List<Color> headerGradient;
@@ -20,11 +21,15 @@ class AuthScreenFrame extends StatelessWidget {
   final List<Widget> formChildren;
   final Widget bottomAction;
   final IconData badgeIcon;
+  final bool extraCompactHeader;
 
   @override
   Widget build(BuildContext context) {
     final colors = AppThemeColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final mediaSize = MediaQuery.sizeOf(context);
+    final compact = mediaSize.height < 850 || mediaSize.width < 390;
+    final ultraCompact = compact && extraCompactHeader;
 
     return Scaffold(
       body: MobileScreenShell(
@@ -38,48 +43,53 @@ class AuthScreenFrame extends StatelessWidget {
           ),
           child: Column(
             children: [
-              const SizedBox(height: 22),
+              SizedBox(height: ultraCompact ? 4 : (compact ? 8 : 16)),
               Container(
-                width: 112,
-                height: 112,
+                width: ultraCompact ? 64 : (compact ? 74 : 96),
+                height: ultraCompact ? 64 : (compact ? 74 : 96),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFFEDF2FC) : Colors.white,
-                  borderRadius: BorderRadius.circular(28),
+                  borderRadius: BorderRadius.circular(ultraCompact ? 18 : (compact ? 20 : 24)),
                 ),
                 child: Icon(
                   badgeIcon,
-                  size: 52,
+                  size: ultraCompact ? 28 : (compact ? 34 : 44),
                   color: const Color(0xFFAAB7CC),
                 ),
               ),
-              const SizedBox(height: 14),
-              const Text(
+              SizedBox(height: ultraCompact ? 4 : (compact ? 6 : 10)),
+              Text(
                 'CloudVault',
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 56,
+                  fontSize: ultraCompact ? 24 : (compact ? 28 : 38),
                   fontWeight: FontWeight.w800,
-                  letterSpacing: -1.4,
+                  letterSpacing: ultraCompact ? -0.4 : (compact ? -0.6 : -1),
                 ),
               ),
-              const SizedBox(height: 6),
+              SizedBox(height: ultraCompact ? 0 : (compact ? 1 : 4)),
               Text(
                 headerSubtitle,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Color(0xFFE2EAFF),
-                  fontSize: 15,
+                  fontSize: ultraCompact ? 11 : (compact ? 12 : 14),
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: ultraCompact ? 6 : (compact ? 8 : 14)),
               Expanded(
                 child: Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+                  padding: EdgeInsets.fromLTRB(
+                    compact ? 16 : 22,
+                    compact ? 16 : 20,
+                    compact ? 16 : 22,
+                    compact ? 10 : 14,
+                  ),
                   decoration: BoxDecoration(
                     color: colors.cardBackground,
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(34),
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(compact ? 22 : 28),
                     ),
                     border: Border(top: BorderSide(color: colors.cardBorder)),
                   ),
@@ -90,20 +100,21 @@ class AuthScreenFrame extends StatelessWidget {
                         formTitle,
                         style: TextStyle(
                           color: colors.primaryText,
-                          fontSize: 28,
+                          fontSize: compact ? 20 : 24,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
-                      const SizedBox(height: 18),
+                      SizedBox(height: compact ? 8 : 12),
                       Expanded(
                         child: SingleChildScrollView(
+                          physics: const ClampingScrollPhysics(),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: formChildren,
                           ),
                         ),
                       ),
-                      const SizedBox(height: 8),
+                      SizedBox(height: compact ? 2 : 6),
                       Center(child: bottomAction),
                     ],
                   ),

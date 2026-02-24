@@ -18,6 +18,9 @@ class CloudVaultApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           title: 'CloudVault',
+          scrollBehavior: const MaterialScrollBehavior().copyWith(
+            overscroll: false,
+          ),
           locale: appLocaleController.locale,
           localizationsDelegates: const [
             AppLocalizations.delegate,
