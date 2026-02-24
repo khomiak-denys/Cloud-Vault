@@ -5,6 +5,7 @@ import '../data/recent_file_mock_data.dart';
 import '../data/vault_mock_data.dart';
 import '../modals/add_vault_modal.dart';
 import '../modals/file_actions_modal.dart';
+import '../theme/app_theme_colors.dart';
 import '../utils/tab_navigation.dart';
 import '../widgets/mobile_screen_shell.dart';
 import '../widgets/bottom_nav_bar.dart';
@@ -18,8 +19,7 @@ class CloudVaultScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final sectionTitle = isDark ? Colors.white : const Color(0xFF0F172A);
+    final colors = AppThemeColors.of(context);
 
     return Scaffold(
       body: MobileScreenShell(
@@ -43,7 +43,7 @@ class CloudVaultScreen extends StatelessWidget {
                                 fontSize: 18,
                                 fontWeight: FontWeight.w700,
                                 letterSpacing: -0.5,
-                                color: sectionTitle,
+                                color: colors.primaryText,
                               ),
                             ),
                           ),
@@ -51,7 +51,7 @@ class CloudVaultScreen extends StatelessWidget {
                           TextButton.icon(
                             onPressed: () => showAddVaultModal(context),
                             style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF4BA2FF),
+                              foregroundColor: colors.accent,
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 6,
                               ),
@@ -93,7 +93,7 @@ class CloudVaultScreen extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w700,
-                            color: sectionTitle,
+                            color: colors.primaryText,
                           ),
                         ),
                       ),

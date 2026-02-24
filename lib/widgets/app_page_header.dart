@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme_colors.dart';
+
 class AppPageHeader extends StatelessWidget {
   const AppPageHeader({
     super.key,
@@ -16,21 +18,13 @@ class AppPageHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final headerBg = isDark ? const Color(0xFF0F1D36) : Colors.white;
-    final headerBorder = isDark
-        ? const Color(0xFF1E2E46)
-        : const Color(0xFFDCE5F2);
-    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final subtitleColor = isDark
-        ? const Color(0xFF93A1B7)
-        : const Color(0xFF64748B);
+    final colors = AppThemeColors.of(context);
 
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: headerBg,
-        border: Border(bottom: BorderSide(color: headerBorder)),
+        color: colors.headerBackground,
+        border: Border(bottom: BorderSide(color: colors.headerBorder)),
       ),
       padding: padding,
       child: Column(
@@ -41,7 +35,7 @@ class AppPageHeader extends StatelessWidget {
             style: TextStyle(
               fontSize: titleSize,
               fontWeight: FontWeight.w700,
-              color: titleColor,
+              color: colors.primaryText,
             ),
           ),
           if (subtitle != null) ...[
@@ -50,7 +44,7 @@ class AppPageHeader extends StatelessWidget {
               subtitle!,
               style: TextStyle(
                 fontSize: 13,
-                color: subtitleColor,
+                color: colors.mutedText,
                 fontWeight: FontWeight.w500,
               ),
             ),

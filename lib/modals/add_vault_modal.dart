@@ -4,11 +4,15 @@ import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import '../data/add_vault_mock_data.dart';
-import '../widgets/add_vault_option_tile.dart';
+import '../theme/app_theme_colors.dart';
 import '../utils/interaction_styles.dart';
+import '../widgets/add_vault_option_tile.dart';
 
 Future<void> showAddVaultModal(BuildContext context) async {
   final l10n = AppLocalizations.of(context)!;
+  final colors = AppThemeColors.of(context);
+  const primaryBtnBg = Color(0xFF2662E7);
+  const primaryBtnFg = Color(0xFFEAF2FF);
   await showGeneralDialog<void>(
     context: context,
     barrierLabel: 'Add vault',
@@ -45,9 +49,9 @@ Future<void> showAddVaultModal(BuildContext context) async {
                       child: Container(
                         padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0D1B35),
+                          color: colors.modalBackground,
                           borderRadius: BorderRadius.circular(34),
-                          border: Border.all(color: const Color(0xFF243859)),
+                          border: Border.all(color: colors.modalBorder),
                         ),
                         child: SingleChildScrollView(
                           child: ScrollConfiguration(
@@ -68,6 +72,7 @@ Future<void> showAddVaultModal(BuildContext context) async {
                                         style: TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.w700,
+                                          color: colors.primaryText,
                                         ),
                                       ),
                                     ),
@@ -79,22 +84,19 @@ Future<void> showAddVaultModal(BuildContext context) async {
                                           const Color(0x3397A5BD),
                                         ),
                                       ),
-                                      icon: const Icon(
+                                      icon: Icon(
                                         Icons.close,
-                                        color: Color(0xFF96A4BF),
+                                        color: colors.modalCloseIcon,
                                       ),
                                     ),
                                   ],
                                 ),
-                                const Divider(
-                                  color: Color(0xFF263A59),
-                                  height: 24,
-                                ),
+                                Divider(color: colors.modalDivider, height: 24),
                                 Text(
                                   l10n.chooseCloudStorage,
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: Color(0xFF94A2BB),
+                                    color: colors.modalMutedText,
                                     height: 1.35,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -131,14 +133,12 @@ Future<void> showAddVaultModal(BuildContext context) async {
                                         ? null
                                         : () => Navigator.of(context).pop(),
                                     style: ButtonStyle(
-                                      backgroundColor:
-                                          const WidgetStatePropertyAll(
-                                            Color(0xFF2448A3),
-                                          ),
-                                      foregroundColor:
-                                          const WidgetStatePropertyAll(
-                                            Colors.white,
-                                          ),
+                                      backgroundColor: WidgetStatePropertyAll(
+                                        primaryBtnBg,
+                                      ),
+                                      foregroundColor: WidgetStatePropertyAll(
+                                        primaryBtnFg,
+                                      ),
                                       overlayColor: pressOnlyOverlay(
                                         const Color(0x33FFFFFF),
                                       ),

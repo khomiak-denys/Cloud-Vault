@@ -5,9 +5,10 @@ import 'package:flutter/material.dart';
 
 import '../models/file_action_option.dart';
 import '../models/recent_file_item.dart';
-import 'file_info_modal.dart';
+import '../theme/app_theme_colors.dart';
 import '../utils/interaction_styles.dart';
 import '../widgets/file_action_row.dart';
+import 'file_info_modal.dart';
 
 Future<void> showFileActionsModal(
   BuildContext context,
@@ -15,6 +16,7 @@ Future<void> showFileActionsModal(
 ) async {
   final hostContext = context;
   final l10n = AppLocalizations.of(context)!;
+  final colors = AppThemeColors.of(context);
   final isStarred = file.badgeIcon == Icons.star;
   final actions = <FileActionOption>[
     FileActionOption(
@@ -83,8 +85,8 @@ Future<void> showFileActionsModal(
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(22, 20, 22, 14),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF0D1B35),
+                  decoration: BoxDecoration(
+                    color: colors.modalBackground,
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(28),
                     ),
@@ -100,9 +102,10 @@ Future<void> showFileActionsModal(
                                 file.title,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w700,
+                                  color: colors.primaryText,
                                 ),
                               ),
                             ),
@@ -114,9 +117,9 @@ Future<void> showFileActionsModal(
                                   const Color(0x3397A5BD),
                                 ),
                               ),
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.close,
-                                color: Color(0xFF97A5BD),
+                                color: colors.modalCloseIcon,
                               ),
                             ),
                           ],
@@ -139,8 +142,8 @@ Future<void> showFileActionsModal(
                           child: TextButton(
                             onPressed: () => Navigator.of(dialogContext).pop(),
                             style: TextButton.styleFrom(
-                              backgroundColor: const Color(0xFF22314A),
-                              foregroundColor: const Color(0xFFCDD6E5),
+                              backgroundColor: colors.secondaryButtonBackground,
+                              foregroundColor: colors.secondaryButtonForeground,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(14),

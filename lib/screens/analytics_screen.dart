@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../data/storage_formatters.dart';
 import '../data/storage_usage_mock_data.dart';
 import '../models/storage_usage_item.dart';
+import '../theme/app_theme_colors.dart';
 import '../utils/tab_navigation.dart';
 import '../widgets/app_page_header.dart';
 import '../widgets/bottom_nav_bar.dart';
@@ -18,6 +19,7 @@ class AnalyticsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = AppThemeColors.of(context);
 
     final totalUsed = storageUsageItems.fold<double>(
       0,
@@ -97,7 +99,10 @@ class AnalyticsScreen extends StatelessWidget {
                         children: [
                           SizedBox(
                             height: 220,
-                            child: _PieUsageChart(items: storageUsageItems),
+                            child: _PieUsageChart(
+                              items: storageUsageItems,
+                              isDark: isDark,
+                            ),
                           ),
                           const SizedBox(height: 10),
                           ...storageUsageItems.map(
@@ -117,16 +122,16 @@ class AnalyticsScreen extends StatelessWidget {
                                   Expanded(
                                     child: Text(
                                       item.name,
-                                      style: const TextStyle(
-                                        color: Color(0xFFA8B5C9),
+                                      style: TextStyle(
+                                        color: colors.secondaryText,
                                         fontSize: 13,
                                       ),
                                     ),
                                   ),
                                   Text(
                                     formatBytes(item.usedBytes),
-                                    style: const TextStyle(
-                                      color: Colors.white,
+                                    style: TextStyle(
+                                      color: colors.primaryText,
                                       fontSize: 13,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -154,18 +159,30 @@ class AnalyticsScreen extends StatelessWidget {
                             emoji: '💡',
                             title: l10n.tipOptimizeDropboxTitle,
                             body: l10n.tipOptimizeDropboxBody,
-                            bg: Color(0xFF182A4A),
-                            titleColor: Color(0xFFEAF2FF),
-                            bodyColor: Color(0xFF98A8BF),
+                            bg: isDark
+                                ? const Color(0xFF182A4A)
+                                : const Color(0xFFEAF2FF),
+                            titleColor: isDark
+                                ? const Color(0xFFEAF2FF)
+                                : const Color(0xFF0F172A),
+                            bodyColor: isDark
+                                ? const Color(0xFF98A8BF)
+                                : const Color(0xFF475569),
                           ),
                           SizedBox(height: 10),
                           _TipCard(
                             emoji: '✨',
                             title: l10n.tipUseIcloudTitle,
                             body: l10n.tipUseIcloudBody,
-                            bg: Color(0xFF18323A),
-                            titleColor: Color(0xFFEAF2FF),
-                            bodyColor: Color(0xFF98A8BF),
+                            bg: isDark
+                                ? const Color(0xFF18323A)
+                                : const Color(0xFFEAF9F2),
+                            titleColor: isDark
+                                ? const Color(0xFFEAF2FF)
+                                : const Color(0xFF0F172A),
+                            bodyColor: isDark
+                                ? const Color(0xFF98A8BF)
+                                : const Color(0xFF475569),
                           ),
                         ],
                       ),
@@ -204,14 +221,13 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppThemeColors.of(context);
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1F2D44) : Colors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDark ? const Color(0xFF31435C) : const Color(0xFFDCE5F2),
-        ),
+        border: Border.all(color: colors.cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -230,10 +246,7 @@ class _StatCard extends StatelessWidget {
             label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              fontSize: 11,
-              color: isDark ? Color(0xFF93A1B7) : Color(0xFF64748B),
-            ),
+            style: TextStyle(fontSize: 11, color: colors.mutedText),
           ),
           const SizedBox(height: 2),
           Text(
@@ -242,7 +255,7 @@ class _StatCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: 12,
-              color: isDark ? Colors.white : Color(0xFF0F172A),
+              color: colors.primaryText,
               fontWeight: FontWeight.w700,
             ),
           ),
@@ -324,15 +337,14 @@ class _SectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppThemeColors.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1F2D44) : Colors.white,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: isDark ? const Color(0xFF31435C) : const Color(0xFFDCE5F2),
-        ),
+        border: Border.all(color: colors.cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -340,7 +352,7 @@ class _SectionCard extends StatelessWidget {
           Text(
             title,
             style: TextStyle(
-              color: isDark ? Colors.white : Color(0xFF0F172A),
+              color: colors.primaryText,
               fontSize: 16,
               fontWeight: FontWeight.w700,
             ),
@@ -354,12 +366,14 @@ class _SectionCard extends StatelessWidget {
 }
 
 class _PieUsageChart extends StatelessWidget {
-  const _PieUsageChart({required this.items});
+  const _PieUsageChart({required this.items, required this.isDark});
 
   final List<StorageUsageItem> items;
+  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppThemeColors.of(context);
     final total = items.fold<double>(0, (acc, item) => acc + item.usedBytes);
 
     return Center(
@@ -367,7 +381,12 @@ class _PieUsageChart extends StatelessWidget {
         width: 210,
         height: 210,
         child: CustomPaint(
-          painter: _DonutPainter(items: items, total: total),
+          painter: _DonutPainter(
+            items: items,
+            total: total,
+            baseColor: isDark ? const Color(0xFF33445E) : colors.headerBorder,
+            holeColor: isDark ? colors.cardBackground : colors.shellBackground,
+          ),
         ),
       ),
     );
@@ -375,10 +394,17 @@ class _PieUsageChart extends StatelessWidget {
 }
 
 class _DonutPainter extends CustomPainter {
-  _DonutPainter({required this.items, required this.total});
+  _DonutPainter({
+    required this.items,
+    required this.total,
+    required this.baseColor,
+    required this.holeColor,
+  });
 
   final List<StorageUsageItem> items;
   final double total;
+  final Color baseColor;
+  final Color holeColor;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -388,7 +414,7 @@ class _DonutPainter extends CustomPainter {
       ..style = PaintingStyle.stroke
       ..strokeWidth = 28
       ..strokeCap = StrokeCap.butt
-      ..color = const Color(0xFF33445E);
+      ..color = baseColor;
 
     canvas.drawArc(rect, 0, math.pi * 2, false, basePaint);
 
@@ -405,13 +431,16 @@ class _DonutPainter extends CustomPainter {
       currentAngle += sweep;
     }
 
-    final holePaint = Paint()..color = const Color(0xFF1F2D44);
+    final holePaint = Paint()..color = holeColor;
     canvas.drawCircle(size.center(Offset.zero), 56, holePaint);
   }
 
   @override
   bool shouldRepaint(covariant _DonutPainter oldDelegate) {
-    return oldDelegate.items != items || oldDelegate.total != total;
+    return oldDelegate.items != items ||
+        oldDelegate.total != total ||
+        oldDelegate.baseColor != baseColor ||
+        oldDelegate.holeColor != holeColor;
   }
 }
 
@@ -442,8 +471,10 @@ class _BarUsageChart extends StatelessWidget {
               children: [
                 Text(
                   item.name.split(' ').first,
-                  style: const TextStyle(
-                    color: Color(0xFFA8B5C9),
+                  style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? const Color(0xFFA8B5C9)
+                        : const Color(0xFF64748B),
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                   ),
@@ -513,13 +544,17 @@ class _LegendItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       children: [
         Container(width: 10, height: 10, color: color),
         const SizedBox(width: 6),
         Text(
           text,
-          style: const TextStyle(color: Color(0xFF93A1B7), fontSize: 12),
+          style: TextStyle(
+            color: isDark ? const Color(0xFF93A1B7) : const Color(0xFF64748B),
+            fontSize: 12,
+          ),
         ),
       ],
     );

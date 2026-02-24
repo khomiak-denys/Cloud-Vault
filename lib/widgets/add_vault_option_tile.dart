@@ -16,6 +16,16 @@ class AddVaultOptionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final tileBg = isDark ? const Color(0xFF0D1D38) : const Color(0xFFF4F7FD);
+    final tileBorder = isDark
+        ? const Color(0xFF334866)
+        : const Color(0xFFC9D6EA);
+    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
+    final defaultIconBg = isDark
+        ? const Color(0xFF16325E)
+        : const Color(0xFFDDEAFE);
+
     return InkWell(
       borderRadius: BorderRadius.circular(20),
       onTap: onTap,
@@ -27,12 +37,10 @@ class AddVaultOptionTile extends StatelessWidget {
         duration: const Duration(milliseconds: 180),
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFF0D1D38),
+          color: tileBg,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF4A90FF)
-                : const Color(0xFF334866),
+            color: isSelected ? const Color(0xFF4A90FF) : tileBorder,
             width: isSelected ? 1.6 : 1,
           ),
         ),
@@ -43,7 +51,7 @@ class AddVaultOptionTile extends StatelessWidget {
               height: 48,
               width: 48,
               decoration: BoxDecoration(
-                color: option.iconBackground ?? const Color(0xFF16325E),
+                color: option.iconBackground ?? defaultIconBg,
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(
@@ -55,7 +63,11 @@ class AddVaultOptionTile extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               option.title,
-              style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700),
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: titleColor,
+              ),
             ),
           ],
         ),

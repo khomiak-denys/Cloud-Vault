@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/recent_file_item.dart';
+import '../theme/app_theme_colors.dart';
 
 class SearchResultCard extends StatelessWidget {
   const SearchResultCard({
@@ -14,18 +15,14 @@ class SearchResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardBg = isDark ? const Color(0xFF1F2D44) : Colors.white;
-    final border = isDark ? const Color(0xFF31435C) : const Color(0xFFDCE5F2);
-    final subtitle = isDark ? const Color(0xFF97A5BB) : const Color(0xFF64748B);
-    final more = isDark ? const Color(0xFF95A4BE) : const Color(0xFF64748B);
+    final colors = AppThemeColors.of(context);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
       decoration: BoxDecoration(
-        color: cardBg,
+        color: colors.cardBackground,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: border),
+        border: Border.all(color: colors.cardBorder),
       ),
       child: Row(
         children: [
@@ -51,7 +48,7 @@ class SearchResultCard extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontSize: 13,
-                    color: subtitle,
+                    color: colors.secondaryText,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -70,7 +67,7 @@ class SearchResultCard extends StatelessWidget {
           ],
           IconButton(
             onPressed: onMoreTap,
-            icon: Icon(Icons.more_vert, color: more),
+            icon: Icon(Icons.more_vert, color: colors.hintText),
             style: IconButton.styleFrom(
               overlayColor: Colors.transparent,
               minimumSize: const Size(28, 28),

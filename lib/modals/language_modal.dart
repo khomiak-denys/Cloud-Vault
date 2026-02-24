@@ -3,10 +3,13 @@ import 'dart:ui';
 import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme_colors.dart';
 import '../utils/interaction_styles.dart';
 
 Future<String?> showLanguageModal(BuildContext context) async {
   final l10n = AppLocalizations.of(context)!;
+  final colors = AppThemeColors.of(context);
+  final isDark = Theme.of(context).brightness == Brightness.dark;
   var selectedCode = Localizations.localeOf(context).languageCode;
 
   return showGeneralDialog<String>(
@@ -41,8 +44,8 @@ Future<String?> showLanguageModal(BuildContext context) async {
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.fromLTRB(22, 20, 22, 14),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF0D1B35),
+                      decoration: BoxDecoration(
+                        color: colors.modalBackground,
                         borderRadius: BorderRadius.vertical(
                           top: Radius.circular(28),
                         ),
@@ -56,9 +59,10 @@ Future<String?> showLanguageModal(BuildContext context) async {
                               Expanded(
                                 child: Text(
                                   l10n.language,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w700,
+                                    color: colors.primaryText,
                                   ),
                                 ),
                               ),
@@ -70,19 +74,19 @@ Future<String?> showLanguageModal(BuildContext context) async {
                                     const Color(0x3397A5BD),
                                   ),
                                 ),
-                                icon: const Icon(
+                                icon: Icon(
                                   Icons.close,
-                                  color: Color(0xFF97A5BD),
+                                  color: colors.modalCloseIcon,
                                 ),
                               ),
                             ],
                           ),
-                          const Divider(color: Color(0xFF263A59), height: 24),
+                          Divider(color: colors.modalDivider, height: 24),
                           Text(
                             l10n.chooseLanguage,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 13,
-                              color: Color(0xFF94A2BB),
+                              color: colors.modalMutedText,
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -90,6 +94,7 @@ Future<String?> showLanguageModal(BuildContext context) async {
                           _LanguageTile(
                             label: l10n.languageUkrainian,
                             isSelected: selectedCode == 'uk',
+                            isDark: isDark,
                             onTap: () {
                               setModalState(() => selectedCode = 'uk');
                               Navigator.of(dialogContext).pop('uk');
@@ -99,6 +104,7 @@ Future<String?> showLanguageModal(BuildContext context) async {
                           _LanguageTile(
                             label: l10n.languageEnglish,
                             isSelected: selectedCode == 'en',
+                            isDark: isDark,
                             onTap: () {
                               setModalState(() => selectedCode = 'en');
                               Navigator.of(dialogContext).pop('en');
@@ -111,8 +117,10 @@ Future<String?> showLanguageModal(BuildContext context) async {
                               onPressed: () =>
                                   Navigator.of(dialogContext).pop(),
                               style: TextButton.styleFrom(
-                                backgroundColor: const Color(0xFF22314A),
-                                foregroundColor: const Color(0xFFCDD6E5),
+                                backgroundColor:
+                                    colors.secondaryButtonBackground,
+                                foregroundColor:
+                                    colors.secondaryButtonForeground,
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 16,
                                 ),
@@ -148,11 +156,13 @@ class _LanguageTile extends StatelessWidget {
   const _LanguageTile({
     required this.label,
     required this.isSelected,
+    required this.isDark,
     required this.onTap,
   });
 
   final String label;
   final bool isSelected;
+  final bool isDark;
   final VoidCallback onTap;
 
   @override
@@ -167,12 +177,14 @@ class _LanguageTile extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
           decoration: BoxDecoration(
-            color: const Color(0xFF1C2C46),
+            color: isDark ? const Color(0xFF1C2C46) : const Color(0xFFF0F5FD),
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: isSelected
                   ? const Color(0xFF4BA2FF)
-                  : const Color(0xFF2A3C59),
+                  : (isDark
+                        ? const Color(0xFF2A3C59)
+                        : const Color(0xFFD0DCF0)),
             ),
           ),
           child: Row(
@@ -180,10 +192,10 @@ class _LanguageTile extends StatelessWidget {
               Expanded(
                 child: Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: isDark ? Colors.white : const Color(0xFF0F172A),
                   ),
                 ),
               ),

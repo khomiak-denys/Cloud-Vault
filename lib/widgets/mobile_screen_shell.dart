@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_theme_colors.dart';
+
 class MobileScreenShell extends StatelessWidget {
   const MobileScreenShell({
     super.key,
@@ -14,19 +16,17 @@ class MobileScreenShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final outerBg = isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE7ECF4);
-    final shellBg = isDark ? const Color(0xFF00081C) : const Color(0xFFF8FBFF);
+    final colors = AppThemeColors.of(context);
 
     return Container(
-      color: outerBg,
+      color: colors.outerBackground,
       child: SafeArea(
         child: Center(
           child: ConstrainedBox(
             constraints: BoxConstraints(maxWidth: maxWidth),
             child: Container(
               decoration: BoxDecoration(
-                color: shellBg,
+                color: colors.shellBackground,
                 borderRadius: BorderRadius.circular(radius),
               ),
               child: ClipRRect(

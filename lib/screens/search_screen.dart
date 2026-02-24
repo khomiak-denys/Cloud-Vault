@@ -4,6 +4,7 @@ import 'package:cloud_vault/l10n/app_localizations.dart';
 import '../data/recent_file_mock_data.dart';
 import '../modals/file_actions_modal.dart';
 import '../models/recent_file_item.dart';
+import '../theme/app_theme_colors.dart';
 import '../utils/tab_navigation.dart';
 import '../widgets/mobile_screen_shell.dart';
 import '../widgets/bottom_nav_bar.dart';
@@ -31,17 +32,7 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final headerBg = isDark ? const Color(0xFF0E1B34) : Colors.white;
-    final headerTitle = isDark ? Colors.white : const Color(0xFF0F172A);
-    final inputBg = isDark ? const Color(0xFF24344B) : const Color(0xFFEFF3FA);
-    final inputBorder = isDark
-        ? const Color(0xFF34547A)
-        : const Color(0xFFDCE5F2);
-    final muted = isDark ? const Color(0xFF95A4BE) : const Color(0xFF64748B);
-    final resultLabel = isDark
-        ? const Color(0xFF93A0B6)
-        : const Color(0xFF64748B);
+    final colors = AppThemeColors.of(context);
 
     final results = _filteredFiles();
 
@@ -51,7 +42,7 @@ class _SearchScreenState extends State<SearchScreen> {
           children: [
             Container(
               width: double.infinity,
-              color: headerBg,
+              color: colors.headerBackground,
               padding: const EdgeInsets.fromLTRB(16, 26, 16, 18),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,16 +52,16 @@ class _SearchScreenState extends State<SearchScreen> {
                     style: TextStyle(
                       fontSize: 46,
                       fontWeight: FontWeight.w700,
-                      color: headerTitle,
+                      color: colors.primaryText,
                     ),
                   ),
                   const SizedBox(height: 14),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     decoration: BoxDecoration(
-                      color: inputBg,
+                      color: colors.inputBackground,
                       borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: inputBorder),
+                      border: Border.all(color: colors.inputBorder),
                       boxShadow: const [
                         BoxShadow(
                           color: Color(0xA700040A),
@@ -81,7 +72,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.search, color: muted, size: 30),
+                        Icon(Icons.search, color: colors.hintText, size: 30),
                         const SizedBox(width: 10),
                         Expanded(
                           child: TextField(
@@ -94,7 +85,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             decoration: InputDecoration(
                               border: InputBorder.none,
                               hintText: l10n.searchHint,
-                              hintStyle: TextStyle(color: muted),
+                              hintStyle: TextStyle(color: colors.hintText),
                             ),
                           ),
                         ),
@@ -104,7 +95,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               _controller.clear();
                               setState(() {});
                             },
-                            icon: Icon(Icons.close, color: muted),
+                            icon: Icon(Icons.close, color: colors.hintText),
                             style: IconButton.styleFrom(
                               overlayColor: Colors.transparent,
                             ),
@@ -158,7 +149,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       l10n.foundFiles(results.length),
                       style: TextStyle(
                         fontSize: 16,
-                        color: resultLabel,
+                        color: colors.mutedText,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -245,7 +236,7 @@ class _CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = AppThemeColors.of(context);
     return Padding(
       padding: const EdgeInsets.only(right: 10),
       child: TextButton(
@@ -253,10 +244,8 @@ class _CategoryChip extends StatelessWidget {
         style: TextButton.styleFrom(
           backgroundColor: isActive
               ? const Color(0xFF2662E7)
-              : (isDark ? const Color(0xFF24344B) : const Color(0xFFEFF3FA)),
-          foregroundColor: isActive
-              ? Colors.white
-              : (isDark ? const Color(0xFFC5CFDC) : const Color(0xFF475569)),
+              : colors.inputBackground,
+          foregroundColor: isActive ? Colors.white : colors.secondaryText,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(22),
           ),

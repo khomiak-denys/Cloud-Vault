@@ -4,6 +4,7 @@ import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import '../models/recent_file_item.dart';
+import '../theme/app_theme_colors.dart';
 import '../utils/interaction_styles.dart';
 
 Future<void> showFileInfoModal(
@@ -11,6 +12,13 @@ Future<void> showFileInfoModal(
   RecentFileItem file,
 ) async {
   final l10n = AppLocalizations.of(context)!;
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  final colors = AppThemeColors.of(context);
+  final storageColor = isDark ? const Color(0xFFA1AEC2) : colors.secondaryText;
+  final iconTileBg = isDark ? const Color(0xFF1C3F84) : const Color(0xFFE8F1FF);
+  final iconColor = isDark ? const Color(0xFF66A8FF) : const Color(0xFF2662E7);
+  final closeBtnBg = isDark ? const Color(0xFF2662E7) : const Color(0xFF2662E7);
+  final closeBtnFg = isDark ? Colors.white : const Color(0xFFEAF2FF);
   await showGeneralDialog<void>(
     context: context,
     barrierLabel: 'File info',
@@ -39,8 +47,8 @@ Future<void> showFileInfoModal(
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.fromLTRB(24, 22, 24, 24),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF0D1B35),
+                  decoration: BoxDecoration(
+                    color: colors.modalBackground,
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(30),
                     ),
@@ -57,6 +65,7 @@ Future<void> showFileInfoModal(
                                 style: TextStyle(
                                   fontSize: 20,
                                   fontWeight: FontWeight.w700,
+                                  color: colors.primaryText,
                                 ),
                               ),
                             ),
@@ -67,26 +76,26 @@ Future<void> showFileInfoModal(
                                   const Color(0x3397A5BD),
                                 ),
                               ),
-                              icon: const Icon(
+                              icon: Icon(
                                 Icons.close,
-                                color: Color(0xFF97A5BD),
+                                color: colors.modalCloseIcon,
                               ),
                             ),
                           ],
                         ),
-                        const Divider(color: Color(0xFF263A59), height: 28),
+                        Divider(color: colors.modalDivider, height: 28),
                         Row(
                           children: [
                             Container(
                               width: 90,
                               height: 90,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF1C3F84),
+                                color: iconTileBg,
                                 borderRadius: BorderRadius.circular(20),
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.description_outlined,
-                                color: Color(0xFF66A8FF),
+                                color: iconColor,
                                 size: 46,
                               ),
                             ),
@@ -107,9 +116,9 @@ Future<void> showFileInfoModal(
                                   const SizedBox(height: 4),
                                   Text(
                                     file.storageName,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 14,
-                                      color: Color(0xFFA1AEC2),
+                                      color: storageColor,
                                       fontWeight: FontWeight.w600,
                                     ),
                                   ),
@@ -123,18 +132,21 @@ Future<void> showFileInfoModal(
                           icon: Icons.sd_storage_outlined,
                           label: l10n.size,
                           value: file.sizeLabel,
+                          isDark: isDark,
                         ),
                         const SizedBox(height: 12),
                         _InfoTile(
                           icon: Icons.calendar_today_outlined,
                           label: l10n.modified,
                           value: file.modifiedLabel,
+                          isDark: isDark,
                         ),
                         const SizedBox(height: 12),
                         _InfoTile(
                           icon: Icons.description_outlined,
                           label: l10n.path,
                           value: file.pathLabel,
+                          isDark: isDark,
                         ),
                         const SizedBox(height: 26),
                         SizedBox(
@@ -142,8 +154,8 @@ Future<void> showFileInfoModal(
                           child: ElevatedButton(
                             onPressed: () => Navigator.of(context).pop(),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF2662E7),
-                              foregroundColor: Colors.white,
+                              backgroundColor: closeBtnBg,
+                              foregroundColor: closeBtnFg,
                               padding: const EdgeInsets.symmetric(vertical: 16),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(18),
@@ -177,24 +189,31 @@ class _InfoTile extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.value,
+    required this.isDark,
   });
 
   final IconData icon;
   final String label;
   final String value;
+  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppThemeColors.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
       decoration: BoxDecoration(
-        color: const Color(0xFF22314A),
+        color: isDark ? colors.softCardBackground : const Color(0xFFEAF0FA),
         borderRadius: BorderRadius.circular(14),
       ),
       child: Row(
         children: [
-          Icon(icon, color: const Color(0xFF95A3B9), size: 24),
+          Icon(
+            icon,
+            color: isDark ? const Color(0xFF95A3B9) : colors.secondaryText,
+            size: 24,
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -202,18 +221,21 @@ class _InfoTile extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 12,
-                    color: Color(0xFF95A3B9),
+                    color: isDark
+                        ? const Color(0xFF95A3B9)
+                        : colors.secondaryText,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 17,
                     fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : colors.primaryText,
                   ),
                 ),
               ],

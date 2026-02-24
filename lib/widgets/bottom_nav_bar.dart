@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_vault/l10n/app_localizations.dart';
 
+import '../theme/app_theme_colors.dart';
+
 class BottomNavBar extends StatelessWidget {
   const BottomNavBar({super.key, this.activeIndex = 0, this.onTap});
 
@@ -10,19 +12,15 @@ class BottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final colors = AppThemeColors.of(context);
     const itemWidth = 92.4;
     const indicatorWidth = 44.0;
 
     return Container(
       height: 82,
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0A1730) : Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: isDark ? const Color(0xFF1D2C44) : const Color(0xFFDCE5F2),
-          ),
-        ),
+        color: colors.navBackground,
+        border: Border(top: BorderSide(color: colors.navBorder)),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -113,10 +111,8 @@ class _NavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final color = isActive
-        ? const Color(0xFF4BA2FF)
-        : (isDark ? const Color(0xFF95A4BE) : const Color(0xFF64748B));
+    final colors = AppThemeColors.of(context);
+    final color = isActive ? colors.accent : colors.hintText;
 
     return Material(
       color: Colors.transparent,

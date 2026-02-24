@@ -6,6 +6,7 @@ import '../modals/add_vault_modal.dart';
 import '../modals/language_modal.dart';
 import '../state/locale_controller.dart';
 import '../state/theme_controller.dart';
+import '../theme/app_theme_colors.dart';
 import '../utils/tab_navigation.dart';
 import '../widgets/app_page_header.dart';
 import '../widgets/bottom_nav_bar.dart';
@@ -71,23 +72,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final borderColor = isDark
-        ? const Color(0xFF1E2E46)
-        : const Color(0xFFDCE5F2);
-    final cardBg = isDark ? const Color(0xFF0F1D36) : Colors.white;
-    final cardBorder = isDark
-        ? const Color(0xFF20344F)
-        : const Color(0xFFDCE5F2);
-    final titleColor = isDark ? Colors.white : const Color(0xFF0F172A);
-    final secondaryColor = isDark
-        ? const Color(0xFF97A5BC)
-        : const Color(0xFF64748B);
-    final sectionLabelColor = isDark
-        ? const Color(0xFF93A1B7)
-        : const Color(0xFF64748B);
-    final iconTileBg = isDark
-        ? const Color(0xFF18345E)
-        : const Color(0xFFE6EEFC);
+    final colors = AppThemeColors.of(context);
+    final borderColor = colors.headerBorder;
+    final cardBg = isDark ? colors.headerBackground : colors.cardBackground;
+    final cardBorder = isDark ? const Color(0xFF20344F) : colors.cardBorder;
+    final titleColor = colors.primaryText;
+    final secondaryColor = colors.secondaryText;
+    final sectionLabelColor = colors.mutedText;
+    final iconTileBg = colors.iconTileBackground;
     final darkTheme = appThemeController.isDarkMode;
     final languageValue = appLocaleController.locale.languageCode == 'uk'
         ? l10n.languageUkrainian
