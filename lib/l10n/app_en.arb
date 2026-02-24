@@ -81,4 +81,23 @@
   "modified": "Modified",
   "path": "Path",
   "close": "Close"
+  ,"authLoginTitle": "Sign in"
+  ,"authLoginSubtitle": "Access your CloudVault account"
+  ,"authRegisterTitle": "Create account"
+  ,"authRegisterSubtitle": "Start managing all your clouds"
+  ,"authName": "Name"
+  ,"authEmail": "Email"
+  ,"authPassword": "Password"
+  ,"authConfirmPassword": "Confirm password"
+  ,"authSignIn": "Sign in"
+  ,"authSignUp": "Sign up"
+  ,"authGoRegister": "Don't have an account? Sign up"
+  ,"authGoLogin": "Already have an account? Sign in"
+  ,"authAllCloudsOnePlace": "All clouds in one place"
+  ,"authRememberMe": "Remember me"
+  ,"authForgotPassword": "Forgot password?"
+  ,"authAgreeWith": "I agree with"
+  ,"authTerms": "terms of use"
+  ,"authAnd": "and"
+  ,"authPrivacyPolicy": "privacy policy"
 }

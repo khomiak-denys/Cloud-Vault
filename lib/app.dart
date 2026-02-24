@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:cloud_vault/l10n/app_localizations.dart';
 
-import 'screens/search_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/register_screen.dart';
 import 'state/locale_controller.dart';
 import 'state/theme_controller.dart';
 
@@ -44,7 +45,11 @@ class CloudVaultApp extends StatelessWidget {
               brightness: Brightness.dark,
             ),
           ),
-          home: const SearchScreen(),
+          routes: {
+            LoginScreen.routeName: (_) => const LoginScreen(),
+            RegisterScreen.routeName: (_) => const RegisterScreen(),
+          },
+          home: const LoginScreen(),
         );
       },
     );

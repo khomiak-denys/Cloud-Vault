@@ -565,6 +565,120 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Close'**
   String get close;
+
+  /// No description provided for @authLoginTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get authLoginTitle;
+
+  /// No description provided for @authLoginSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Access your CloudVault account'**
+  String get authLoginSubtitle;
+
+  /// No description provided for @authRegisterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create account'**
+  String get authRegisterTitle;
+
+  /// No description provided for @authRegisterSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start managing all your clouds'**
+  String get authRegisterSubtitle;
+
+  /// No description provided for @authName.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get authName;
+
+  /// No description provided for @authEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Email'**
+  String get authEmail;
+
+  /// No description provided for @authPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get authPassword;
+
+  /// No description provided for @authConfirmPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm password'**
+  String get authConfirmPassword;
+
+  /// No description provided for @authSignIn.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in'**
+  String get authSignIn;
+
+  /// No description provided for @authSignUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign up'**
+  String get authSignUp;
+
+  /// No description provided for @authGoRegister.
+  ///
+  /// In en, this message translates to:
+  /// **'Don\'t have an account? Sign up'**
+  String get authGoRegister;
+
+  /// No description provided for @authGoLogin.
+  ///
+  /// In en, this message translates to:
+  /// **'Already have an account? Sign in'**
+  String get authGoLogin;
+
+  /// No description provided for @authAllCloudsOnePlace.
+  ///
+  /// In en, this message translates to:
+  /// **'All clouds in one place'**
+  String get authAllCloudsOnePlace;
+
+  /// No description provided for @authRememberMe.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember me'**
+  String get authRememberMe;
+
+  /// No description provided for @authForgotPassword.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot password?'**
+  String get authForgotPassword;
+
+  /// No description provided for @authAgreeWith.
+  ///
+  /// In en, this message translates to:
+  /// **'I agree with'**
+  String get authAgreeWith;
+
+  /// No description provided for @authTerms.
+  ///
+  /// In en, this message translates to:
+  /// **'terms of use'**
+  String get authTerms;
+
+  /// No description provided for @authAnd.
+  ///
+  /// In en, this message translates to:
+  /// **'and'**
+  String get authAnd;
+
+  /// No description provided for @authPrivacyPolicy.
+  ///
+  /// In en, this message translates to:
+  /// **'privacy policy'**
+  String get authPrivacyPolicy;
 }
 
 class _AppLocalizationsDelegate

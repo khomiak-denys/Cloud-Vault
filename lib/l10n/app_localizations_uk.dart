@@ -250,4 +250,61 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get close => 'Закрити';
+
+  @override
+  String get authLoginTitle => 'Вхід';
+
+  @override
+  String get authLoginSubtitle => 'Увійдіть у ваш CloudVault акаунт';
+
+  @override
+  String get authRegisterTitle => 'Реєстрація';
+
+  @override
+  String get authRegisterSubtitle => 'Почніть керувати всіма своїми хмарами';
+
+  @override
+  String get authName => 'Ім\'я';
+
+  @override
+  String get authEmail => 'Email';
+
+  @override
+  String get authPassword => 'Пароль';
+
+  @override
+  String get authConfirmPassword => 'Підтвердіть пароль';
+
+  @override
+  String get authSignIn => 'Увійти';
+
+  @override
+  String get authSignUp => 'Зареєструватися';
+
+  @override
+  String get authGoRegister => 'Ще немає акаунта? Зареєструватися';
+
+  @override
+  String get authGoLogin => 'Вже маєте акаунт? Увійти';
+
+  @override
+  String get authAllCloudsOnePlace => 'Всі хмари в одному місці';
+
+  @override
+  String get authRememberMe => 'Запам\'ятати мене';
+
+  @override
+  String get authForgotPassword => 'Забули пароль?';
+
+  @override
+  String get authAgreeWith => 'Я погоджуюсь з';
+
+  @override
+  String get authTerms => 'умовами використання';
+
+  @override
+  String get authAnd => 'та';
+
+  @override
+  String get authPrivacyPolicy => 'політикою конфіденційності';
 }

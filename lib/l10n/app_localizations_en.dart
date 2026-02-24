@@ -249,4 +249,61 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get close => 'Close';
+
+  @override
+  String get authLoginTitle => 'Sign in';
+
+  @override
+  String get authLoginSubtitle => 'Access your CloudVault account';
+
+  @override
+  String get authRegisterTitle => 'Create account';
+
+  @override
+  String get authRegisterSubtitle => 'Start managing all your clouds';
+
+  @override
+  String get authName => 'Name';
+
+  @override
+  String get authEmail => 'Email';
+
+  @override
+  String get authPassword => 'Password';
+
+  @override
+  String get authConfirmPassword => 'Confirm password';
+
+  @override
+  String get authSignIn => 'Sign in';
+
+  @override
+  String get authSignUp => 'Sign up';
+
+  @override
+  String get authGoRegister => 'Don\'t have an account? Sign up';
+
+  @override
+  String get authGoLogin => 'Already have an account? Sign in';
+
+  @override
+  String get authAllCloudsOnePlace => 'All clouds in one place';
+
+  @override
+  String get authRememberMe => 'Remember me';
+
+  @override
+  String get authForgotPassword => 'Forgot password?';
+
+  @override
+  String get authAgreeWith => 'I agree with';
+
+  @override
+  String get authTerms => 'terms of use';
+
+  @override
+  String get authAnd => 'and';
+
+  @override
+  String get authPrivacyPolicy => 'privacy policy';
 }
