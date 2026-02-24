@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "422706958150",
+    "project_id": "cloud-vault-df35b",
+    "storage_bucket": "cloud-vault-df35b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:422706958150:android:128c0a02b29f3dca8e5f47",
+        "android_client_info": {
+          "package_name": "com.example.cloud_vault"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAeVUOxpu_0MmzzdMjZ51z3j0J2cnO7y5c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

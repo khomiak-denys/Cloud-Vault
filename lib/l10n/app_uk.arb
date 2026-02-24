@@ -81,4 +81,23 @@
   "modified": "Змінено",
   "path": "Шлях",
   "close": "Закрити"
+  ,"authLoginTitle": "Вхід"
+  ,"authLoginSubtitle": "Увійдіть у ваш CloudVault акаунт"
+  ,"authRegisterTitle": "Реєстрація"
+  ,"authRegisterSubtitle": "Почніть керувати всіма своїми хмарами"
+  ,"authName": "Ім'я"
+  ,"authEmail": "Email"
+  ,"authPassword": "Пароль"
+  ,"authConfirmPassword": "Підтвердіть пароль"
+  ,"authSignIn": "Увійти"
+  ,"authSignUp": "Зареєструватися"
+  ,"authGoRegister": "Ще немає акаунта? Зареєструватися"
+  ,"authGoLogin": "Вже маєте акаунт? Увійти"
+  ,"authAllCloudsOnePlace": "Всі хмари в одному місці"
+  ,"authRememberMe": "Запам'ятати мене"
+  ,"authForgotPassword": "Забули пароль?"
+  ,"authAgreeWith": "Я погоджуюсь з"
+  ,"authTerms": "умовами використання"
+  ,"authAnd": "та"
+  ,"authPrivacyPolicy": "політикою конфіденційності"
 }

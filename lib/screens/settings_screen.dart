@@ -4,6 +4,7 @@ import 'package:cloud_vault/l10n/app_localizations.dart';
 import '../data/vault_mock_data.dart';
 import '../modals/add_vault_modal.dart';
 import '../modals/language_modal.dart';
+import '../screens/login_screen.dart';
 import '../state/locale_controller.dart';
 import '../state/theme_controller.dart';
 import '../theme/app_theme_colors.dart';
@@ -66,6 +67,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await appLocaleController.setLocale(selectedCode);
     if (!mounted) return;
     setState(() {});
+  }
+
+  void _logout() {
+    Navigator.of(
+      context,
+    ).pushNamedAndRemoveUntil(LoginScreen.routeName, (route) => false);
   }
 
   @override
@@ -141,7 +148,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.logout,
             label: l10n.logout,
             isDanger: true,
-            onTap: () => _showToast(l10n.logout),
+            onTap: _logout,
           ),
         ],
       ),
