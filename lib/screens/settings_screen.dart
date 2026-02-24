@@ -10,7 +10,6 @@ import '../state/locale_controller.dart';
 import '../state/theme_controller.dart';
 import '../theme/app_theme_colors.dart';
 import '../utils/tab_navigation.dart';
-import '../widgets/app_page_header.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/mobile_screen_shell.dart';
 import '../widgets/settings/connected_storages_card.dart';
@@ -161,10 +160,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       body: MobileScreenShell(
         child: Column(
           children: [
-            AppPageHeader(
-              title: l10n.settings,
-              padding: const EdgeInsets.fromLTRB(16, 24, 16, 20),
-            ),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),

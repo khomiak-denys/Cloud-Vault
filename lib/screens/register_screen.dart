@@ -43,70 +43,71 @@ class _RegisterScreenState extends State<RegisterScreen> {
           : const [Color(0xFF8B2CF5), Color(0xFFEC008C)],
       headerSubtitle: l10n.authRegisterSubtitle,
       formTitle: l10n.authRegisterTitle,
+      extraCompactHeader: true,
       formChildren: [
         Text(
           l10n.authName,
           style: TextStyle(
             color: colors.primaryText,
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         AuthFormField(
           controller: _nameController,
           hintText: l10n.profileName,
           prefixIcon: Icons.person_outline,
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
         Text(
           l10n.authEmail,
           style: TextStyle(
             color: colors.primaryText,
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         AuthFormField(
           controller: _emailController,
           hintText: 'example@email.com',
           prefixIcon: Icons.mail_outline,
           keyboardType: TextInputType.emailAddress,
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
         Text(
           l10n.authPassword,
           style: TextStyle(
             color: colors.primaryText,
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         AuthFormField(
           controller: _passwordController,
           hintText: '••••••••',
           prefixIcon: Icons.lock_outline,
           obscureText: true,
         ),
-        const SizedBox(height: 14),
+        const SizedBox(height: 10),
         Text(
           l10n.authConfirmPassword,
           style: TextStyle(
             color: colors.primaryText,
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: FontWeight.w700,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 6),
         AuthFormField(
           controller: _confirmController,
           hintText: '••••••••',
           prefixIcon: Icons.lock_outline,
           obscureText: true,
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 8),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -122,7 +123,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   text: TextSpan(
                     style: TextStyle(
                       color: colors.secondaryText,
-                      fontSize: 14,
+                      fontSize: 13,
                       fontWeight: FontWeight.w600,
                       height: 1.4,
                     ),
@@ -150,7 +151,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
             ),
           ],
         ),
-        const SizedBox(height: 10),
+        const SizedBox(height: 8),
         SizedBox(
           width: double.infinity,
           child: DecoratedBox(
@@ -166,7 +167,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 backgroundColor: Colors.transparent,
                 shadowColor: Colors.transparent,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(vertical: 16),
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),
@@ -175,7 +176,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               child: Text(
                 l10n.authSignUp,
                 style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 17,
                   fontWeight: FontWeight.w700,
                 ),
               ),

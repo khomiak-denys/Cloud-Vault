@@ -28,7 +28,7 @@ class AuthFormField extends StatelessWidget {
       keyboardType: keyboardType,
       style: TextStyle(
         color: colors.primaryText,
-        fontSize: 16,
+        fontSize: 15,
         fontWeight: FontWeight.w600,
       ),
       decoration: InputDecoration(
@@ -36,12 +36,12 @@ class AuthFormField extends StatelessWidget {
         hintStyle: TextStyle(color: colors.hintText),
         prefixIcon: prefixIcon == null
             ? null
-            : Icon(prefixIcon, color: colors.hintText, size: 22),
+            : Icon(prefixIcon, color: colors.hintText, size: 20),
         filled: true,
         fillColor: colors.inputBackground,
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: 14,
-          vertical: 14,
+          horizontal: 12,
+          vertical: 12,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14),

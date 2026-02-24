@@ -7,7 +7,7 @@ class MobileScreenShell extends StatelessWidget {
     super.key,
     required this.child,
     this.maxWidth = 430,
-    this.radius = 36,
+    this.radius = 0,
   });
 
   final Widget child;

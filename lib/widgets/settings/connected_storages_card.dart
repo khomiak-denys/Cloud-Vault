@@ -26,6 +26,7 @@ class ConnectedStoragesCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colors = AppThemeColors.of(context);
     final cardBorder = isDark ? const Color(0xFF20344F) : colors.cardBorder;
+    final isNarrow = MediaQuery.sizeOf(context).width < 390;
 
     return Container(
       width: double.infinity,
@@ -39,28 +40,36 @@ class ConnectedStoragesCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w700,
-                    color: colors.primaryText,
+                Expanded(
+                  child: Text(
+                    title,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: isNarrow ? 18 : 22,
+                      fontWeight: FontWeight.w700,
+                      color: colors.primaryText,
+                    ),
                   ),
                 ),
+                const SizedBox(width: 8),
                 TextButton.icon(
                   onPressed: onAddTap,
                   style: TextButton.styleFrom(
                     overlayColor: Colors.transparent,
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isNarrow ? 2 : 4,
+                    ),
+                    minimumSize: const Size(0, 0),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   ),
-                  icon: Icon(Icons.add, color: colors.accent),
+                  icon: Icon(Icons.add, color: colors.accent, size: isNarrow ? 20 : 24),
                   label: Text(
                     addLabel,
                     style: TextStyle(
                       color: colors.accent,
-                      fontSize: 16,
+                      fontSize: isNarrow ? 14 : 16,
                       fontWeight: FontWeight.w600,
                     ),
                   ),

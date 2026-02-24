@@ -13,7 +13,7 @@ class BottomNavBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = AppThemeColors.of(context);
-    const itemWidth = 92.4;
+    const maxItemWidth = 92.4;
     const indicatorWidth = 44.0;
 
     return Container(
@@ -24,6 +24,8 @@ class BottomNavBar extends StatelessWidget {
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
+          final itemWidth =
+              (constraints.maxWidth / 4).clamp(72.0, maxItemWidth).toDouble();
           final totalNavWidth = itemWidth * 4;
           final leftInset = (constraints.maxWidth - totalNavWidth) / 2;
           final indicatorLeft =

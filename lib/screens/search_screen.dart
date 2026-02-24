@@ -38,6 +38,7 @@ class _SearchScreenState extends State<SearchScreen> {
           children: [
             SearchHeader(
               title: l10n.search,
+              showTitle: false,
               hintText: l10n.searchHint,
               controller: _controller,
               labels: SearchHeaderLabels(

@@ -6,7 +6,6 @@ import '../data/storage_usage_mock_data.dart';
 import '../theme/app_theme_colors.dart';
 import '../utils/tab_navigation.dart';
 import '../widgets/analytics/analytics_components.dart';
-import '../widgets/app_page_header.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/mobile_screen_shell.dart';
 
@@ -36,10 +35,6 @@ class AnalyticsScreen extends StatelessWidget {
       body: MobileScreenShell(
         child: Column(
           children: [
-            AppPageHeader(
-              title: l10n.analytics,
-              subtitle: l10n.analyticsSubtitle,
-            ),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(16),
