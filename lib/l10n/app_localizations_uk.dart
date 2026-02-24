@@ -145,6 +145,24 @@ class AppLocalizationsUk extends AppLocalizations {
   String get profile => 'Профіль';
 
   @override
+  String get profileEdit => 'Редагувати';
+
+  @override
+  String get profileSave => 'Зберегти';
+
+  @override
+  String get profileSaved => 'Профіль оновлено';
+
+  @override
+  String get profilePersonalInfo => 'Особиста інформація';
+
+  @override
+  String get profileFilesStat => 'Файлів';
+
+  @override
+  String get profileStoragesStat => 'Сховищ';
+
+  @override
   String get language => 'Мова';
 
   @override

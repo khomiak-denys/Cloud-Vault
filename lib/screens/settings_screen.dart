@@ -5,6 +5,7 @@ import '../data/vault_mock_data.dart';
 import '../modals/add_vault_modal.dart';
 import '../modals/language_modal.dart';
 import '../screens/login_screen.dart';
+import '../screens/profile_screen.dart';
 import '../state/locale_controller.dart';
 import '../state/theme_controller.dart';
 import '../theme/app_theme_colors.dart';
@@ -96,6 +97,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.person_outline,
             label: l10n.profile,
             value: l10n.profileName,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute<void>(builder: (_) => const ProfileScreen()),
+              );
+            },
           ),
           SettingsItemData(
             icon: Icons.language,
