@@ -4,13 +4,11 @@ import 'package:cloud_vault/l10n/app_localizations.dart';
 import '../data/recent_file_mock_data.dart';
 import '../modals/file_actions_modal.dart';
 import '../models/recent_file_item.dart';
-import '../theme/app_theme_colors.dart';
 import '../utils/tab_navigation.dart';
-import '../widgets/mobile_screen_shell.dart';
 import '../widgets/bottom_nav_bar.dart';
-import '../widgets/search_result_card.dart';
-
-enum SearchCategory { all, documents, images, videos }
+import '../widgets/mobile_screen_shell.dart';
+import '../widgets/search/search_header.dart';
+import '../widgets/search/search_results_section.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -32,146 +30,35 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final colors = AppThemeColors.of(context);
-
     final results = _filteredFiles();
 
     return Scaffold(
       body: MobileScreenShell(
         child: Column(
           children: [
-            Container(
-              width: double.infinity,
-              color: colors.headerBackground,
-              padding: const EdgeInsets.fromLTRB(16, 26, 16, 18),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    l10n.search,
-                    style: TextStyle(
-                      fontSize: 46,
-                      fontWeight: FontWeight.w700,
-                      color: colors.primaryText,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    decoration: BoxDecoration(
-                      color: colors.inputBackground,
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(color: colors.inputBorder),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0xA700040A),
-                          blurRadius: 8,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.search, color: colors.hintText, size: 30),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: TextField(
-                            controller: _controller,
-                            onChanged: (_) => setState(() {}),
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            decoration: InputDecoration(
-                              border: InputBorder.none,
-                              hintText: l10n.searchHint,
-                              hintStyle: TextStyle(color: colors.hintText),
-                            ),
-                          ),
-                        ),
-                        if (_controller.text.isNotEmpty)
-                          IconButton(
-                            onPressed: () {
-                              _controller.clear();
-                              setState(() {});
-                            },
-                            icon: Icon(Icons.close, color: colors.hintText),
-                            style: IconButton.styleFrom(
-                              overlayColor: Colors.transparent,
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      children: [
-                        _CategoryChip(
-                          label: l10n.all,
-                          isActive: _category == SearchCategory.all,
-                          onTap: () =>
-                              setState(() => _category = SearchCategory.all),
-                        ),
-                        _CategoryChip(
-                          label: l10n.documents,
-                          isActive: _category == SearchCategory.documents,
-                          onTap: () => setState(
-                            () => _category = SearchCategory.documents,
-                          ),
-                        ),
-                        _CategoryChip(
-                          label: l10n.images,
-                          isActive: _category == SearchCategory.images,
-                          onTap: () =>
-                              setState(() => _category = SearchCategory.images),
-                        ),
-                        _CategoryChip(
-                          label: l10n.videos,
-                          isActive: _category == SearchCategory.videos,
-                          onTap: () =>
-                              setState(() => _category = SearchCategory.videos),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+            SearchHeader(
+              title: l10n.search,
+              hintText: l10n.searchHint,
+              controller: _controller,
+              labels: SearchHeaderLabels(
+                all: l10n.all,
+                documents: l10n.documents,
+                images: l10n.images,
+                videos: l10n.videos,
               ),
+              selectedCategory: _category,
+              onQueryChanged: (_) => setState(() {}),
+              onClearTap: () {
+                _controller.clear();
+                setState(() {});
+              },
+              onCategoryChanged: (value) => setState(() => _category = value),
             ),
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 18, 16, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      l10n.foundFiles(results.length),
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: colors.mutedText,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                    const SizedBox(height: 14),
-                    Expanded(
-                      child: ListView.builder(
-                        itemCount: results.length,
-                        itemBuilder: (context, index) {
-                          final file = results[index];
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: SearchResultCard(
-                              item: file,
-                              onMoreTap: () =>
-                                  showFileActionsModal(context, file),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+              child: SearchResultsSection(
+                resultsLabel: l10n.foundFiles(results.length),
+                results: results,
+                onMoreTap: (file) => showFileActionsModal(context, file),
               ),
             ),
             BottomNavBar(
@@ -220,43 +107,5 @@ class _SearchScreenState extends State<SearchScreen> {
     final parts = fileName.split('.');
     if (parts.length < 2) return '';
     return parts.last.toLowerCase();
-  }
-}
-
-class _CategoryChip extends StatelessWidget {
-  const _CategoryChip({
-    required this.label,
-    required this.isActive,
-    required this.onTap,
-  });
-
-  final String label;
-  final bool isActive;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final colors = AppThemeColors.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(right: 10),
-      child: TextButton(
-        onPressed: onTap,
-        style: TextButton.styleFrom(
-          backgroundColor: isActive
-              ? const Color(0xFF2662E7)
-              : colors.inputBackground,
-          foregroundColor: isActive ? Colors.white : colors.secondaryText,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(22),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          overlayColor: Colors.transparent,
-        ),
-        child: Text(
-          label,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
-        ),
-      ),
-    );
   }
 }
