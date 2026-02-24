@@ -356,6 +356,42 @@ abstract class AppLocalizations {
   /// **'Profile'**
   String get profile;
 
+  /// No description provided for @profileEdit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get profileEdit;
+
+  /// No description provided for @profileSave.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get profileSave;
+
+  /// No description provided for @profileSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated'**
+  String get profileSaved;
+
+  /// No description provided for @profilePersonalInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Personal information'**
+  String get profilePersonalInfo;
+
+  /// No description provided for @profileFilesStat.
+  ///
+  /// In en, this message translates to:
+  /// **'Files'**
+  String get profileFilesStat;
+
+  /// No description provided for @profileStoragesStat.
+  ///
+  /// In en, this message translates to:
+  /// **'Storages'**
+  String get profileStoragesStat;
+
   /// No description provided for @language.
   ///
   /// In en, this message translates to:

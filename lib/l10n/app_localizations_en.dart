@@ -144,6 +144,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get profile => 'Profile';
 
   @override
+  String get profileEdit => 'Edit';
+
+  @override
+  String get profileSave => 'Save';
+
+  @override
+  String get profileSaved => 'Profile updated';
+
+  @override
+  String get profilePersonalInfo => 'Personal information';
+
+  @override
+  String get profileFilesStat => 'Files';
+
+  @override
+  String get profileStoragesStat => 'Storages';
+
+  @override
   String get language => 'Language';
 
   @override
