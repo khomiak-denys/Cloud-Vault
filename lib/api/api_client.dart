@@ -180,8 +180,10 @@ class ApiClient {
     required Uri uri,
     Map<String, dynamic>? body,
   }) {
-    final payload = body == null ? '' : '\nbody=${jsonEncode(body)}';
-    debugPrint('[API][request] $method $uri$payload');
+    debugPrint('[API][request] $method $uri');
+    if (body != null) {
+      debugPrint('[API][request-body] ${jsonEncode(body)}');
+    }
   }
 
   void _logApiResponse({

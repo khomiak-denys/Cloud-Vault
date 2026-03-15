@@ -160,17 +160,39 @@ class ApiRepository {
     return _parseFileItems(json);
   }
 
-  Future<void> setFavorite({required String connectionId, required String fileId}) async {
+  Future<void> setFavorite({
+    required String connectionId,
+    required String fileId,
+    required String fileName,
+    required String kind,
+  }) async {
+    final normalizedKind = kind == 'folder' ? 'folder' : 'file';
     await _client.postJson(
       '/files/favorites/set',
-      body: <String, dynamic>{'connectionId': connectionId, 'fileId': fileId},
+      body: <String, dynamic>{
+        'connectionId': connectionId,
+        'fileId': fileId,
+        'fileName': fileName,
+        'kind': normalizedKind,
+      },
     );
   }
 
-  Future<void> unsetFavorite({required String connectionId, required String fileId}) async {
+  Future<void> unsetFavorite({
+    required String connectionId,
+    required String fileId,
+    required String fileName,
+    required String kind,
+  }) async {
+    final normalizedKind = kind == 'folder' ? 'folder' : 'file';
     await _client.postJson(
       '/files/favorites/unset',
-      body: <String, dynamic>{'connectionId': connectionId, 'fileId': fileId},
+      body: <String, dynamic>{
+        'connectionId': connectionId,
+        'fileId': fileId,
+        'fileName': fileName,
+        'kind': normalizedKind,
+      },
     );
   }
 
@@ -263,12 +285,18 @@ class ApiRepository {
           _str(item['createdAt']);
       final fileName = _str(item['fileName']) ?? _str(item['name']) ?? 'Unknown';
       final filePath = _str(item['path']) ?? _str(item['parentPath']) ?? '/';
-      final fallbackId = '${rootConnectionId ?? rootProviderId ?? 'all'}:$filePath:$fileName';
+      final itemConnectionId = _str(item['connectionId']);
+      final safeRootConnectionId = rootConnectionId == 'all'
+          ? null
+          : rootConnectionId;
 
       return ApiFileItem(
-        id: _str(item['id']) ?? _str(item['fileId']) ?? fallbackId,
-        connectionId:
-            _str(item['connectionId']) ?? rootConnectionId ?? rootProviderId ?? 'all',
+        // Prefer provider-native file identifier (fileId/path) for file actions.
+        id: _str(item['fileId']) ?? filePath,
+        connectionId: itemConnectionId ??
+            safeRootConnectionId ??
+            rootProviderId ??
+            '',
         name: fileName,
         path: filePath,
         sizeBytes: _num(item['sizeBytes']) ?? _num(item['size']) ?? 0,

@@ -11,6 +11,7 @@ import '../theme/app_theme_colors.dart';
 import '../utils/tab_navigation.dart';
 import '../widgets/analytics/analytics_components.dart';
 import '../widgets/bottom_nav_bar.dart';
+import '../widgets/loading_skeletons.dart';
 import '../widgets/mobile_screen_shell.dart';
 
 class AnalyticsScreen extends StatefulWidget {
@@ -21,6 +22,9 @@ class AnalyticsScreen extends StatefulWidget {
 }
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
+  static const _cacheKey = 'analytics_bundle_v1';
+  static const _cacheTtl = Duration(minutes: 3);
+
   List<StorageUsageItem> _usageItems = const [];
   List<ApiStorageRecommendation> _recommendations = const [];
   bool _isLoading = true;
@@ -31,7 +35,19 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     _load();
   }
 
-  Future<void> _load() async {
+  Future<void> _load({bool forceRefresh = false}) async {
+    if (!forceRefresh) {
+      final cached = appCacheStore.get<_AnalyticsBundle>(_cacheKey);
+      if (cached != null) {
+        setState(() {
+          _usageItems = cached.usageItems;
+          _recommendations = cached.recommendations;
+          _isLoading = false;
+        });
+        return;
+      }
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -44,8 +60,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       final recommendations = results[1] as List<ApiStorageRecommendation>;
 
       if (!mounted) return;
+      final mappedUsage = usage.map(mapConnectionToStorageUsageItem).toList();
+      appCacheStore.set<_AnalyticsBundle>(
+        _cacheKey,
+        _AnalyticsBundle(mappedUsage, recommendations),
+        ttl: _cacheTtl,
+      );
       setState(() {
-        _usageItems = usage.map(mapConnectionToStorageUsageItem).toList();
+        _usageItems = mappedUsage;
         _recommendations = recommendations;
       });
     } on ApiException catch (e) {
@@ -90,9 +112,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           children: [
             Expanded(
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const AnalyticsLoadingSkeleton()
                   : RefreshIndicator(
-                      onRefresh: _load,
+                      onRefresh: () => _load(forceRefresh: true),
                       child: SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         padding: const EdgeInsets.all(16),
@@ -244,4 +266,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       ),
     );
   }
+}
+
+class _AnalyticsBundle {
+  const _AnalyticsBundle(this.usageItems, this.recommendations);
+
+  final List<StorageUsageItem> usageItems;
+  final List<ApiStorageRecommendation> recommendations;
 }

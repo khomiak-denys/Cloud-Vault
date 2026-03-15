@@ -11,6 +11,7 @@ import '../modals/file_actions_modal.dart';
 import '../models/recent_file_item.dart';
 import '../utils/tab_navigation.dart';
 import '../widgets/bottom_nav_bar.dart';
+import '../widgets/loading_skeletons.dart';
 import '../widgets/mobile_screen_shell.dart';
 import '../widgets/search/search_header.dart';
 import '../widgets/search/search_results_section.dart';
@@ -127,7 +128,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
             Expanded(
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const SearchLoadingSkeleton()
                   : SearchResultsSection(
                       resultsLabel: l10n.foundFiles(filtered.length),
                       results: filtered,

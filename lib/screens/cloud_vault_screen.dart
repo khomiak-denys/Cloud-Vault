@@ -13,6 +13,7 @@ import '../utils/tab_navigation.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/dashboard/dashboard_recent_files_section.dart';
 import '../widgets/dashboard/dashboard_storages_section.dart';
+import '../widgets/loading_skeletons.dart';
 import '../widgets/mobile_screen_shell.dart';
 import '../widgets/top_summary_card.dart';
 
@@ -24,6 +25,9 @@ class CloudVaultScreen extends StatefulWidget {
 }
 
 class _CloudVaultScreenState extends State<CloudVaultScreen> {
+  static const _cacheKey = 'dashboard_bundle_v1';
+  static const _cacheTtl = Duration(minutes: 2);
+
   List<VaultItem> _vaultItems = const [];
   List<RecentFileItem> _recentFiles = const [];
   bool _isLoading = true;
@@ -36,7 +40,21 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
     _load();
   }
 
-  Future<void> _load() async {
+  Future<void> _load({bool forceRefresh = false}) async {
+    if (!forceRefresh) {
+      final cached = appCacheStore.get<_DashboardBundle>(_cacheKey);
+      if (cached != null) {
+        setState(() {
+          _vaultItems = cached.vaultItems;
+          _recentFiles = cached.recentFiles;
+          _totalUsedBytes = cached.totalUsedBytes;
+          _totalBytes = cached.totalBytes;
+          _isLoading = false;
+        });
+        return;
+      }
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -47,19 +65,34 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
 
       final connections = results[0] as List<ApiConnection>;
       final files = results[1] as List<ApiFileItem>;
+      final mappedVaultItems = connections.map(mapConnectionToVaultItem).toList();
+      final mappedRecentFiles = files.map(mapApiFileToRecentFileItem).toList();
+      final totalUsedBytes = connections.fold<double>(
+        0,
+        (acc, connection) => acc + connection.usedBytes,
+      );
+      final totalBytes = connections.fold<double>(
+        0,
+        (acc, connection) => acc + connection.totalBytes,
+      );
+
+      appCacheStore.set<_DashboardBundle>(
+        _cacheKey,
+        _DashboardBundle(
+          vaultItems: mappedVaultItems,
+          recentFiles: mappedRecentFiles,
+          totalUsedBytes: totalUsedBytes,
+          totalBytes: totalBytes,
+        ),
+        ttl: _cacheTtl,
+      );
 
       if (!mounted) return;
       setState(() {
-        _vaultItems = connections.map(mapConnectionToVaultItem).toList();
-        _recentFiles = files.map(mapApiFileToRecentFileItem).toList();
-        _totalUsedBytes = connections.fold<double>(
-          0,
-          (acc, connection) => acc + connection.usedBytes,
-        );
-        _totalBytes = connections.fold<double>(
-          0,
-          (acc, connection) => acc + connection.totalBytes,
-        );
+        _vaultItems = mappedVaultItems;
+        _recentFiles = mappedRecentFiles;
+        _totalUsedBytes = totalUsedBytes;
+        _totalBytes = totalBytes;
       });
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -77,7 +110,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
   Future<void> _onFileAction(String actionId, RecentFileItem file) async {
     final shouldReload = await handleFileAction(context, actionId, file);
     if (shouldReload) {
-      await _load();
+      await _load(forceRefresh: true);
     }
   }
 
@@ -105,7 +138,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
           children: [
             Expanded(
               child: RefreshIndicator(
-                onRefresh: _load,
+                onRefresh: () => _load(forceRefresh: true),
                 child: SingleChildScrollView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   child: Column(
@@ -115,14 +148,11 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
                         items: _vaultItems,
                         onAddTap: () async {
                           await showAddVaultModal(context);
-                          await _load();
+                          await _load(forceRefresh: true);
                         },
                       ),
                       if (_isLoading)
-                        const Padding(
-                          padding: EdgeInsets.all(24),
-                          child: CircularProgressIndicator(),
-                        )
+                        const DashboardLoadingSkeleton()
                       else
                         DashboardRecentFilesSection(
                           items: _recentFiles,
@@ -146,4 +176,18 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
       ),
     );
   }
+}
+
+class _DashboardBundle {
+  const _DashboardBundle({
+    required this.vaultItems,
+    required this.recentFiles,
+    required this.totalUsedBytes,
+    required this.totalBytes,
+  });
+
+  final List<VaultItem> vaultItems;
+  final List<RecentFileItem> recentFiles;
+  final double totalUsedBytes;
+  final double totalBytes;
 }

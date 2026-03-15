@@ -13,15 +13,26 @@ Future<bool> handleFileAction(
   try {
     switch (actionId) {
       case 'star':
+        if (file.connectionId.isEmpty || file.connectionId == 'all') {
+          _showSnack(
+            context,
+            'Cannot update favorites: missing scoped connectionId',
+          );
+          return false;
+        }
         if (file.isFavorite) {
           await appApiRepository.unsetFavorite(
             connectionId: file.connectionId,
             fileId: file.id,
+            fileName: file.title,
+            kind: file.kind,
           );
         } else {
           await appApiRepository.setFavorite(
             connectionId: file.connectionId,
             fileId: file.id,
+            fileName: file.title,
+            kind: file.kind,
           );
         }
         if (!context.mounted) return false;

@@ -16,6 +16,7 @@ import '../state/theme_controller.dart';
 import '../theme/app_theme_colors.dart';
 import '../utils/tab_navigation.dart';
 import '../widgets/bottom_nav_bar.dart';
+import '../widgets/loading_skeletons.dart';
 import '../widgets/mobile_screen_shell.dart';
 import '../widgets/settings/connected_storages_card.dart';
 import '../widgets/settings/settings_models.dart';
@@ -30,7 +31,11 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  static const _cacheKey = 'settings_bundle_v1';
+  static const _cacheTtl = Duration(minutes: 2);
+
   bool notifications = true;
+  bool _isLoading = true;
   List<VaultItem> _vaultItems = const [];
   ApiUser? _me;
 
@@ -40,7 +45,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _load();
   }
 
-  Future<void> _load() async {
+  Future<void> _load({bool forceRefresh = false}) async {
+    if (!forceRefresh) {
+      final cached = appCacheStore.get<_SettingsBundle>(_cacheKey);
+      if (cached != null) {
+        setState(() {
+          _me = cached.me;
+          _vaultItems = cached.vaultItems;
+          _isLoading = false;
+        });
+        return;
+      }
+    }
+
+    setState(() => _isLoading = true);
+
     try {
       final results = await Future.wait([
         appApiRepository.me(),
@@ -49,18 +68,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       final me = results[0] as ApiUser?;
       final connections = results[1] as List<ApiConnection>;
+      final mappedVaultItems = connections.map(mapConnectionToVaultItem).toList();
+
+      appCacheStore.set<_SettingsBundle>(
+        _cacheKey,
+        _SettingsBundle(me: me, vaultItems: mappedVaultItems),
+        ttl: _cacheTtl,
+      );
 
       if (!mounted) return;
       setState(() {
         _me = me;
-        _vaultItems = connections.map(mapConnectionToVaultItem).toList();
+        _vaultItems = mappedVaultItems;
+        _isLoading = false;
       });
     } on ApiException catch (e) {
       if (!mounted) return;
       _showToast('API error: ${e.statusCode ?? ''} ${e.message}'.trim());
+      setState(() => _isLoading = false);
     } catch (_) {
       if (!mounted) return;
       _showToast('Failed to load settings data');
+      setState(() => _isLoading = false);
     }
   }
 
@@ -82,7 +111,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     try {
       await appApiRepository.disconnectConnection(storage.id);
       _showToast(l10n.disconnectedToast(storage.title));
-      await _load();
+      await _load(forceRefresh: true);
     } on ApiException catch (e) {
       _showToast('API error: ${e.statusCode ?? ''} ${e.message}'.trim());
     } catch (_) {
@@ -121,6 +150,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _logout() async {
     await AuthSession.instance.clearTokens();
+    appCacheStore.clear();
     if (!mounted) return;
     await Navigator.of(
       context,
@@ -209,54 +239,56 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           children: [
             Expanded(
-              child: RefreshIndicator(
-                onRefresh: _load,
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SettingsProfileCard(
-                        name: _me?.name ?? '',
-                        email: _me?.email ?? '',
-                      ),
-                      const SizedBox(height: 18),
-                      ConnectedStoragesCard(
-                        title: l10n.connectedStorages,
-                        addLabel: l10n.add,
-                        connectedLabel: l10n.connected,
-                        items: _vaultItems,
-                        onAddTap: () async {
-                          await showAddVaultModal(context);
-                          await _load();
-                        },
-                        onDisconnect: _handleDisconnect,
-                      ),
-                      const SizedBox(height: 20),
-                      ...sections.map(
-                        (section) => Padding(
-                          padding: const EdgeInsets.only(bottom: 18),
-                          child: SettingsSectionCard(section: section),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 6),
-                        child: Align(
-                          alignment: Alignment.center,
-                          child: Text(
-                            l10n.appVersion,
-                            style: TextStyle(
-                              color: colors.mutedText,
-                              fontSize: 13,
+              child: _isLoading
+                  ? const SettingsLoadingSkeleton()
+                  : RefreshIndicator(
+                      onRefresh: () => _load(forceRefresh: true),
+                      child: SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SettingsProfileCard(
+                              name: _me?.name ?? '',
+                              email: _me?.email ?? '',
                             ),
-                          ),
+                            const SizedBox(height: 18),
+                            ConnectedStoragesCard(
+                              title: l10n.connectedStorages,
+                              addLabel: l10n.add,
+                              connectedLabel: l10n.connected,
+                              items: _vaultItems,
+                              onAddTap: () async {
+                                await showAddVaultModal(context);
+                                await _load(forceRefresh: true);
+                              },
+                              onDisconnect: _handleDisconnect,
+                            ),
+                            const SizedBox(height: 20),
+                            ...sections.map(
+                              (section) => Padding(
+                                padding: const EdgeInsets.only(bottom: 18),
+                                child: SettingsSectionCard(section: section),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 6),
+                              child: Align(
+                                alignment: Alignment.center,
+                                child: Text(
+                                  l10n.appVersion,
+                                  style: TextStyle(
+                                    color: colors.mutedText,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ),
+                    ),
             ),
             BottomNavBar(
               activeIndex: 3,
@@ -267,4 +299,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
+}
+
+class _SettingsBundle {
+  const _SettingsBundle({
+    required this.me,
+    required this.vaultItems,
+  });
+
+  final ApiUser? me;
+  final List<VaultItem> vaultItems;
 }

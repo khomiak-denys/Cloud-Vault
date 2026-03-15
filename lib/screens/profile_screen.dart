@@ -6,6 +6,7 @@ import '../api/api_repository.dart';
 import '../data/app_services.dart';
 import '../data/storage_formatters.dart';
 import '../theme/app_theme_colors.dart';
+import '../widgets/loading_skeletons.dart';
 import '../widgets/mobile_screen_shell.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -16,6 +17,9 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
+  static const _cacheKey = 'profile_bundle_v1';
+  static const _cacheTtl = Duration(minutes: 2);
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController(
@@ -34,7 +38,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
     _loadProfileData();
   }
 
-  Future<void> _loadProfileData() async {
+  Future<void> _loadProfileData({bool forceRefresh = false}) async {
+    if (!forceRefresh) {
+      final cached = appCacheStore.get<_ProfileBundle>(_cacheKey);
+      if (cached != null) {
+        setState(() {
+          _nameController.text = cached.name;
+          _emailController.text = cached.email;
+          _storagesCount = cached.storagesCount;
+          _usedBytes = cached.usedBytes;
+          _isLoading = false;
+        });
+        return;
+      }
+    }
+
     setState(() => _isLoading = true);
 
     try {
@@ -47,16 +65,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final me = results[0] as ApiUser?;
       final connections = results[1] as List<ApiConnection>;
       final storageUsage = results[2] as List<ApiConnection>;
+      final name = me?.name ?? '';
+      final email = me?.email ?? '';
+      final storagesCount = connections.length;
+      final usedBytes = storageUsage.fold<double>(
+        0,
+        (acc, item) => acc + item.usedBytes,
+      );
+
+      appCacheStore.set<_ProfileBundle>(
+        _cacheKey,
+        _ProfileBundle(
+          name: name,
+          email: email,
+          storagesCount: storagesCount,
+          usedBytes: usedBytes,
+        ),
+        ttl: _cacheTtl,
+      );
 
       if (!mounted) return;
       setState(() {
-        _nameController.text = me?.name ?? '';
-        _emailController.text = me?.email ?? '';
-        _storagesCount = connections.length;
-        _usedBytes = storageUsage.fold<double>(
-          0,
-          (acc, item) => acc + item.usedBytes,
-        );
+        _nameController.text = name;
+        _emailController.text = email;
+        _storagesCount = storagesCount;
+        _usedBytes = usedBytes;
       });
     } on ApiException catch (e) {
       if (!mounted) return;
@@ -136,9 +169,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             Expanded(
               child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
+                  ? const ProfileLoadingSkeleton()
                   : RefreshIndicator(
-                      onRefresh: _loadProfileData,
+                      onRefresh: () => _loadProfileData(forceRefresh: true),
                       child: SingleChildScrollView(
                         physics: const AlwaysScrollableScrollPhysics(),
                         padding: const EdgeInsets.all(16),
@@ -530,4 +563,18 @@ class _ProfileField extends StatelessWidget {
       ],
     );
   }
+}
+
+class _ProfileBundle {
+  const _ProfileBundle({
+    required this.name,
+    required this.email,
+    required this.storagesCount,
+    required this.usedBytes,
+  });
+
+  final String name;
+  final String email;
+  final int storagesCount;
+  final double usedBytes;
 }
