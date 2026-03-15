@@ -19,7 +19,7 @@ class ConnectedStoragesCard extends StatelessWidget {
   final String connectedLabel;
   final List<VaultItem> items;
   final VoidCallback onAddTap;
-  final ValueChanged<String> onDisconnect;
+  final ValueChanged<VaultItem> onDisconnect;
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +125,7 @@ class ConnectedStoragesCard extends StatelessWidget {
                         ),
                       ),
                       IconButton(
-                        onPressed: () => onDisconnect(storage.title),
+                        onPressed: () => onDisconnect(storage),
                         icon: const Icon(
                           Icons.delete_outline,
                           color: Color(0xFFFF626D),

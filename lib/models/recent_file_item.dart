@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 class RecentFileItem {
   const RecentFileItem({
+    required this.id,
+    required this.connectionId,
     required this.title,
     required this.subtitle,
     required this.icon,
@@ -10,10 +12,15 @@ class RecentFileItem {
     required this.sizeLabel,
     required this.modifiedLabel,
     required this.pathLabel,
+    this.isFavorite = false,
+    this.kind = 'file',
+    this.mimeType,
     this.badgeIcon,
     this.badgeColor,
   });
 
+  final String id;
+  final String connectionId;
   final String title;
   final String subtitle;
   final IconData icon;
@@ -22,6 +29,9 @@ class RecentFileItem {
   final String sizeLabel;
   final String modifiedLabel;
   final String pathLabel;
+  final bool isFavorite;
+  final String kind;
+  final String? mimeType;
   final IconData? badgeIcon;
   final Color? badgeColor;
 }

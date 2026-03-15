@@ -43,3 +43,8 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Local env overrides
+env/local.json
+env/dev.json
+env/prod.json

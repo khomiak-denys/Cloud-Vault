@@ -1,6 +1,8 @@
 import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
+import '../api/auth_session.dart';
 import '../theme/app_theme_colors.dart';
 import '../widgets/auth_form_field.dart';
 import '../widgets/auth_screen_frame.dart';
@@ -161,14 +163,52 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (_emailController.text.trim().isEmpty ||
         _passwordController.text.trim().isEmpty) {
       return;
     }
 
+    try {
+      final credentials = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+      final idToken = await credentials.user?.getIdToken();
+
+      if (idToken == null || idToken.isEmpty) {
+        if (!mounted) return;
+        _showError('Failed to get Firebase ID token');
+        return;
+      }
+
+      await AuthSession.instance.setTokens(bearerToken: idToken);
+    } on FirebaseAuthException catch (e) {
+      if (!mounted) return;
+      _showError('[${e.code}] ${e.message ?? 'Login failed'}');
+      return;
+    } catch (_) {
+      if (!mounted) return;
+      _showError('Login failed');
+      return;
+    }
+
+    if (!mounted) return;
+
     Navigator.of(context).pushReplacement(
       MaterialPageRoute<void>(builder: (_) => const CloudVaultScreen()),
     );
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
   }
 }

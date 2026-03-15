@@ -13,6 +13,7 @@ import 'file_info_modal.dart';
 Future<void> showFileActionsModal(
   BuildContext context,
   RecentFileItem file,
+  {Future<void> Function(String actionId, RecentFileItem file)? onActionTap}
 ) async {
   final hostContext = context;
   final l10n = AppLocalizations.of(context)!;
@@ -132,7 +133,10 @@ Future<void> showFileActionsModal(
                               Navigator.of(dialogContext).pop();
                               if (action.actionId == 'info') {
                                 await showFileInfoModal(hostContext, file);
+                                return;
                               }
+
+                              await onActionTap?.call(action.actionId, file);
                             },
                           ),
                         ),

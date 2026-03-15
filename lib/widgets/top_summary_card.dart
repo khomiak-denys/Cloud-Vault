@@ -4,7 +4,9 @@ import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'progress_track.dart';
 
 class TopSummaryCard extends StatelessWidget {
-  const TopSummaryCard({super.key});
+  const TopSummaryCard({super.key, this.percentUsed = 0.63});
+
+  final double percentUsed;
 
   @override
   Widget build(BuildContext context) {
@@ -92,7 +94,7 @@ class TopSummaryCard extends StatelessWidget {
                       ),
                       SizedBox(width: 12),
                       Text(
-                        '63%',
+                        '${(percentUsed * 100).round()}%',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
@@ -102,7 +104,7 @@ class TopSummaryCard extends StatelessWidget {
                     ],
                   ),
                   SizedBox(height: 16),
-                  ProgressTrack(value: 0.63, color: Color(0xFFE7EEFF)),
+                  ProgressTrack(value: percentUsed, color: Color(0xFFE7EEFF)),
                 ],
               ),
             ),

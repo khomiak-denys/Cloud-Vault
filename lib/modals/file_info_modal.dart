@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
+import '../api/api_exception.dart';
+import '../data/app_services.dart';
 import '../models/recent_file_item.dart';
 import '../theme/app_theme_colors.dart';
 import '../utils/interaction_styles.dart';
@@ -14,6 +16,30 @@ Future<void> showFileInfoModal(
   final l10n = AppLocalizations.of(context)!;
   final isDark = Theme.of(context).brightness == Brightness.dark;
   final colors = AppThemeColors.of(context);
+  String sizeLabel = file.sizeLabel;
+  String modifiedLabel = file.modifiedLabel;
+  String pathLabel = file.pathLabel;
+
+  try {
+    final response = await appApiRepository.fileProperties(
+      connectionId: file.connectionId,
+      fileId: file.id,
+    );
+    final data = (response['data'] is Map<String, dynamic>)
+        ? response['data'] as Map<String, dynamic>
+        : response;
+
+    sizeLabel = (data['sizeLabel'] ?? data['size'] ?? file.sizeLabel).toString();
+    modifiedLabel = (data['modifiedLabel'] ?? data['modifiedTime'] ?? file.modifiedLabel).toString();
+    pathLabel = (data['path'] ?? data['fullPath'] ?? file.pathLabel).toString();
+  } on ApiException {
+    // Keep existing labels when endpoint fails.
+  } catch (_) {
+    // Keep existing labels when endpoint fails.
+  }
+
+  if (!context.mounted) return;
+
   final storageColor = isDark ? const Color(0xFFA1AEC2) : colors.secondaryText;
   final iconTileBg = isDark ? const Color(0xFF1C3F84) : const Color(0xFFE8F1FF);
   final iconColor = isDark ? const Color(0xFF66A8FF) : const Color(0xFF2662E7);
@@ -131,21 +157,21 @@ Future<void> showFileInfoModal(
                         _InfoTile(
                           icon: Icons.sd_storage_outlined,
                           label: l10n.size,
-                          value: file.sizeLabel,
+                          value: sizeLabel,
                           isDark: isDark,
                         ),
                         const SizedBox(height: 12),
                         _InfoTile(
                           icon: Icons.calendar_today_outlined,
                           label: l10n.modified,
-                          value: file.modifiedLabel,
+                          value: modifiedLabel,
                           isDark: isDark,
                         ),
                         const SizedBox(height: 12),
                         _InfoTile(
                           icon: Icons.description_outlined,
                           label: l10n.path,
-                          value: file.pathLabel,
+                          value: pathLabel,
                           isDark: isDark,
                         ),
                         const SizedBox(height: 26),

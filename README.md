@@ -216,3 +216,28 @@ flutter run -d <device_id>
 ## Ліцензія
 
 Внутрішній проєкт. `publish_to: none`.
+
+## Environment config (dart-define-from-file)
+
+Use one of these files:
+- `env/dev.json`
+- `env/local.json` (local, gitignored)
+- `env/prod.json`
+
+JSON keys:
+- `API_BASE_URL`
+- `API_BEARER_TOKEN`
+- `API_APP_CHECK_TOKEN`
+
+Run examples:
+
+```bash
+flutter run --dart-define-from-file=env/dev.json
+flutter run --dart-define-from-file=env/local.json
+flutter run --release --dart-define-from-file=env/prod.json
+```
+
+In VS Code, use launch profile:
+- `Flutter Dev (env/dev.json)`
+- `Flutter Local (env/local.json)`
+- `Flutter Prod (env/prod.json)`

@@ -259,6 +259,12 @@ class AnalyticsBarUsageChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = AppThemeColors.of(context);
     final l10n = AppLocalizations.of(context)!;
+    if (items.isEmpty) {
+      return Text(
+        'No data',
+        style: TextStyle(color: colors.mutedText, fontSize: 12),
+      );
+    }
     final maxValue = items
         .map((e) => e.totalBytes / (1024 * 1024 * 1024))
         .reduce(math.max);

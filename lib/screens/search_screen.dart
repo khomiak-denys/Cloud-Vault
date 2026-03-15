@@ -1,7 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:cloud_vault/l10n/app_localizations.dart';
+import 'dart:async';
 
-import '../data/recent_file_mock_data.dart';
+import 'package:cloud_vault/l10n/app_localizations.dart';
+import 'package:flutter/material.dart';
+
+import '../api/api_exception.dart';
+import '../data/api_mappers.dart';
+import '../data/app_services.dart';
+import '../data/file_actions_handler.dart';
 import '../modals/file_actions_modal.dart';
 import '../models/recent_file_item.dart';
 import '../utils/tab_navigation.dart';
@@ -20,17 +25,81 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _controller = TextEditingController();
   SearchCategory _category = SearchCategory.all;
+  Timer? _debounce;
+  bool _isLoading = false;
+  List<RecentFileItem> _results = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _fetch();
+  }
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _controller.dispose();
     super.dispose();
+  }
+
+  Future<void> _fetch() async {
+    final query = _controller.text.trim();
+    setState(() => _isLoading = true);
+
+    try {
+      final files = query.isEmpty
+          ? await appApiRepository.recentFiles(pageSize: 50)
+          : await appApiRepository.searchFiles(
+              query,
+              pageSize: 50,
+            );
+
+      if (!mounted) return;
+      setState(() {
+        _results = files.map(mapApiFileToRecentFileItem).toList();
+      });
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      _showSnack('API error: ${e.statusCode ?? ''} ${e.message}'.trim());
+    } catch (_) {
+      if (!mounted) return;
+      _showSnack('Search failed');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  void _onQueryChanged(String _) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 400), _fetch);
+    setState(() {});
+  }
+
+  Future<void> _onFileAction(String actionId, RecentFileItem file) async {
+    final shouldReload = await handleFileAction(context, actionId, file);
+    if (shouldReload) {
+      await _fetch();
+    }
+  }
+
+  void _showSnack(String message) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 2),
+        ),
+      );
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final results = _filteredFiles();
+    final filtered = _applyCategoryFilter(_results);
 
     return Scaffold(
       body: MobileScreenShell(
@@ -48,19 +117,26 @@ class _SearchScreenState extends State<SearchScreen> {
                 videos: l10n.videos,
               ),
               selectedCategory: _category,
-              onQueryChanged: (_) => setState(() {}),
+              onQueryChanged: _onQueryChanged,
               onClearTap: () {
                 _controller.clear();
+                _fetch();
                 setState(() {});
               },
               onCategoryChanged: (value) => setState(() => _category = value),
             ),
             Expanded(
-              child: SearchResultsSection(
-                resultsLabel: l10n.foundFiles(results.length),
-                results: results,
-                onMoreTap: (file) => showFileActionsModal(context, file),
-              ),
+              child: _isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : SearchResultsSection(
+                      resultsLabel: l10n.foundFiles(filtered.length),
+                      results: filtered,
+                      onMoreTap: (file) => showFileActionsModal(
+                        context,
+                        file,
+                        onActionTap: _onFileAction,
+                      ),
+                    ),
             ),
             BottomNavBar(
               activeIndex: 1,
@@ -72,35 +148,15 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  List<RecentFileItem> _filteredFiles() {
-    final query = _controller.text.trim().toLowerCase();
-
-    return recentFileItems.where((file) {
+  List<RecentFileItem> _applyCategoryFilter(List<RecentFileItem> files) {
+    return files.where((file) {
       final extension = _fileExtension(file.title);
-      final categoryMatches = switch (_category) {
+      return switch (_category) {
         SearchCategory.all => true,
-        SearchCategory.documents => ['pptx', 'xlsx', 'pdf'].contains(extension),
-        SearchCategory.images => [
-          'jpg',
-          'jpeg',
-          'png',
-          'gif',
-          'webp',
-        ].contains(extension),
-        SearchCategory.videos => [
-          'mp4',
-          'mov',
-          'avi',
-          'mkv',
-        ].contains(extension),
+        SearchCategory.documents => ['pptx', 'xlsx', 'pdf', 'doc', 'docx', 'txt'].contains(extension),
+        SearchCategory.images => ['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(extension),
+        SearchCategory.videos => ['mp4', 'mov', 'avi', 'mkv'].contains(extension),
       };
-
-      final queryMatches = query.isEmpty
-          ? true
-          : file.title.toLowerCase().contains(query) ||
-                file.subtitle.toLowerCase().contains(query);
-
-      return categoryMatches && queryMatches;
     }).toList();
   }
 

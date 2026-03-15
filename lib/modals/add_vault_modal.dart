@@ -2,8 +2,11 @@ import 'dart:ui';
 
 import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
-import '../data/add_vault_mock_data.dart';
+import '../api/api_exception.dart';
+import '../data/app_services.dart';
+import '../data/provider_options_data.dart';
 import '../theme/app_theme_colors.dart';
 import '../utils/interaction_styles.dart';
 import '../widgets/add_vault_option_tile.dart';
@@ -13,6 +16,7 @@ Future<void> showAddVaultModal(BuildContext context) async {
   final colors = AppThemeColors.of(context);
   const primaryBtnBg = Color(0xFF2662E7);
   const primaryBtnFg = Color(0xFFEAF2FF);
+
   await showGeneralDialog<void>(
     context: context,
     barrierLabel: 'Add vault',
@@ -131,12 +135,79 @@ Future<void> showAddVaultModal(BuildContext context) async {
                                   child: ElevatedButton(
                                     onPressed: selectedIndex == null
                                         ? null
-                                        : () => Navigator.of(context).pop(),
+                                        : () async {
+                                            final option =
+                                                addVaultOptions[selectedIndex!];
+                                            final providerId =
+                                                _providerIdForTitle(option.title);
+
+                                            if (providerId == null) {
+                                              _showSnack(
+                                                context,
+                                                'Provider is not supported by backend yet',
+                                              );
+                                              return;
+                                            }
+
+                                            try {
+                                              final authorizeUrl =
+                                                  await appApiRepository
+                                                      .startProviderConnect(
+                                                        providerId,
+                                                        redirectUri:
+                                                            'cloudvault://oauth-callback',
+                                                      );
+
+                                              if (authorizeUrl == null ||
+                                                  authorizeUrl.isEmpty) {
+                                                if (!context.mounted) return;
+                                                _showSnack(
+                                                  context,
+                                                  'Connect URL not returned',
+                                                );
+                                                return;
+                                              }
+
+                                              final uri = Uri.tryParse(
+                                                authorizeUrl,
+                                              );
+
+                                              if (uri == null ||
+                                                  !await launchUrl(
+                                                    uri,
+                                                    mode: LaunchMode
+                                                        .externalApplication,
+                                                  )) {
+                                                if (!context.mounted) return;
+                                                _showSnack(
+                                                  context,
+                                                  'Cannot open connect URL',
+                                                );
+                                                return;
+                                              }
+
+                                              if (context.mounted) {
+                                                Navigator.of(context).pop();
+                                              }
+                                            } on ApiException catch (e) {
+                                              if (!context.mounted) return;
+                                              _showSnack(
+                                                context,
+                                                'API error: ${e.statusCode ?? ''} ${e.message}'.trim(),
+                                              );
+                                            } catch (_) {
+                                              if (!context.mounted) return;
+                                              _showSnack(
+                                                context,
+                                                'Failed to start provider connect',
+                                              );
+                                            }
+                                          },
                                     style: ButtonStyle(
-                                      backgroundColor: WidgetStatePropertyAll(
+                                      backgroundColor: const WidgetStatePropertyAll(
                                         primaryBtnBg,
                                       ),
-                                      foregroundColor: WidgetStatePropertyAll(
+                                      foregroundColor: const WidgetStatePropertyAll(
                                         primaryBtnFg,
                                       ),
                                       overlayColor: pressOnlyOverlay(
@@ -155,7 +226,7 @@ Future<void> showAddVaultModal(BuildContext context) async {
                                     ),
                                     child: Text(
                                       l10n.connect,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w700,
                                       ),
@@ -177,4 +248,31 @@ Future<void> showAddVaultModal(BuildContext context) async {
       );
     },
   );
+}
+
+String? _providerIdForTitle(String title) {
+  switch (title.toLowerCase()) {
+    case 'google drive':
+      return 'google-drive';
+    case 'dropbox':
+      return 'dropbox';
+    case 'onedrive':
+      return 'onedrive';
+    case 'mega':
+      return 'mega';
+    default:
+      return null;
+  }
+}
+
+void _showSnack(BuildContext context, String message) {
+  ScaffoldMessenger.of(context)
+    ..hideCurrentSnackBar()
+    ..showSnackBar(
+      SnackBar(
+        content: Text(message),
+        behavior: SnackBarBehavior.floating,
+        duration: const Duration(seconds: 2),
+      ),
+    );
 }

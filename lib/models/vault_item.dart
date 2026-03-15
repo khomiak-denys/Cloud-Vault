@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 class VaultItem {
   const VaultItem({
+    required this.id,
+    required this.providerId,
     required this.title,
     required this.usageText,
     required this.percentLabel,
@@ -11,6 +13,8 @@ class VaultItem {
     this.hasWarning = false,
   });
 
+  final String id;
+  final String providerId;
   final String title;
   final String usageText;
   final String percentLabel;

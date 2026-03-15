@@ -1,9 +1,14 @@
 import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
-import '../data/vault_mock_data.dart';
+import '../api/auth_session.dart';
+import '../api/api_exception.dart';
+import '../api/api_repository.dart';
+import '../data/api_mappers.dart';
+import '../data/app_services.dart';
 import '../modals/add_vault_modal.dart';
 import '../modals/language_modal.dart';
+import '../models/vault_item.dart';
 import '../screens/login_screen.dart';
 import '../screens/profile_screen.dart';
 import '../state/locale_controller.dart';
@@ -26,6 +31,38 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool notifications = true;
+  List<VaultItem> _vaultItems = const [];
+  ApiUser? _me;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    try {
+      final results = await Future.wait([
+        appApiRepository.me(),
+        appApiRepository.connections(),
+      ]);
+
+      final me = results[0] as ApiUser?;
+      final connections = results[1] as List<ApiConnection>;
+
+      if (!mounted) return;
+      setState(() {
+        _me = me;
+        _vaultItems = connections.map(mapConnectionToVaultItem).toList();
+      });
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      _showToast('API error: ${e.statusCode ?? ''} ${e.message}'.trim());
+    } catch (_) {
+      if (!mounted) return;
+      _showToast('Failed to load settings data');
+    }
+  }
 
   void _showToast(String message) {
     ScaffoldMessenger.of(context)
@@ -39,9 +76,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
       );
   }
 
-  void _handleDisconnect(String storageName) {
+  Future<void> _handleDisconnect(VaultItem storage) async {
     final l10n = AppLocalizations.of(context)!;
-    _showToast(l10n.disconnectedToast(storageName));
+
+    try {
+      await appApiRepository.disconnectConnection(storage.id);
+      _showToast(l10n.disconnectedToast(storage.title));
+      await _load();
+    } on ApiException catch (e) {
+      _showToast('API error: ${e.statusCode ?? ''} ${e.message}'.trim());
+    } catch (_) {
+      _showToast('Disconnect failed');
+    }
   }
 
   void _toggleNotifications() {
@@ -73,8 +119,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     setState(() {});
   }
 
-  void _logout() {
-    Navigator.of(
+  Future<void> _logout() async {
+    await AuthSession.instance.clearTokens();
+    if (!mounted) return;
+    await Navigator.of(
       context,
     ).pushNamedAndRemoveUntil(LoginScreen.routeName, (route) => false);
   }
@@ -95,7 +143,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SettingsItemData(
             icon: Icons.person_outline,
             label: l10n.profile,
-            value: l10n.profileName,
+            value: _me?.name ?? '',
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(builder: (_) => const ProfileScreen()),
@@ -161,48 +209,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           children: [
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SettingsProfileCard(
-                      name: l10n.profileName,
-                      email: l10n.profileEmail,
-                      planTitle: l10n.premiumPlan,
-                      planSubtitle: l10n.premiumValidUntil,
-                      proLabel: l10n.pro,
-                    ),
-                    const SizedBox(height: 18),
-                    ConnectedStoragesCard(
-                      title: l10n.connectedStorages,
-                      addLabel: l10n.add,
-                      connectedLabel: l10n.connected,
-                      items: vaultItems,
-                      onAddTap: () => showAddVaultModal(context),
-                      onDisconnect: _handleDisconnect,
-                    ),
-                    const SizedBox(height: 20),
-                    ...sections.map(
-                      (section) => Padding(
-                        padding: const EdgeInsets.only(bottom: 18),
-                        child: SettingsSectionCard(section: section),
+              child: RefreshIndicator(
+                onRefresh: _load,
+                child: SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SettingsProfileCard(
+                        name: _me?.name ?? '',
+                        email: _me?.email ?? '',
                       ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Align(
-                        alignment: Alignment.center,
-                        child: Text(
-                          l10n.appVersion,
-                          style: TextStyle(
-                            color: colors.mutedText,
-                            fontSize: 13,
+                      const SizedBox(height: 18),
+                      ConnectedStoragesCard(
+                        title: l10n.connectedStorages,
+                        addLabel: l10n.add,
+                        connectedLabel: l10n.connected,
+                        items: _vaultItems,
+                        onAddTap: () async {
+                          await showAddVaultModal(context);
+                          await _load();
+                        },
+                        onDisconnect: _handleDisconnect,
+                      ),
+                      const SizedBox(height: 20),
+                      ...sections.map(
+                        (section) => Padding(
+                          padding: const EdgeInsets.only(bottom: 18),
+                          child: SettingsSectionCard(section: section),
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Align(
+                          alignment: Alignment.center,
+                          child: Text(
+                            l10n.appVersion,
+                            style: TextStyle(
+                              color: colors.mutedText,
+                              fontSize: 13,
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
