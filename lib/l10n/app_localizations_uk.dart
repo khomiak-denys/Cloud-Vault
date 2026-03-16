@@ -113,6 +113,18 @@ class AppLocalizationsUk extends AppLocalizations {
   String get recommendations => 'Рекомендації';
 
   @override
+  String get exportPdf => 'Експорт PDF';
+
+  @override
+  String get pdfReportTitle => 'Звіт про використання сховищ';
+
+  @override
+  String get generatedAt => 'Згенеровано';
+
+  @override
+  String get pdfExportFailed => 'Не вдалося експортувати PDF';
+
+  @override
   String get tipOptimizeDropboxTitle => 'Оптимізуйте Dropbox';
 
   @override
