@@ -142,8 +142,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             ),
             pw.SizedBox(height: 8),
             ..._usageItems.map((item) {
-              final percent = item.totalBytes > 0
-                  ? ((item.usedBytes / item.totalBytes) * 100)
+              final percent = totalUsed > 0
+                  ? ((item.usedBytes / totalUsed) * 100)
                   : 0.0;
               final percentText = percent.toStringAsFixed(1);
               return pw.Padding(
