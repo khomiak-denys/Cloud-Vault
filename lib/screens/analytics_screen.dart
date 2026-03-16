@@ -1,5 +1,6 @@
 import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -108,11 +109,21 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       final totalUsed = _usageItems.fold<double>(0, (acc, item) => acc + item.usedBytes);
       final totalSpace = _usageItems.fold<double>(0, (acc, item) => acc + item.totalBytes);
       final totalFree = totalSpace - totalUsed;
+      final baseFont = pw.Font.ttf(
+        await rootBundle.load('assets/fonts/NotoSans-Regular.ttf'),
+      );
+      final boldFont = pw.Font.ttf(
+        await rootBundle.load('assets/fonts/NotoSans-Bold.ttf'),
+      );
 
       final doc = pw.Document();
       doc.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
+          theme: pw.ThemeData.withFont(
+            base: baseFont,
+            bold: boldFont,
+          ),
           build: (context) => [
             pw.Text(
               l10n.pdfReportTitle,
