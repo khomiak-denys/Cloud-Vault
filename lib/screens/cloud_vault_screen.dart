@@ -58,27 +58,28 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
     setState(() => _isLoading = true);
 
     try {
+      final usageReportFuture = _loadUsageReportSafe();
       final results = await Future.wait([
         appApiRepository.connections(),
         appApiRepository.recentFiles(pageSize: 20),
-        appApiRepository.storageUsageReport(),
+        usageReportFuture,
       ]);
 
       final connections = results[0] as List<ApiConnection>;
       final files = results[1] as List<ApiFileItem>;
-      final usageReport = results[2] as ApiStorageUsageReport;
-      final usage = usageReport.connections;
+      final usageReport = results[2] as ApiStorageUsageReport?;
+      final usage = usageReport?.connections ?? const <ApiConnection>[];
       final enrichedConnections = _mergeConnectionsWithUsage(connections, usage);
       final mappedVaultItems = enrichedConnections
           .map(mapConnectionToVaultItem)
           .toList();
       final mappedRecentFiles = files.map(mapApiFileToRecentFileItem).toList();
-      final totalUsedBytes = usageReport.usedBytes ??
+      final totalUsedBytes = usageReport?.usedBytes ??
           enrichedConnections.fold<double>(
             0,
             (acc, connection) => acc + connection.usedBytes,
           );
-      final totalBytes = usageReport.totalBytes ??
+      final totalBytes = usageReport?.totalBytes ??
           enrichedConnections.fold<double>(
             0,
             (acc, connection) => acc + connection.totalBytes,
@@ -119,6 +120,14 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
     final shouldReload = await handleFileAction(context, actionId, file);
     if (shouldReload) {
       await _load(forceRefresh: true);
+    }
+  }
+
+  Future<ApiStorageUsageReport?> _loadUsageReportSafe() async {
+    try {
+      return await appApiRepository.storageUsageReport();
+    } catch (_) {
+      return null;
     }
   }
 
