@@ -6,6 +6,7 @@ import '../api/api_exception.dart';
 import '../api/api_repository.dart';
 import '../data/api_mappers.dart';
 import '../data/app_services.dart';
+import '../data/cache_keys.dart';
 import '../modals/add_vault_modal.dart';
 import '../modals/language_modal.dart';
 import '../models/vault_item.dart';
@@ -33,16 +34,19 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   static const _cacheKey = 'settings_bundle_v1';
   static const _cacheTtl = Duration(minutes: 2);
+  static const _profileUsageCacheTtl = Duration(minutes: 2);
 
   bool notifications = true;
   bool _isLoading = true;
   List<VaultItem> _vaultItems = const [];
+  List<ApiConnection> _connections = const [];
   ApiUser? _me;
 
   @override
   void initState() {
     super.initState();
     _load();
+    _prefetchProfileUsage();
   }
 
   Future<void> _load({bool forceRefresh = false}) async {
@@ -52,8 +56,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         setState(() {
           _me = cached.me;
           _vaultItems = cached.vaultItems;
+          _connections = cached.connections;
           _isLoading = false;
         });
+        _prefetchProfileUsage();
         return;
       }
     }
@@ -72,13 +78,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       appCacheStore.set<_SettingsBundle>(
         _cacheKey,
-        _SettingsBundle(me: me, vaultItems: mappedVaultItems),
+        _SettingsBundle(
+          me: me,
+          connections: connections,
+          vaultItems: mappedVaultItems,
+        ),
         ttl: _cacheTtl,
       );
 
       if (!mounted) return;
       setState(() {
         _me = me;
+        _connections = connections;
         _vaultItems = mappedVaultItems;
         _isLoading = false;
       });
@@ -90,6 +101,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (!mounted) return;
       _showToast('Failed to load settings data');
       setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _prefetchProfileUsage({bool forceRefresh = false}) async {
+    if (!forceRefresh) {
+      final cachedUsedBytes = appCacheStore.get<double>(kProfileUsageCacheKey);
+      if (cachedUsedBytes != null) return;
+    }
+
+    try {
+      final usage = await appApiRepository.storageUsage();
+      final usedBytes = usage.fold<double>(0, (acc, item) => acc + item.usedBytes);
+      appCacheStore.set<double>(
+        kProfileUsageCacheKey,
+        usedBytes,
+        ttl: _profileUsageCacheTtl,
+      );
+    } catch (_) {
+      // Silent prefetch: settings UI should not fail if usage is unavailable.
+    }
+  }
+
+  Future<void> _refreshConnectionsOnly() async {
+    try {
+      final connections = await appApiRepository.connections();
+      final mappedVaultItems = connections.map(mapConnectionToVaultItem).toList();
+
+      if (!mounted) return;
+      setState(() {
+        _connections = connections;
+        _vaultItems = mappedVaultItems;
+      });
+
+      appCacheStore.set<_SettingsBundle>(
+        _cacheKey,
+        _SettingsBundle(
+          me: _me,
+          connections: connections,
+          vaultItems: mappedVaultItems,
+        ),
+        ttl: _cacheTtl,
+      );
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      _showToast('API error: ${e.statusCode ?? ''} ${e.message}'.trim());
+    } catch (_) {
+      if (!mounted) return;
+      _showToast('Failed to refresh connected storages');
     }
   }
 
@@ -176,7 +235,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
             value: _me?.name ?? '',
             onTap: () {
               Navigator.of(context).push(
-                MaterialPageRoute<void>(builder: (_) => const ProfileScreen()),
+                MaterialPageRoute<void>(
+                  builder: (_) => ProfileScreen(
+                    initialUser: _me,
+                    initialConnections: _connections,
+                  ),
+                ),
               );
             },
           ),
@@ -260,8 +324,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               connectedLabel: l10n.connected,
                               items: _vaultItems,
                               onAddTap: () async {
-                                await showAddVaultModal(context);
-                                await _load(forceRefresh: true);
+                                final didStartConnect =
+                                    await showAddVaultModal(context);
+                                if (!didStartConnect) return;
+                                await _refreshConnectionsOnly();
                               },
                               onDisconnect: _handleDisconnect,
                             ),
@@ -304,9 +370,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 class _SettingsBundle {
   const _SettingsBundle({
     required this.me,
+    required this.connections,
     required this.vaultItems,
   });
 
   final ApiUser? me;
+  final List<ApiConnection> connections;
   final List<VaultItem> vaultItems;
 }
