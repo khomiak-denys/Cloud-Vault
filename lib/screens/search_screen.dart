@@ -169,7 +169,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                   CheckedPopupMenuItem<SearchSort>(
                                     value: SearchSort.extensionAsc,
                                     checked: _sort == SearchSort.extensionAsc,
-                                    child: const Text('Type (A-Z)'),
+                                    child: Text(l10n.sortByType),
                                   ),
                                 ],
                                 child: Container(
@@ -268,7 +268,7 @@ class _SearchScreenState extends State<SearchScreen> {
     return switch (_sort) {
       SearchSort.modifiedDesc => l10n.modified,
       SearchSort.sizeDesc => l10n.size,
-      SearchSort.extensionAsc => 'Type (A-Z)',
+      SearchSort.extensionAsc => l10n.sortByType,
     };
   }
 

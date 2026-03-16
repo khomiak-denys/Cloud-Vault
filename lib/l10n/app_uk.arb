@@ -21,6 +21,7 @@
   "documents": "Документи",
   "images": "Зображення",
   "videos": "Відео",
+  "sortByType": "Тип (A-Z)",
   "foundFiles": "Знайдено {count} файлів",
   "@@foundFiles": {"placeholders": {"count": {"type": "int"}}},
   "analytics": "Аналітика",

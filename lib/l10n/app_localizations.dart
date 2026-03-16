@@ -224,6 +224,12 @@ abstract class AppLocalizations {
   /// **'Videos'**
   String get videos;
 
+  /// No description provided for @sortByType.
+  ///
+  /// In en, this message translates to:
+  /// **'Type (A-Z)'**
+  String get sortByType;
+
   /// No description provided for @foundFiles.
   ///
   /// In en, this message translates to:

@@ -73,6 +73,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get videos => 'Відео';
 
   @override
+  String get sortByType => 'Тип (A-Z)';
+
+  @override
   String foundFiles(Object count) {
     return 'Знайдено $count файлів';
   }
