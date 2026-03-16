@@ -15,6 +15,9 @@ import '../widgets/loading_skeletons.dart';
 import '../widgets/mobile_screen_shell.dart';
 import '../widgets/search/search_header.dart';
 import '../widgets/search/search_results_section.dart';
+import '../theme/app_theme_colors.dart';
+
+enum SearchSort { modifiedDesc, sizeDesc, typeAsc }
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -26,6 +29,7 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final TextEditingController _controller = TextEditingController();
   SearchCategory _category = SearchCategory.all;
+  SearchSort _sort = SearchSort.modifiedDesc;
   Timer? _debounce;
   bool _isLoading = false;
   List<RecentFileItem> _results = const [];
@@ -100,8 +104,10 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final colors = AppThemeColors.of(context);
     final query = _controller.text.trim();
     final filtered = _applyCategoryFilter(_results);
+    final sorted = _applySort(filtered);
     final emptyStateMessage = query.isEmpty
         ? l10n.searchHint
         : l10n.foundFiles(0);
@@ -133,15 +139,85 @@ class _SearchScreenState extends State<SearchScreen> {
             Expanded(
               child: _isLoading
                   ? const SearchLoadingSkeleton()
-                  : SearchResultsSection(
-                      resultsLabel: l10n.foundFiles(filtered.length),
-                      emptyStateMessage: emptyStateMessage,
-                      results: filtered,
-                      onMoreTap: (file) => showFileActionsModal(
-                        context,
-                        file,
-                        onActionTap: _onFileAction,
-                      ),
+                  : Column(
+                      children: [
+                        if (sorted.isNotEmpty)
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: PopupMenuButton<SearchSort>(
+                                initialValue: _sort,
+                                onSelected: (value) => setState(
+                                  () => _sort = value,
+                                ),
+                                color: colors.cardBackground,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                itemBuilder: (context) => [
+                                  CheckedPopupMenuItem<SearchSort>(
+                                    value: SearchSort.modifiedDesc,
+                                    checked: _sort == SearchSort.modifiedDesc,
+                                    child: Text(l10n.modified),
+                                  ),
+                                  CheckedPopupMenuItem<SearchSort>(
+                                    value: SearchSort.sizeDesc,
+                                    checked: _sort == SearchSort.sizeDesc,
+                                    child: Text(l10n.size),
+                                  ),
+                                  CheckedPopupMenuItem<SearchSort>(
+                                    value: SearchSort.typeAsc,
+                                    checked: _sort == SearchSort.typeAsc,
+                                    child: const Text('A-Z'),
+                                  ),
+                                ],
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: colors.cardBackground,
+                                    border: Border.all(color: colors.cardBorder),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.sort_rounded,
+                                        size: 18,
+                                        color: colors.secondaryText,
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(
+                                        _sortLabel(l10n),
+                                        style: TextStyle(
+                                          color: colors.secondaryText,
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        Expanded(
+                          child: SearchResultsSection(
+                            resultsLabel: l10n.foundFiles(sorted.length),
+                            emptyStateMessage: emptyStateMessage,
+                            results: sorted,
+                            onMoreTap: (file) => showFileActionsModal(
+                              context,
+                              file,
+                              onActionTap: _onFileAction,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
             ),
             BottomNavBar(
@@ -164,6 +240,36 @@ class _SearchScreenState extends State<SearchScreen> {
         SearchCategory.videos => ['mp4', 'mov', 'avi', 'mkv'].contains(extension),
       };
     }).toList();
+  }
+
+  List<RecentFileItem> _applySort(List<RecentFileItem> files) {
+    final sorted = List<RecentFileItem>.from(files);
+    switch (_sort) {
+      case SearchSort.modifiedDesc:
+        sorted.sort((a, b) => b.modifiedAt.compareTo(a.modifiedAt));
+        break;
+      case SearchSort.sizeDesc:
+        sorted.sort((a, b) => b.sizeBytes.compareTo(a.sizeBytes));
+        break;
+      case SearchSort.typeAsc:
+        sorted.sort((a, b) {
+          final typeCompare = _fileExtension(a.title).compareTo(
+            _fileExtension(b.title),
+          );
+          if (typeCompare != 0) return typeCompare;
+          return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+        });
+        break;
+    }
+    return sorted;
+  }
+
+  String _sortLabel(AppLocalizations l10n) {
+    return switch (_sort) {
+      SearchSort.modifiedDesc => l10n.modified,
+      SearchSort.sizeDesc => l10n.size,
+      SearchSort.typeAsc => 'A-Z',
+    };
   }
 
   String _fileExtension(String fileName) {
