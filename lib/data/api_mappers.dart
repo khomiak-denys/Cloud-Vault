@@ -50,6 +50,8 @@ RecentFileItem mapApiFileToRecentFileItem(ApiFileItem file) {
     storageName: file.providerName,
     sizeLabel: sizeLabel,
     modifiedLabel: formattedDate,
+    sizeBytes: file.sizeBytes,
+    modifiedAt: file.modifiedAt,
     pathLabel: file.path,
     isFavorite: file.isFavorite,
     kind: file.kind,

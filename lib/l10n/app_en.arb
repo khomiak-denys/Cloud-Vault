@@ -21,6 +21,7 @@
   "documents": "Documents",
   "images": "Images",
   "videos": "Videos",
+  "sortByType": "Type (A-Z)",
   "foundFiles": "Found {count} files",
   "@@foundFiles": {"placeholders": {"count": {"type": "int"}}},
   "analytics": "Analytics",

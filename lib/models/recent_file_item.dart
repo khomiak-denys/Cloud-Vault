@@ -11,6 +11,8 @@ class RecentFileItem {
     required this.storageName,
     required this.sizeLabel,
     required this.modifiedLabel,
+    required this.sizeBytes,
+    required this.modifiedAt,
     required this.pathLabel,
     this.isFavorite = false,
     this.kind = 'file',
@@ -28,6 +30,8 @@ class RecentFileItem {
   final String storageName;
   final String sizeLabel;
   final String modifiedLabel;
+  final double sizeBytes;
+  final DateTime modifiedAt;
   final String pathLabel;
   final bool isFavorite;
   final String kind;

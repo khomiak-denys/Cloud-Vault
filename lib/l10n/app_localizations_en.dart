@@ -72,6 +72,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get videos => 'Videos';
 
   @override
+  String get sortByType => 'Type (A-Z)';
+
+  @override
   String foundFiles(Object count) {
     return 'Found $count files';
   }
