@@ -9,11 +9,13 @@ class SearchResultsSection extends StatelessWidget {
     super.key,
     required this.resultsLabel,
     required this.results,
+    required this.emptyStateMessage,
     required this.onMoreTap,
   });
 
   final String resultsLabel;
   final List<RecentFileItem> results;
+  final String emptyStateMessage;
   final ValueChanged<RecentFileItem> onMoreTap;
 
   @override
@@ -35,7 +37,7 @@ class SearchResultsSection extends StatelessWidget {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    'Type something to search',
+                    emptyStateMessage,
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 16,
