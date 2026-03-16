@@ -11,6 +11,7 @@ class TopSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final percentText = _formatPercent(percentUsed * 100);
     return Container(
       width: double.infinity,
       decoration: const BoxDecoration(
@@ -94,7 +95,7 @@ class TopSummaryCard extends StatelessWidget {
                       ),
                       SizedBox(width: 12),
                       Text(
-                        '${(percentUsed * 100).round()}%',
+                        percentText,
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w700,
@@ -112,5 +113,18 @@ class TopSummaryCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatPercent(double value) {
+    if (value <= 0) return '0%';
+    if (value < 1) {
+      final fixed = value.toStringAsFixed(2);
+      return '${fixed.replaceFirst(RegExp(r'\.?0+$'), '')}%';
+    }
+    if (value < 10) {
+      final fixed = value.toStringAsFixed(1);
+      return '${fixed.replaceFirst(RegExp(r'\.?0+$'), '')}%';
+    }
+    return '${value.round()}%';
   }
 }
