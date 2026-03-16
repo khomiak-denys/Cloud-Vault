@@ -5,6 +5,7 @@ import 'progress_track.dart';
 
 class TopSummaryCard extends StatelessWidget {
   const TopSummaryCard({super.key, this.percentUsed = 0.63});
+  static final RegExp _trailingZerosPattern = RegExp(r'\.?0+$');
 
   final double percentUsed;
 
@@ -119,11 +120,11 @@ class TopSummaryCard extends StatelessWidget {
     if (value <= 0) return '0%';
     if (value < 1) {
       final fixed = value.toStringAsFixed(2);
-      return '${fixed.replaceFirst(RegExp(r'\.?0+$'), '')}%';
+      return '${fixed.replaceFirst(_trailingZerosPattern, '')}%';
     }
     if (value < 10) {
       final fixed = value.toStringAsFixed(1);
-      return '${fixed.replaceFirst(RegExp(r'\.?0+$'), '')}%';
+      return '${fixed.replaceFirst(_trailingZerosPattern, '')}%';
     }
     return '${value.round()}%';
   }
