@@ -63,6 +63,20 @@ class ApiStorageRecommendation {
   final String body;
 }
 
+class ApiStorageUsageReport {
+  const ApiStorageUsageReport({
+    required this.connections,
+    this.usedBytes,
+    this.totalBytes,
+    this.usagePercent,
+  });
+
+  final List<ApiConnection> connections;
+  final double? usedBytes;
+  final double? totalBytes;
+  final double? usagePercent;
+}
+
 class ApiRepository {
   ApiRepository(this._client);
 
@@ -246,11 +260,14 @@ class ApiRepository {
     );
   }
 
-  Future<List<ApiConnection>> storageUsage() async {
+  Future<ApiStorageUsageReport> storageUsageReport() async {
     final json = await _client.getJson('/analytics/storage-usage');
+    final totals = json['totals'] is Map
+        ? Map<String, dynamic>.from(json['totals'] as Map)
+        : null;
     final list = _extractList(json);
 
-    return list.map((item) {
+    final connections = list.map((item) {
       return ApiConnection(
         id: _str(item['connectionId']) ?? _str(item['id']) ?? '',
         providerId: _str(item['providerId']) ?? '',
@@ -259,6 +276,18 @@ class ApiRepository {
         totalBytes: _num(item['totalBytes']) ?? 0,
       );
     }).where((c) => c.id.isNotEmpty).toList();
+
+    return ApiStorageUsageReport(
+      connections: connections,
+      usedBytes: _num(totals?['usedBytes']),
+      totalBytes: _num(totals?['totalBytes']),
+      usagePercent: _num(totals?['usagePercent']),
+    );
+  }
+
+  Future<List<ApiConnection>> storageUsage() async {
+    final report = await storageUsageReport();
+    return report.connections;
   }
 
   Future<List<ApiStorageRecommendation>> recommendations() async {
