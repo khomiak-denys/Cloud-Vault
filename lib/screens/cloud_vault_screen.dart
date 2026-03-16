@@ -61,20 +61,29 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
       final results = await Future.wait([
         appApiRepository.connections(),
         appApiRepository.recentFiles(pageSize: 20),
+        appApiRepository.storageUsageReport(),
       ]);
 
       final connections = results[0] as List<ApiConnection>;
       final files = results[1] as List<ApiFileItem>;
-      final mappedVaultItems = connections.map(mapConnectionToVaultItem).toList();
+      final usageReport = results[2] as ApiStorageUsageReport;
+      final usage = usageReport.connections;
+      final enrichedConnections = _mergeConnectionsWithUsage(connections, usage);
+      final mappedVaultItems = enrichedConnections
+          .map(mapConnectionToVaultItem)
+          .toList();
       final mappedRecentFiles = files.map(mapApiFileToRecentFileItem).toList();
-      final totalUsedBytes = connections.fold<double>(
-        0,
-        (acc, connection) => acc + connection.usedBytes,
-      );
-      final totalBytes = connections.fold<double>(
-        0,
-        (acc, connection) => acc + connection.totalBytes,
-      );
+      final totalSource = usage.isNotEmpty ? usage : enrichedConnections;
+      final totalUsedBytes = usageReport.usedBytes ??
+          totalSource.fold<double>(
+            0,
+            (acc, connection) => acc + connection.usedBytes,
+          );
+      final totalBytes = usageReport.totalBytes ??
+          totalSource.fold<double>(
+            0,
+            (acc, connection) => acc + connection.totalBytes,
+          );
 
       appCacheStore.set<_DashboardBundle>(
         _cacheKey,
@@ -175,6 +184,40 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
         ),
       ),
     );
+  }
+
+  List<ApiConnection> _mergeConnectionsWithUsage(
+    List<ApiConnection> connections,
+    List<ApiConnection> usage,
+  ) {
+    String key(ApiConnection c) =>
+        '${c.id}|${c.providerId}|${c.providerName}'.toLowerCase();
+
+    final usageByKey = {for (final item in usage) key(item): item};
+    final usageById = {
+      for (final item in usage)
+        if (item.id.isNotEmpty) item.id.toLowerCase(): item,
+    };
+    final usageByProvider = {
+      for (final item in usage)
+        if (item.providerId.isNotEmpty) item.providerId.toLowerCase(): item,
+    };
+
+    return connections.map((connection) {
+      final matched = usageByKey[key(connection)] ??
+          usageById[connection.id.toLowerCase()] ??
+          usageByProvider[connection.providerId.toLowerCase()];
+
+      if (matched == null) return connection;
+
+      return ApiConnection(
+        id: connection.id,
+        providerId: connection.providerId,
+        providerName: connection.providerName,
+        usedBytes: matched.usedBytes,
+        totalBytes: matched.totalBytes,
+      );
+    }).toList();
   }
 }
 
