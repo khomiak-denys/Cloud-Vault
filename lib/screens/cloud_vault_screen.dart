@@ -58,23 +58,32 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
     setState(() => _isLoading = true);
 
     try {
+      final usageReportFuture = _loadUsageReportSafe();
       final results = await Future.wait([
         appApiRepository.connections(),
         appApiRepository.recentFiles(pageSize: 20),
+        usageReportFuture,
       ]);
 
       final connections = results[0] as List<ApiConnection>;
       final files = results[1] as List<ApiFileItem>;
-      final mappedVaultItems = connections.map(mapConnectionToVaultItem).toList();
+      final usageReport = results[2] as ApiStorageUsageReport?;
+      final usage = usageReport?.connections ?? const <ApiConnection>[];
+      final enrichedConnections = _mergeConnectionsWithUsage(connections, usage);
+      final mappedVaultItems = enrichedConnections
+          .map(mapConnectionToVaultItem)
+          .toList();
       final mappedRecentFiles = files.map(mapApiFileToRecentFileItem).toList();
-      final totalUsedBytes = connections.fold<double>(
-        0,
-        (acc, connection) => acc + connection.usedBytes,
-      );
-      final totalBytes = connections.fold<double>(
-        0,
-        (acc, connection) => acc + connection.totalBytes,
-      );
+      final totalUsedBytes = usageReport?.usedBytes ??
+          enrichedConnections.fold<double>(
+            0,
+            (acc, connection) => acc + connection.usedBytes,
+          );
+      final totalBytes = usageReport?.totalBytes ??
+          enrichedConnections.fold<double>(
+            0,
+            (acc, connection) => acc + connection.totalBytes,
+          );
 
       appCacheStore.set<_DashboardBundle>(
         _cacheKey,
@@ -111,6 +120,14 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
     final shouldReload = await handleFileAction(context, actionId, file);
     if (shouldReload) {
       await _load(forceRefresh: true);
+    }
+  }
+
+  Future<ApiStorageUsageReport?> _loadUsageReportSafe() async {
+    try {
+      return await appApiRepository.storageUsageReport();
+    } catch (_) {
+      return null;
     }
   }
 
@@ -175,6 +192,57 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
         ),
       ),
     );
+  }
+
+  List<ApiConnection> _mergeConnectionsWithUsage(
+    List<ApiConnection> connections,
+    List<ApiConnection> usage,
+  ) {
+    String key(ApiConnection c) =>
+        '${c.id}|${c.providerId}|${c.providerName}'.toLowerCase();
+
+    final usageByKey = {for (final item in usage) key(item): item};
+    final usageById = {
+      for (final item in usage)
+        if (item.id.isNotEmpty) item.id.toLowerCase(): item,
+    };
+    final usageByProvider = {
+      for (final item in usage)
+        if (item.providerId.isNotEmpty) item.providerId.toLowerCase(): item,
+    };
+    final connectionProviderCounts = <String, int>{};
+    for (final connection in connections) {
+      if (connection.providerId.isEmpty) continue;
+      final key = connection.providerId.toLowerCase();
+      connectionProviderCounts[key] =
+          (connectionProviderCounts[key] ?? 0) + 1;
+    }
+    final usageProviderCounts = <String, int>{};
+    for (final item in usage) {
+      if (item.providerId.isEmpty) continue;
+      final key = item.providerId.toLowerCase();
+      usageProviderCounts[key] = (usageProviderCounts[key] ?? 0) + 1;
+    }
+
+    return connections.map((connection) {
+      final providerIdKey = connection.providerId.toLowerCase();
+      final canFallbackByProvider = providerIdKey.isNotEmpty &&
+          (connectionProviderCounts[providerIdKey] ?? 0) == 1 &&
+          (usageProviderCounts[providerIdKey] ?? 0) == 1;
+      final matched = usageByKey[key(connection)] ??
+          usageById[connection.id.toLowerCase()] ??
+          (canFallbackByProvider ? usageByProvider[providerIdKey] : null);
+
+      if (matched == null) return connection;
+
+      return ApiConnection(
+        id: connection.id,
+        providerId: connection.providerId,
+        providerName: connection.providerName,
+        usedBytes: matched.usedBytes,
+        totalBytes: matched.totalBytes,
+      );
+    }).toList();
   }
 }
 

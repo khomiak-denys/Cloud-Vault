@@ -100,7 +100,11 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final query = _controller.text.trim();
     final filtered = _applyCategoryFilter(_results);
+    final emptyStateMessage = query.isEmpty
+        ? l10n.searchHint
+        : l10n.foundFiles(0);
 
     return Scaffold(
       body: MobileScreenShell(
@@ -131,6 +135,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   ? const SearchLoadingSkeleton()
                   : SearchResultsSection(
                       resultsLabel: l10n.foundFiles(filtered.length),
+                      emptyStateMessage: emptyStateMessage,
                       results: filtered,
                       onMoreTap: (file) => showFileActionsModal(
                         context,
