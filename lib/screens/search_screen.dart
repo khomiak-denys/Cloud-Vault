@@ -17,7 +17,7 @@ import '../widgets/search/search_header.dart';
 import '../widgets/search/search_results_section.dart';
 import '../theme/app_theme_colors.dart';
 
-enum SearchSort { modifiedDesc, sizeDesc, typeAsc }
+enum SearchSort { modifiedDesc, sizeDesc, extensionAsc }
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -167,9 +167,9 @@ class _SearchScreenState extends State<SearchScreen> {
                                     child: Text(l10n.size),
                                   ),
                                   CheckedPopupMenuItem<SearchSort>(
-                                    value: SearchSort.typeAsc,
-                                    checked: _sort == SearchSort.typeAsc,
-                                    child: const Text('A-Z'),
+                                    value: SearchSort.extensionAsc,
+                                    checked: _sort == SearchSort.extensionAsc,
+                                    child: const Text('Type (A-Z)'),
                                   ),
                                 ],
                                 child: Container(
@@ -251,7 +251,7 @@ class _SearchScreenState extends State<SearchScreen> {
       case SearchSort.sizeDesc:
         sorted.sort((a, b) => b.sizeBytes.compareTo(a.sizeBytes));
         break;
-      case SearchSort.typeAsc:
+      case SearchSort.extensionAsc:
         sorted.sort((a, b) {
           final typeCompare = _fileExtension(a.title).compareTo(
             _fileExtension(b.title),
@@ -268,7 +268,7 @@ class _SearchScreenState extends State<SearchScreen> {
     return switch (_sort) {
       SearchSort.modifiedDesc => l10n.modified,
       SearchSort.sizeDesc => l10n.size,
-      SearchSort.typeAsc => 'A-Z',
+      SearchSort.extensionAsc => 'Type (A-Z)',
     };
   }
 
