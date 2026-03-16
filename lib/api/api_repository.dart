@@ -265,12 +265,7 @@ class ApiRepository {
     final totals = json['totals'] is Map
         ? Map<String, dynamic>.from(json['totals'] as Map)
         : null;
-    final list = json['connections'] is List
-        ? (json['connections'] as List)
-            .whereType<Map>()
-            .map((e) => Map<String, dynamic>.from(e))
-            .toList()
-        : _extractList(json);
+    final list = _extractList(json);
 
     final connections = list.map((item) {
       return ApiConnection(
