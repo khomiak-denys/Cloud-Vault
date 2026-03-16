@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../api/api_exception.dart';
 import '../api/api_repository.dart';
+import '../data/cache_keys.dart';
 import '../data/app_services.dart';
 import '../data/storage_formatters.dart';
 import '../theme/app_theme_colors.dart';
@@ -10,7 +11,14 @@ import '../widgets/loading_skeletons.dart';
 import '../widgets/mobile_screen_shell.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key});
+  const ProfileScreen({
+    super.key,
+    this.initialUser,
+    this.initialConnections,
+  });
+
+  final ApiUser? initialUser;
+  final List<ApiConnection>? initialConnections;
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
@@ -35,7 +43,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   void initState() {
     super.initState();
+    if (_hydrateFromInitialData()) {
+      _isLoading = false;
+      return;
+    }
     _loadProfileData();
+  }
+
+  bool _hydrateFromInitialData() {
+    final initialUser = widget.initialUser;
+    final initialConnections = widget.initialConnections;
+    if (initialUser == null && initialConnections == null) {
+      return false;
+    }
+
+    final name = initialUser?.name ?? '';
+    final email = initialUser?.email ?? '';
+    final connections = initialConnections ?? const <ApiConnection>[];
+    final cachedUsedBytes = appCacheStore.get<double>(kProfileUsageCacheKey);
+
+    _nameController.text = name;
+    _emailController.text = email;
+    _storagesCount = connections.length;
+    _usedBytes = cachedUsedBytes ??
+        connections.fold<double>(0, (acc, item) => acc + item.usedBytes);
+
+    appCacheStore.set<_ProfileBundle>(
+      _cacheKey,
+      _ProfileBundle(
+        name: name,
+        email: email,
+        storagesCount: _storagesCount,
+        usedBytes: _usedBytes,
+      ),
+      ttl: _cacheTtl,
+    );
+    return true;
   }
 
   Future<void> _loadProfileData({bool forceRefresh = false}) async {
@@ -81,6 +124,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           storagesCount: storagesCount,
           usedBytes: usedBytes,
         ),
+        ttl: _cacheTtl,
+      );
+      appCacheStore.set<double>(
+        kProfileUsageCacheKey,
+        usedBytes,
         ttl: _cacheTtl,
       );
 
