@@ -1,5 +1,10 @@
 import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
 
 import '../api/api_exception.dart';
 import '../api/api_repository.dart';
@@ -95,6 +100,88 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       );
   }
 
+  Future<void> _exportPdfReport() async {
+    final l10n = AppLocalizations.of(context)!;
+    try {
+      final now = DateTime.now();
+      final generatedAt = DateFormat('yyyy-MM-dd HH:mm').format(now);
+      final fileSuffix = DateFormat('yyyyMMdd-HHmm').format(now);
+      final totalUsed = _usageItems.fold<double>(0, (acc, item) => acc + item.usedBytes);
+      final totalSpace = _usageItems.fold<double>(0, (acc, item) => acc + item.totalBytes);
+      final totalFree = totalSpace - totalUsed;
+      final baseFont = pw.Font.ttf(
+        await rootBundle.load('assets/fonts/NotoSans-Regular.ttf'),
+      );
+      final boldFont = pw.Font.ttf(
+        await rootBundle.load('assets/fonts/NotoSans-Bold.ttf'),
+      );
+
+      final doc = pw.Document();
+      doc.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          theme: pw.ThemeData.withFont(
+            base: baseFont,
+            bold: boldFont,
+          ),
+          build: (context) => [
+            pw.Text(
+              l10n.pdfReportTitle,
+              style: pw.TextStyle(fontSize: 22, fontWeight: pw.FontWeight.bold),
+            ),
+            pw.SizedBox(height: 6),
+            pw.Text('${l10n.generatedAt}: $generatedAt'),
+            pw.SizedBox(height: 16),
+            pw.Text('${l10n.totalSpace}: ${formatBytes(totalSpace)}'),
+            pw.Text('${l10n.usedSpace}: ${formatBytes(totalUsed)}'),
+            pw.Text('${l10n.freeSpace}: ${formatBytes(totalFree)}'),
+            pw.SizedBox(height: 18),
+            pw.Text(
+              l10n.distributionByStorage,
+              style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+            ),
+            pw.SizedBox(height: 8),
+            ..._usageItems.map((item) {
+              final percent = totalUsed > 0
+                  ? ((item.usedBytes / totalUsed) * 100)
+                  : 0.0;
+              final percentText = percent.toStringAsFixed(1);
+              return pw.Padding(
+                padding: const pw.EdgeInsets.only(bottom: 6),
+                child: pw.Text(
+                  '${item.name}: ${formatBytes(item.usedBytes)} / ${formatBytes(item.totalBytes)} ($percentText%)',
+                ),
+              );
+            }),
+            pw.SizedBox(height: 18),
+            pw.Text(
+              l10n.recommendations,
+              style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
+            ),
+            pw.SizedBox(height: 8),
+            if (_recommendations.isEmpty)
+              pw.Text('-')
+            else
+              ..._recommendations.take(5).map(
+                    (item) => pw.Padding(
+                      padding: const pw.EdgeInsets.only(bottom: 6),
+                      child: pw.Bullet(text: '${item.title}: ${item.body}'),
+                    ),
+                  ),
+          ],
+        ),
+      );
+
+      await Printing.sharePdf(
+        bytes: await doc.save(),
+        filename: 'cloud-vault-report-$fileSuffix.pdf',
+      );
+    } catch (_) {
+      if (!mounted) return;
+      _showSnack(l10n.pdfExportFailed);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -120,6 +207,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           children: [
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: OutlinedButton.icon(
+                                onPressed: _usageItems.isEmpty ? null : _exportPdfReport,
+                                icon: const Icon(Icons.picture_as_pdf_outlined),
+                                label: Text(l10n.exportPdf),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
                             Row(
                               children: [
                                 Expanded(

@@ -296,6 +296,30 @@ abstract class AppLocalizations {
   /// **'Recommendations'**
   String get recommendations;
 
+  /// No description provided for @exportPdf.
+  ///
+  /// In en, this message translates to:
+  /// **'Export PDF'**
+  String get exportPdf;
+
+  /// No description provided for @pdfReportTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage Usage Report'**
+  String get pdfReportTitle;
+
+  /// No description provided for @generatedAt.
+  ///
+  /// In en, this message translates to:
+  /// **'Generated at'**
+  String get generatedAt;
+
+  /// No description provided for @pdfExportFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to export PDF'**
+  String get pdfExportFailed;
+
   /// No description provided for @tipOptimizeDropboxTitle.
   ///
   /// In en, this message translates to:

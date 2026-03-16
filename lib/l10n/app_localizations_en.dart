@@ -112,6 +112,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recommendations => 'Recommendations';
 
   @override
+  String get exportPdf => 'Export PDF';
+
+  @override
+  String get pdfReportTitle => 'Storage Usage Report';
+
+  @override
+  String get generatedAt => 'Generated at';
+
+  @override
+  String get pdfExportFailed => 'Failed to export PDF';
+
+  @override
   String get tipOptimizeDropboxTitle => 'Optimize Dropbox';
 
   @override
