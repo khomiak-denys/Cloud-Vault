@@ -262,8 +262,8 @@ class ApiRepository {
 
   Future<ApiStorageUsageReport> storageUsageReport() async {
     final json = await _client.getJson('/analytics/storage-usage');
-    final totals = json['totals'] is Map<String, dynamic>
-        ? json['totals'] as Map<String, dynamic>
+    final totals = json['totals'] is Map
+        ? Map<String, dynamic>.from(json['totals'] as Map)
         : null;
     final list = json['connections'] is List
         ? (json['connections'] as List)
