@@ -73,14 +73,13 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
           .map(mapConnectionToVaultItem)
           .toList();
       final mappedRecentFiles = files.map(mapApiFileToRecentFileItem).toList();
-      final totalSource = usage.isNotEmpty ? usage : enrichedConnections;
       final totalUsedBytes = usageReport.usedBytes ??
-          totalSource.fold<double>(
+          enrichedConnections.fold<double>(
             0,
             (acc, connection) => acc + connection.usedBytes,
           );
       final totalBytes = usageReport.totalBytes ??
-          totalSource.fold<double>(
+          enrichedConnections.fold<double>(
             0,
             (acc, connection) => acc + connection.totalBytes,
           );
@@ -202,11 +201,28 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
       for (final item in usage)
         if (item.providerId.isNotEmpty) item.providerId.toLowerCase(): item,
     };
+    final connectionProviderCounts = <String, int>{};
+    for (final connection in connections) {
+      if (connection.providerId.isEmpty) continue;
+      final key = connection.providerId.toLowerCase();
+      connectionProviderCounts[key] =
+          (connectionProviderCounts[key] ?? 0) + 1;
+    }
+    final usageProviderCounts = <String, int>{};
+    for (final item in usage) {
+      if (item.providerId.isEmpty) continue;
+      final key = item.providerId.toLowerCase();
+      usageProviderCounts[key] = (usageProviderCounts[key] ?? 0) + 1;
+    }
 
     return connections.map((connection) {
+      final providerIdKey = connection.providerId.toLowerCase();
+      final canFallbackByProvider = providerIdKey.isNotEmpty &&
+          (connectionProviderCounts[providerIdKey] ?? 0) == 1 &&
+          (usageProviderCounts[providerIdKey] ?? 0) == 1;
       final matched = usageByKey[key(connection)] ??
           usageById[connection.id.toLowerCase()] ??
-          usageByProvider[connection.providerId.toLowerCase()];
+          (canFallbackByProvider ? usageByProvider[providerIdKey] : null);
 
       if (matched == null) return connection;
 
