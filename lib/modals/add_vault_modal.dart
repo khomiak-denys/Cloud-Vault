@@ -11,13 +11,13 @@ import '../theme/app_theme_colors.dart';
 import '../utils/interaction_styles.dart';
 import '../widgets/add_vault_option_tile.dart';
 
-Future<void> showAddVaultModal(BuildContext context) async {
+Future<bool> showAddVaultModal(BuildContext context) async {
   final l10n = AppLocalizations.of(context)!;
   final colors = AppThemeColors.of(context);
   const primaryBtnBg = Color(0xFF2662E7);
   const primaryBtnFg = Color(0xFFEAF2FF);
 
-  await showGeneralDialog<void>(
+  final result = await showGeneralDialog<bool>(
     context: context,
     barrierLabel: 'Add vault',
     barrierDismissible: true,
@@ -187,7 +187,7 @@ Future<void> showAddVaultModal(BuildContext context) async {
                                               }
 
                                               if (context.mounted) {
-                                                Navigator.of(context).pop();
+                                                Navigator.of(context).pop(true);
                                               }
                                             } on ApiException catch (e) {
                                               if (!context.mounted) return;
@@ -248,6 +248,8 @@ Future<void> showAddVaultModal(BuildContext context) async {
       );
     },
   );
+
+  return result ?? false;
 }
 
 String? _providerIdForTitle(String title) {
