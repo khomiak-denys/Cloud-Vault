@@ -207,15 +207,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         padding: const EdgeInsets.all(16),
                         child: Column(
                           children: [
-                            Align(
-                              alignment: Alignment.centerRight,
-                              child: OutlinedButton.icon(
-                                onPressed: _usageItems.isEmpty ? null : _exportPdfReport,
-                                icon: const Icon(Icons.picture_as_pdf_outlined),
-                                label: Text(l10n.exportPdf),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
                             Row(
                               children: [
                                 Expanded(
@@ -346,6 +337,28 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                           ),
                                         );
                                       }).toList(),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            SizedBox(
+                              width: double.infinity,
+                              child: TextButton.icon(
+                                onPressed: _usageItems.isEmpty ? null : _exportPdfReport,
+                                icon: const Icon(Icons.picture_as_pdf_outlined),
+                                label: Text(l10n.exportPdf),
+                                style: TextButton.styleFrom(
+                                  backgroundColor: colors.secondaryButtonBackground,
+                                  foregroundColor: colors.secondaryButtonForeground,
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(14),
+                                  ),
+                                  overlayColor: Colors.transparent,
+                                  textStyle: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
                               ),
                             ),
                           ],
