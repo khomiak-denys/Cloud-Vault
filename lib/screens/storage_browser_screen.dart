@@ -240,20 +240,20 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
-                    Row(
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 8,
                       children: [
                         OutlinedButton.icon(
                           onPressed: _currentPath == _rootPath ? null : _goUp,
                           icon: const Icon(Icons.drive_file_move_outline),
                           label: Text(l10n.storageBrowserUp),
                         ),
-                        const SizedBox(width: 8),
                         OutlinedButton.icon(
                           onPressed: _onCreateFolder,
                           icon: const Icon(Icons.create_new_folder_outlined),
                           label: Text(l10n.storageBrowserNewFolder),
                         ),
-                        const SizedBox(width: 8),
                         OutlinedButton.icon(
                           onPressed: _onUpload,
                           icon: const Icon(Icons.upload_file_outlined),
@@ -397,14 +397,16 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
                                                 item,
                                                 onActionTap: _onFileAction,
                                               ),
-                                      trailing: IconButton(
-                                        icon: Icon(Icons.more_vert, color: colors.hintText),
-                                        onPressed: () => showFileActionsModal(
-                                          context,
-                                          item,
-                                          onActionTap: _onFileAction,
-                                        ),
-                                      ),
+                                      trailing: isFolder
+                                          ? null
+                                          : IconButton(
+                                              icon: Icon(Icons.more_vert, color: colors.hintText),
+                                              onPressed: () => showFileActionsModal(
+                                                context,
+                                                item,
+                                                onActionTap: _onFileAction,
+                                              ),
+                                            ),
                                     ),
                                   ),
                                 );
