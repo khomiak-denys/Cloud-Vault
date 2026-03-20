@@ -423,7 +423,7 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
   String _apiErrorMessage(ApiException e) {
     final l10n = AppLocalizations.of(context)!;
     final status = e.statusCode?.toString() ?? '-';
-    return l10n.storageBrowserApiError(status, e.message);
+    return l10n.storageBrowserApiError(e.message, status);
   }
 
   List<RecentFileItem> _applyCategoryFilter(List<RecentFileItem> files) {
