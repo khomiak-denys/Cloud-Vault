@@ -504,9 +504,13 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
       return switch (_sort) {
         StorageBrowserSort.modifiedDesc => b.modifiedAt.compareTo(a.modifiedAt),
         StorageBrowserSort.sizeDesc => b.sizeBytes.compareTo(a.sizeBytes),
-        StorageBrowserSort.extensionAsc => _fileExtension(
-          a.title,
-        ).compareTo(_fileExtension(b.title)),
+        StorageBrowserSort.extensionAsc => () {
+          final extensionCompare = _fileExtension(
+            a.title,
+          ).compareTo(_fileExtension(b.title));
+          if (extensionCompare != 0) return extensionCompare;
+          return a.title.toLowerCase().compareTo(b.title.toLowerCase());
+        }(),
       };
     });
     return sorted;
@@ -557,11 +561,11 @@ class _PathChip extends StatelessWidget {
     final colors = AppThemeColors.of(context);
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: InkWell(
-        onTap: onTap,
+      child: Material(
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(999),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        clipBehavior: Clip.antiAlias,
+        child: Ink(
           decoration: BoxDecoration(
             color: isActive
                 ? colors.accent.withValues(alpha: 0.16)
@@ -571,11 +575,18 @@ class _PathChip extends StatelessWidget {
               color: isActive ? colors.accent : colors.cardBorder,
             ),
           ),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: isActive ? colors.accent : colors.secondaryText,
-              fontWeight: FontWeight.w600,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(999),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: isActive ? colors.accent : colors.secondaryText,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
         ),
@@ -600,11 +611,11 @@ class _CategoryChip extends StatelessWidget {
     final colors = AppThemeColors.of(context);
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: InkWell(
-        onTap: onTap,
+      child: Material(
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(999),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        clipBehavior: Clip.antiAlias,
+        child: Ink(
           decoration: BoxDecoration(
             color: isActive
                 ? colors.accent.withValues(alpha: 0.16)
@@ -614,11 +625,18 @@ class _CategoryChip extends StatelessWidget {
               color: isActive ? colors.accent : colors.cardBorder,
             ),
           ),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: isActive ? colors.accent : colors.secondaryText,
-              fontWeight: FontWeight.w600,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(999),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: isActive ? colors.accent : colors.secondaryText,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
         ),
