@@ -152,6 +152,20 @@ class ApiRepository {
     return _parseFileItems(json);
   }
 
+  Future<List<ApiFileItem>> listFiles({
+    required String connectionId,
+    String path = '/',
+    int pageSize = 200,
+  }) async {
+    final payload = <String, dynamic>{
+      'connectionId': connectionId,
+      'path': path,
+      'pageSize': pageSize,
+    };
+    final json = await _client.postJson('/files/list', body: payload);
+    return _parseFileItems(json);
+  }
+
   Future<List<ApiFileItem>> searchFiles(
     String query, {
     int pageSize = 20,
@@ -247,6 +261,21 @@ class ApiRepository {
     await _client.postJson(
       '/files/delete',
       body: <String, dynamic>{'connectionId': connectionId, 'fileId': fileId},
+    );
+  }
+
+  Future<void> createFolder({
+    required String connectionId,
+    required String parentPath,
+    required String name,
+  }) async {
+    await _client.postJson(
+      '/files/folders/create',
+      body: <String, dynamic>{
+        'connectionId': connectionId,
+        'parentPath': parentPath,
+        'name': name,
+      },
     );
   }
 
