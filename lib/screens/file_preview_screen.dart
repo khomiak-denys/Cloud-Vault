@@ -34,7 +34,10 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
   @override
   void initState() {
     super.initState();
-    _loadPreview();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _loadPreview();
+    });
   }
 
   @override
@@ -86,12 +89,18 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
       }
 
       if (kind == _PreviewKind.video) {
+        VideoPlayerController? controller;
+        var initialized = false;
         try {
-          final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+          controller = VideoPlayerController.networkUrl(Uri.parse(url));
           await controller.initialize();
           await controller.setLooping(true);
+          initialized = true;
           _videoController = controller;
         } catch (_) {
+          if (!initialized) {
+            await controller?.dispose();
+          }
           _errorMessage = l10n.filePreviewVideoInitFailed;
         }
       }
