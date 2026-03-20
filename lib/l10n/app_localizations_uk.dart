@@ -379,7 +379,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get storageBrowserCreateFolderFailed => 'Не вдалося створити папку';
 
   @override
-  String storageBrowserApiError(String status, String message) {
+  String storageBrowserApiError(Object message, Object status) {
     return 'Помилка API: $status $message';
   }
 }

@@ -378,7 +378,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get storageBrowserCreateFolderFailed => 'Failed to create folder';
 
   @override
-  String storageBrowserApiError(String status, String message) {
+  String storageBrowserApiError(Object message, Object status) {
     return 'API error: $status $message';
   }
 }

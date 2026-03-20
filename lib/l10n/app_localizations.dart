@@ -822,7 +822,7 @@ abstract class AppLocalizations {
   ///
   /// In en, this message translates to:
   /// **'API error: {status} {message}'**
-  String storageBrowserApiError(String status, String message);
+  String storageBrowserApiError(Object message, Object status);
 }
 
 class _AppLocalizationsDelegate

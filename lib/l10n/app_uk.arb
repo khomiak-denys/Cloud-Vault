@@ -124,5 +124,5 @@
   ,"storageBrowserLoadFailed": "Не вдалося завантажити папку"
   ,"storageBrowserCreateFolderFailed": "Не вдалося створити папку"
   ,"storageBrowserApiError": "Помилка API: {status} {message}"
-  ,"@storageBrowserApiError": {"placeholders": {"status": {"type": "String"}, "message": {"type": "String"}}}
+  ,"@@storageBrowserApiError": {"placeholders": {"status": {"type": "String"}, "message": {"type": "String"}}}
 }
