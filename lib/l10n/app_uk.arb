@@ -111,4 +111,18 @@
   ,"authTerms": "умовами використання"
   ,"authAnd": "та"
   ,"authPrivacyPolicy": "політикою конфіденційності"
+  ,"storageBrowserRoot": "Корінь"
+  ,"storageBrowserUp": "Вгору"
+  ,"storageBrowserNewFolder": "Нова папка"
+  ,"storageBrowserUpload": "Завантажити"
+  ,"storageBrowserEmptyFolder": "Папка порожня"
+  ,"storageBrowserCreateFolderTitle": "Створити папку"
+  ,"storageBrowserCreateFolderHint": "Назва папки"
+  ,"storageBrowserCreateFolderAction": "Створити"
+  ,"storageBrowserFolderCreated": "Папку створено"
+  ,"storageBrowserUploadNotConfigured": "Завантаження ще не налаштовано"
+  ,"storageBrowserLoadFailed": "Не вдалося завантажити папку"
+  ,"storageBrowserCreateFolderFailed": "Не вдалося створити папку"
+  ,"storageBrowserApiError": "Помилка API: {status} {message}"
+  ,"@@storageBrowserApiError": {"placeholders": {"status": {"type": "String"}, "message": {"type": "String"}}}
 }

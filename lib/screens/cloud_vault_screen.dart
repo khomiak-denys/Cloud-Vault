@@ -9,6 +9,7 @@ import '../modals/add_vault_modal.dart';
 import '../modals/file_actions_modal.dart';
 import '../models/recent_file_item.dart';
 import '../models/vault_item.dart';
+import '../screens/storage_browser_screen.dart';
 import '../utils/tab_navigation.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/dashboard/dashboard_recent_files_section.dart';
@@ -166,6 +167,15 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
                         onAddTap: () async {
                           await showAddVaultModal(context);
                           await _load(forceRefresh: true);
+                        },
+                        onStorageTap: (storage) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => StorageBrowserScreen(
+                                storage: storage,
+                              ),
+                            ),
+                          );
                         },
                       ),
                       if (_isLoading)

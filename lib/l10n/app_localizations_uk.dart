@@ -340,4 +340,46 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get authPrivacyPolicy => 'політикою конфіденційності';
+
+  @override
+  String get storageBrowserRoot => 'Корінь';
+
+  @override
+  String get storageBrowserUp => 'Вгору';
+
+  @override
+  String get storageBrowserNewFolder => 'Нова папка';
+
+  @override
+  String get storageBrowserUpload => 'Завантажити';
+
+  @override
+  String get storageBrowserEmptyFolder => 'Папка порожня';
+
+  @override
+  String get storageBrowserCreateFolderTitle => 'Створити папку';
+
+  @override
+  String get storageBrowserCreateFolderHint => 'Назва папки';
+
+  @override
+  String get storageBrowserCreateFolderAction => 'Створити';
+
+  @override
+  String get storageBrowserFolderCreated => 'Папку створено';
+
+  @override
+  String get storageBrowserUploadNotConfigured =>
+      'Завантаження ще не налаштовано';
+
+  @override
+  String get storageBrowserLoadFailed => 'Не вдалося завантажити папку';
+
+  @override
+  String get storageBrowserCreateFolderFailed => 'Не вдалося створити папку';
+
+  @override
+  String storageBrowserApiError(Object message, Object status) {
+    return 'Помилка API: $status $message';
+  }
 }

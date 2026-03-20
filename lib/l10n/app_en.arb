@@ -111,4 +111,18 @@
   ,"authTerms": "terms of use"
   ,"authAnd": "and"
   ,"authPrivacyPolicy": "privacy policy"
+  ,"storageBrowserRoot": "Root"
+  ,"storageBrowserUp": "Up"
+  ,"storageBrowserNewFolder": "New folder"
+  ,"storageBrowserUpload": "Upload"
+  ,"storageBrowserEmptyFolder": "Folder is empty"
+  ,"storageBrowserCreateFolderTitle": "Create folder"
+  ,"storageBrowserCreateFolderHint": "Folder name"
+  ,"storageBrowserCreateFolderAction": "Create"
+  ,"storageBrowserFolderCreated": "Folder created"
+  ,"storageBrowserUploadNotConfigured": "Upload is not configured yet"
+  ,"storageBrowserLoadFailed": "Failed to load folder"
+  ,"storageBrowserCreateFolderFailed": "Failed to create folder"
+  ,"storageBrowserApiError": "API error: {status} {message}"
+  ,"@@storageBrowserApiError": {"placeholders": {"status": {"type": "String"}, "message": {"type": "String"}}}
 }
