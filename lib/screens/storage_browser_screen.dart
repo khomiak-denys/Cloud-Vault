@@ -50,7 +50,9 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
         path: requestedPath,
       );
 
-      if (!mounted || requestId != _loadRequestId || requestedPath != _currentPath) {
+      if (!mounted ||
+          requestId != _loadRequestId ||
+          requestedPath != _currentPath) {
         return;
       }
 
@@ -58,14 +60,18 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
         _items = files.map(mapApiFileToRecentFileItem).toList();
       });
     } on ApiException catch (e) {
-      if (!mounted || requestId != _loadRequestId || requestedPath != _currentPath) {
+      if (!mounted ||
+          requestId != _loadRequestId ||
+          requestedPath != _currentPath) {
         return;
       }
 
       _showSnack(_apiErrorMessage(e));
       setState(() => _items = const []);
     } catch (_) {
-      if (!mounted || requestId != _loadRequestId || requestedPath != _currentPath) {
+      if (!mounted ||
+          requestId != _loadRequestId ||
+          requestedPath != _currentPath) {
         return;
       }
 
@@ -229,10 +235,12 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
                           ),
                           ...pathParts.asMap().entries.map((entry) {
                             final part = entry.value;
-                            final partPath = '/${pathParts.take(entry.key + 1).join('/')}';
+                            final partPath =
+                                '/${pathParts.take(entry.key + 1).join('/')}';
                             return _PathChip(
                               label: part,
-                              isActive: _normalizePath(partPath) == _currentPath,
+                              isActive:
+                                  _normalizePath(partPath) == _currentPath,
                               onTap: () => _goToPath(partPath),
                             );
                           }),
@@ -272,22 +280,31 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
                                 _CategoryChip(
                                   label: l10n.all,
                                   isActive: _category == SearchCategory.all,
-                                  onTap: () => setState(() => _category = SearchCategory.all),
+                                  onTap: () => setState(
+                                    () => _category = SearchCategory.all,
+                                  ),
                                 ),
                                 _CategoryChip(
                                   label: l10n.documents,
-                                  isActive: _category == SearchCategory.documents,
-                                  onTap: () => setState(() => _category = SearchCategory.documents),
+                                  isActive:
+                                      _category == SearchCategory.documents,
+                                  onTap: () => setState(
+                                    () => _category = SearchCategory.documents,
+                                  ),
                                 ),
                                 _CategoryChip(
                                   label: l10n.images,
                                   isActive: _category == SearchCategory.images,
-                                  onTap: () => setState(() => _category = SearchCategory.images),
+                                  onTap: () => setState(
+                                    () => _category = SearchCategory.images,
+                                  ),
                                 ),
                                 _CategoryChip(
                                   label: l10n.videos,
                                   isActive: _category == SearchCategory.videos,
-                                  onTap: () => setState(() => _category = SearchCategory.videos),
+                                  onTap: () => setState(
+                                    () => _category = SearchCategory.videos,
+                                  ),
                                 ),
                               ],
                             ),
@@ -315,7 +332,10 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
                           ],
                           child: Padding(
                             padding: const EdgeInsets.all(8),
-                            child: Icon(Icons.sort_rounded, color: colors.secondaryText),
+                            child: Icon(
+                              Icons.sort_rounded,
+                              color: colors.secondaryText,
+                            ),
                           ),
                         ),
                       ],
@@ -350,12 +370,19 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
                             )
                           : ListView.separated(
                               physics: const AlwaysScrollableScrollPhysics(),
-                              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                              padding: const EdgeInsets.fromLTRB(
+                                16,
+                                12,
+                                16,
+                                16,
+                              ),
                               itemCount: sorted.length,
-                              separatorBuilder: (context, index) => const SizedBox(height: 10),
+                              separatorBuilder: (context, index) =>
+                                  const SizedBox(height: 10),
                               itemBuilder: (context, index) {
                                 final item = sorted[index];
-                                final isFolder = item.kind.toLowerCase() == 'folder';
+                                final isFolder =
+                                    item.kind.toLowerCase() == 'folder';
 
                                 return Material(
                                   color: Colors.transparent,
@@ -365,7 +392,9 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
                                     decoration: BoxDecoration(
                                       color: colors.cardBackground,
                                       borderRadius: BorderRadius.circular(14),
-                                      border: Border.all(color: colors.cardBorder),
+                                      border: Border.all(
+                                        color: colors.cardBorder,
+                                      ),
                                     ),
                                     child: ListTile(
                                       leading: Icon(
@@ -388,24 +417,30 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
                                             : '${item.modifiedLabel} - ${item.sizeLabel}',
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(color: colors.secondaryText),
+                                        style: TextStyle(
+                                          color: colors.secondaryText,
+                                        ),
                                       ),
                                       onTap: isFolder
                                           ? () => _openFolder(item)
                                           : () => showFileActionsModal(
-                                                context,
-                                                item,
-                                                onActionTap: _onFileAction,
-                                              ),
+                                              context,
+                                              item,
+                                              onActionTap: _onFileAction,
+                                            ),
                                       trailing: isFolder
                                           ? null
                                           : IconButton(
-                                              icon: Icon(Icons.more_vert, color: colors.hintText),
-                                              onPressed: () => showFileActionsModal(
-                                                context,
-                                                item,
-                                                onActionTap: _onFileAction,
+                                              icon: Icon(
+                                                Icons.more_vert,
+                                                color: colors.hintText,
                                               ),
+                                              onPressed: () =>
+                                                  showFileActionsModal(
+                                                    context,
+                                                    item,
+                                                    onActionTap: _onFileAction,
+                                                  ),
                                             ),
                                     ),
                                   ),
@@ -433,9 +468,27 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
       final extension = _fileExtension(file.title);
       return switch (_category) {
         SearchCategory.all => true,
-        SearchCategory.documents => ['pptx', 'xlsx', 'pdf', 'doc', 'docx', 'txt'].contains(extension),
-        SearchCategory.images => ['jpg', 'jpeg', 'png', 'gif', 'webp'].contains(extension),
-        SearchCategory.videos => ['mp4', 'mov', 'avi', 'mkv'].contains(extension),
+        SearchCategory.documents => [
+          'pptx',
+          'xlsx',
+          'pdf',
+          'doc',
+          'docx',
+          'txt',
+        ].contains(extension),
+        SearchCategory.images => [
+          'jpg',
+          'jpeg',
+          'png',
+          'gif',
+          'webp',
+        ].contains(extension),
+        SearchCategory.videos => [
+          'mp4',
+          'mov',
+          'avi',
+          'mkv',
+        ].contains(extension),
       };
     }).toList();
   }
@@ -451,17 +504,18 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
       return switch (_sort) {
         StorageBrowserSort.modifiedDesc => b.modifiedAt.compareTo(a.modifiedAt),
         StorageBrowserSort.sizeDesc => b.sizeBytes.compareTo(a.sizeBytes),
-        StorageBrowserSort.extensionAsc => _fileExtension(a.title).compareTo(_fileExtension(b.title)),
+        StorageBrowserSort.extensionAsc => _fileExtension(
+          a.title,
+        ).compareTo(_fileExtension(b.title)),
       };
     });
     return sorted;
   }
 
   List<String> _pathParts(String path) {
-    return _normalizePath(path)
-        .split('/')
-        .where((part) => part.trim().isNotEmpty)
-        .toList();
+    return _normalizePath(
+      path,
+    ).split('/').where((part) => part.trim().isNotEmpty).toList();
   }
 
   String _parentPath(String path) {
@@ -474,9 +528,7 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
     final trimmed = path.trim();
     if (trimmed.isEmpty || trimmed == _rootPath) return _rootPath;
 
-    final compact = trimmed
-        .replaceAll('\\', '/')
-        .replaceAll(RegExp('/+'), '/');
+    final compact = trimmed.replaceAll('\\', '/').replaceAll(RegExp('/+'), '/');
 
     if (compact == _rootPath) return _rootPath;
     return compact.startsWith('/') ? compact : '/$compact';
@@ -511,7 +563,9 @@ class _PathChip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: isActive ? colors.accent.withValues(alpha: 0.16) : colors.cardBackground,
+            color: isActive
+                ? colors.accent.withValues(alpha: 0.16)
+                : colors.cardBackground,
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
               color: isActive ? colors.accent : colors.cardBorder,
@@ -552,7 +606,9 @@ class _CategoryChip extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           decoration: BoxDecoration(
-            color: isActive ? colors.accent.withValues(alpha: 0.16) : colors.cardBackground,
+            color: isActive
+                ? colors.accent.withValues(alpha: 0.16)
+                : colors.cardBackground,
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
               color: isActive ? colors.accent : colors.cardBorder,
