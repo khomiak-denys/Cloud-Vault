@@ -129,6 +129,7 @@
   ,"filePreviewFolderUnsupported": "Folder preview is not available"
   ,"filePreviewUnavailable": "Preview unavailable"
   ,"filePreviewOpenExternal": "Open externally"
+  ,"filePreviewOpenExternalFailed": "Failed to open externally"
   ,"filePreviewLoadFailed": "Failed to load preview"
   ,"filePreviewUnsupportedType": "This file type is not supported for in-app preview"
   ,"filePreviewPdfLoadFailed": "Failed to load PDF preview"

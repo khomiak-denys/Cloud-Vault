@@ -129,6 +129,7 @@
   ,"filePreviewFolderUnsupported": "Попередній перегляд папки недоступний"
   ,"filePreviewUnavailable": "Попередній перегляд недоступний"
   ,"filePreviewOpenExternal": "Відкрити зовні"
+  ,"filePreviewOpenExternalFailed": "Не вдалося відкрити зовні"
   ,"filePreviewLoadFailed": "Не вдалося завантажити попередній перегляд"
   ,"filePreviewUnsupportedType": "Цей тип файлу не підтримується для вбудованого перегляду"
   ,"filePreviewPdfLoadFailed": "Не вдалося завантажити PDF для перегляду"

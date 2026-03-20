@@ -848,6 +848,12 @@ abstract class AppLocalizations {
   /// **'Open externally'**
   String get filePreviewOpenExternal;
 
+  /// No description provided for @filePreviewOpenExternalFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to open externally'**
+  String get filePreviewOpenExternalFailed;
+
   /// No description provided for @filePreviewLoadFailed.
   ///
   /// In en, this message translates to:

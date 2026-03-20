@@ -373,7 +373,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
     }
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (!mounted) return;
-      _showSnack(l10n.filePreviewUnavailable);
+      _showSnack(l10n.filePreviewOpenExternalFailed);
     }
   }
 

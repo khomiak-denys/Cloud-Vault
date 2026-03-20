@@ -397,6 +397,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get filePreviewOpenExternal => 'Відкрити зовні';
 
   @override
+  String get filePreviewOpenExternalFailed => 'Не вдалося відкрити зовні';
+
+  @override
   String get filePreviewLoadFailed =>
       'Не вдалося завантажити попередній перегляд';
 

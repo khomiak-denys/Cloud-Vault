@@ -395,6 +395,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filePreviewOpenExternal => 'Open externally';
 
   @override
+  String get filePreviewOpenExternalFailed => 'Failed to open externally';
+
+  @override
   String get filePreviewLoadFailed => 'Failed to load preview';
 
   @override
