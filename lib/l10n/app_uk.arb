@@ -125,4 +125,16 @@
   ,"storageBrowserCreateFolderFailed": "Не вдалося створити папку"
   ,"storageBrowserApiError": "Помилка API: {status} {message}"
   ,"@@storageBrowserApiError": {"placeholders": {"status": {"type": "String"}, "message": {"type": "String"}}}
+  ,"filePreviewLoading": "Завантаження перегляду..."
+  ,"filePreviewFolderUnsupported": "Попередній перегляд папки недоступний"
+  ,"filePreviewUnavailable": "Попередній перегляд недоступний"
+  ,"filePreviewOpenExternal": "Відкрити зовні"
+  ,"filePreviewLoadFailed": "Не вдалося завантажити попередній перегляд"
+  ,"filePreviewUnsupportedType": "Цей тип файлу не підтримується для вбудованого перегляду"
+  ,"filePreviewPdfLoadFailed": "Не вдалося завантажити PDF для перегляду"
+  ,"filePreviewVideoInitFailed": "Не вдалося ініціалізувати перегляд відео"
+  ,"filePreviewPlay": "Відтворити"
+  ,"filePreviewPause": "Пауза"
+  ,"filePreviewApiError": "Помилка API: {status} {message}"
+  ,"@@filePreviewApiError": {"placeholders": {"status": {"type": "String"}, "message": {"type": "String"}}}
 }

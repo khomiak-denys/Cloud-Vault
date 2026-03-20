@@ -823,6 +823,72 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'API error: {status} {message}'**
   String storageBrowserApiError(Object message, Object status);
+
+  /// No description provided for @filePreviewLoading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading preview...'**
+  String get filePreviewLoading;
+
+  /// No description provided for @filePreviewFolderUnsupported.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder preview is not available'**
+  String get filePreviewFolderUnsupported;
+
+  /// No description provided for @filePreviewUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview unavailable'**
+  String get filePreviewUnavailable;
+
+  /// No description provided for @filePreviewOpenExternal.
+  ///
+  /// In en, this message translates to:
+  /// **'Open externally'**
+  String get filePreviewOpenExternal;
+
+  /// No description provided for @filePreviewLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load preview'**
+  String get filePreviewLoadFailed;
+
+  /// No description provided for @filePreviewUnsupportedType.
+  ///
+  /// In en, this message translates to:
+  /// **'This file type is not supported for in-app preview'**
+  String get filePreviewUnsupportedType;
+
+  /// No description provided for @filePreviewPdfLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load PDF preview'**
+  String get filePreviewPdfLoadFailed;
+
+  /// No description provided for @filePreviewVideoInitFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to initialize video preview'**
+  String get filePreviewVideoInitFailed;
+
+  /// No description provided for @filePreviewPlay.
+  ///
+  /// In en, this message translates to:
+  /// **'Play'**
+  String get filePreviewPlay;
+
+  /// No description provided for @filePreviewPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause'**
+  String get filePreviewPause;
+
+  /// No description provided for @filePreviewApiError.
+  ///
+  /// In en, this message translates to:
+  /// **'API error: {status} {message}'**
+  String filePreviewApiError(Object message, Object status);
 }
 
 class _AppLocalizationsDelegate

@@ -125,4 +125,16 @@
   ,"storageBrowserCreateFolderFailed": "Failed to create folder"
   ,"storageBrowserApiError": "API error: {status} {message}"
   ,"@@storageBrowserApiError": {"placeholders": {"status": {"type": "String"}, "message": {"type": "String"}}}
+  ,"filePreviewLoading": "Loading preview..."
+  ,"filePreviewFolderUnsupported": "Folder preview is not available"
+  ,"filePreviewUnavailable": "Preview unavailable"
+  ,"filePreviewOpenExternal": "Open externally"
+  ,"filePreviewLoadFailed": "Failed to load preview"
+  ,"filePreviewUnsupportedType": "This file type is not supported for in-app preview"
+  ,"filePreviewPdfLoadFailed": "Failed to load PDF preview"
+  ,"filePreviewVideoInitFailed": "Failed to initialize video preview"
+  ,"filePreviewPlay": "Play"
+  ,"filePreviewPause": "Pause"
+  ,"filePreviewApiError": "API error: {status} {message}"
+  ,"@@filePreviewApiError": {"placeholders": {"status": {"type": "String"}, "message": {"type": "String"}}}
 }
