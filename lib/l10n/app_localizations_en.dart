@@ -339,4 +339,46 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get authPrivacyPolicy => 'privacy policy';
+
+  @override
+  String get storageBrowserRoot => 'Root';
+
+  @override
+  String get storageBrowserUp => 'Up';
+
+  @override
+  String get storageBrowserNewFolder => 'New folder';
+
+  @override
+  String get storageBrowserUpload => 'Upload';
+
+  @override
+  String get storageBrowserEmptyFolder => 'Folder is empty';
+
+  @override
+  String get storageBrowserCreateFolderTitle => 'Create folder';
+
+  @override
+  String get storageBrowserCreateFolderHint => 'Folder name';
+
+  @override
+  String get storageBrowserCreateFolderAction => 'Create';
+
+  @override
+  String get storageBrowserFolderCreated => 'Folder created';
+
+  @override
+  String get storageBrowserUploadNotConfigured =>
+      'Upload is not configured yet';
+
+  @override
+  String get storageBrowserLoadFailed => 'Failed to load folder';
+
+  @override
+  String get storageBrowserCreateFolderFailed => 'Failed to create folder';
+
+  @override
+  String storageBrowserApiError(String status, String message) {
+    return 'API error: $status $message';
+  }
 }

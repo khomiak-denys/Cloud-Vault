@@ -1,4 +1,4 @@
-﻿import 'package:cloud_vault/l10n/app_localizations.dart';
+import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
 import '../api/api_exception.dart';
@@ -31,6 +31,7 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
   bool _isLoading = true;
   String _currentPath = _rootPath;
   List<RecentFileItem> _items = const [];
+  int _loadRequestId = 0;
 
   @override
   void initState() {
@@ -39,28 +40,40 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
   }
 
   Future<void> _load() async {
+    final requestedPath = _currentPath;
+    final requestId = ++_loadRequestId;
     setState(() => _isLoading = true);
 
     try {
       final files = await appApiRepository.listFiles(
         connectionId: widget.storage.id,
-        path: _currentPath,
+        path: requestedPath,
       );
 
-      if (!mounted) return;
+      if (!mounted || requestId != _loadRequestId || requestedPath != _currentPath) {
+        return;
+      }
+
       setState(() {
         _items = files.map(mapApiFileToRecentFileItem).toList();
       });
     } on ApiException catch (e) {
-      if (!mounted) return;
-      _showSnack('API error: ${e.statusCode ?? ''} ${e.message}'.trim());
+      if (!mounted || requestId != _loadRequestId || requestedPath != _currentPath) {
+        return;
+      }
+
+      _showSnack(_apiErrorMessage(e));
       setState(() => _items = const []);
     } catch (_) {
-      if (!mounted) return;
-      _showSnack('Failed to load folder');
+      if (!mounted || requestId != _loadRequestId || requestedPath != _currentPath) {
+        return;
+      }
+
+      final l10n = AppLocalizations.of(context)!;
+      _showSnack(l10n.storageBrowserLoadFailed);
       setState(() => _items = const []);
     } finally {
-      if (mounted) {
+      if (mounted && requestId == _loadRequestId) {
         setState(() => _isLoading = false);
       }
     }
@@ -84,30 +97,36 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
   }
 
   Future<void> _onCreateFolder() async {
+    final l10n = AppLocalizations.of(context)!;
     final controller = TextEditingController();
+
     final name = await showDialog<String>(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Create folder'),
+          title: Text(l10n.storageBrowserCreateFolderTitle),
           content: TextField(
             controller: controller,
             autofocus: true,
-            decoration: const InputDecoration(hintText: 'Folder name'),
+            decoration: InputDecoration(
+              hintText: l10n.storageBrowserCreateFolderHint,
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () => Navigator.of(context).pop(controller.text),
-              child: const Text('Create'),
+              child: Text(l10n.storageBrowserCreateFolderAction),
             ),
           ],
         );
       },
     );
+
+    controller.dispose();
 
     if (name == null || name.trim().isEmpty) return;
 
@@ -118,19 +137,21 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
         name: name.trim(),
       );
       if (!mounted) return;
-      _showSnack('Folder created');
+
+      _showSnack(l10n.storageBrowserFolderCreated);
       await _load();
     } on ApiException catch (e) {
       if (!mounted) return;
-      _showSnack('API error: ${e.statusCode ?? ''} ${e.message}'.trim());
+      _showSnack(_apiErrorMessage(e));
     } catch (_) {
       if (!mounted) return;
-      _showSnack('Failed to create folder');
+      _showSnack(l10n.storageBrowserCreateFolderFailed);
     }
   }
 
   void _onUpload() {
-    _showSnack('Upload is not configured yet');
+    final l10n = AppLocalizations.of(context)!;
+    _showSnack(l10n.storageBrowserUploadNotConfigured);
   }
 
   Future<void> _onFileAction(String actionId, RecentFileItem file) async {
@@ -202,12 +223,13 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
                       child: Row(
                         children: [
                           _PathChip(
-                            label: 'Root',
+                            label: l10n.storageBrowserRoot,
                             isActive: _currentPath == _rootPath,
                             onTap: () => _goToPath(_rootPath),
                           ),
-                          ...pathParts.map((part) {
-                            final partPath = '/${pathParts.take(pathParts.indexOf(part) + 1).join('/')}';
+                          ...pathParts.asMap().entries.map((entry) {
+                            final part = entry.value;
+                            final partPath = '/${pathParts.take(entry.key + 1).join('/')}';
                             return _PathChip(
                               label: part,
                               isActive: _normalizePath(partPath) == _currentPath,
@@ -223,19 +245,19 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
                         OutlinedButton.icon(
                           onPressed: _currentPath == _rootPath ? null : _goUp,
                           icon: const Icon(Icons.drive_file_move_outline),
-                          label: const Text('Up'),
+                          label: Text(l10n.storageBrowserUp),
                         ),
                         const SizedBox(width: 8),
                         OutlinedButton.icon(
                           onPressed: _onCreateFolder,
                           icon: const Icon(Icons.create_new_folder_outlined),
-                          label: const Text('New folder'),
+                          label: Text(l10n.storageBrowserNewFolder),
                         ),
                         const SizedBox(width: 8),
                         OutlinedButton.icon(
                           onPressed: _onUpload,
                           icon: const Icon(Icons.upload_file_outlined),
-                          label: const Text('Upload'),
+                          label: Text(l10n.storageBrowserUpload),
                         ),
                       ],
                     ),
@@ -315,7 +337,7 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
                                   height: 220,
                                   child: Center(
                                     child: Text(
-                                      'Folder is empty',
+                                      l10n.storageBrowserEmptyFolder,
                                       style: TextStyle(
                                         color: colors.mutedText,
                                         fontSize: 16,
@@ -335,48 +357,53 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
                                 final item = sorted[index];
                                 final isFolder = item.kind.toLowerCase() == 'folder';
 
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    color: colors.cardBackground,
-                                    borderRadius: BorderRadius.circular(14),
-                                    border: Border.all(color: colors.cardBorder),
-                                  ),
-                                  child: ListTile(
-                                    leading: Icon(
-                                      item.icon,
-                                      color: item.iconColor,
-                                      size: 28,
+                                return Material(
+                                  color: Colors.transparent,
+                                  borderRadius: BorderRadius.circular(14),
+                                  clipBehavior: Clip.antiAlias,
+                                  child: Ink(
+                                    decoration: BoxDecoration(
+                                      color: colors.cardBackground,
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(color: colors.cardBorder),
                                     ),
-                                    title: Text(
-                                      item.title,
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
-                                        color: colors.primaryText,
-                                        fontWeight: FontWeight.w700,
+                                    child: ListTile(
+                                      leading: Icon(
+                                        item.icon,
+                                        color: item.iconColor,
+                                        size: 28,
                                       ),
-                                    ),
-                                    subtitle: Text(
-                                      isFolder
-                                          ? item.pathLabel
-                                          : '${item.modifiedLabel} - ${item.sizeLabel}',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(color: colors.secondaryText),
-                                    ),
-                                    onTap: isFolder
-                                        ? () => _openFolder(item)
-                                        : () => showFileActionsModal(
-                                              context,
-                                              item,
-                                              onActionTap: _onFileAction,
-                                            ),
-                                    trailing: IconButton(
-                                      icon: Icon(Icons.more_vert, color: colors.hintText),
-                                      onPressed: () => showFileActionsModal(
-                                        context,
-                                        item,
-                                        onActionTap: _onFileAction,
+                                      title: Text(
+                                        item.title,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          color: colors.primaryText,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                      subtitle: Text(
+                                        isFolder
+                                            ? item.pathLabel
+                                            : '${item.modifiedLabel} - ${item.sizeLabel}',
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(color: colors.secondaryText),
+                                      ),
+                                      onTap: isFolder
+                                          ? () => _openFolder(item)
+                                          : () => showFileActionsModal(
+                                                context,
+                                                item,
+                                                onActionTap: _onFileAction,
+                                              ),
+                                      trailing: IconButton(
+                                        icon: Icon(Icons.more_vert, color: colors.hintText),
+                                        onPressed: () => showFileActionsModal(
+                                          context,
+                                          item,
+                                          onActionTap: _onFileAction,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -389,6 +416,12 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
         ),
       ),
     );
+  }
+
+  String _apiErrorMessage(ApiException e) {
+    final l10n = AppLocalizations.of(context)!;
+    final status = e.statusCode?.toString() ?? '-';
+    return l10n.storageBrowserApiError(status, e.message);
   }
 
   List<RecentFileItem> _applyCategoryFilter(List<RecentFileItem> files) {

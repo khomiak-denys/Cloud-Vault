@@ -20,19 +20,23 @@ class VaultCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final colors = AppThemeColors.of(context);
 
-    return InkWell(
-      onTap: onTap,
+    return Material(
+      color: Colors.transparent,
       borderRadius: BorderRadius.circular(22),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 2),
-        padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
+      clipBehavior: Clip.antiAlias,
+      child: Ink(
         decoration: BoxDecoration(
           color: colors.cardBackground,
           borderRadius: BorderRadius.circular(22),
           border: Border.all(color: colors.cardBorder),
         ),
-        child: Column(
-          children: [
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(22),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
+            child: Column(
+              children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -101,7 +105,9 @@ class VaultCard extends StatelessWidget {
             ),
             const SizedBox(height: 12),
             ProgressTrack(value: item.progress, color: item.progressColor),
-          ],
+              ],
+            ),
+          ),
         ),
       ),
     );

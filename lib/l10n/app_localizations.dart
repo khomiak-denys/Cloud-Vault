@@ -745,6 +745,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'privacy policy'**
   String get authPrivacyPolicy;
+
+  /// No description provided for @storageBrowserRoot.
+  ///
+  /// In en, this message translates to:
+  /// **'Root'**
+  String get storageBrowserRoot;
+
+  /// No description provided for @storageBrowserUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Up'**
+  String get storageBrowserUp;
+
+  /// No description provided for @storageBrowserNewFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'New folder'**
+  String get storageBrowserNewFolder;
+
+  /// No description provided for @storageBrowserUpload.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload'**
+  String get storageBrowserUpload;
+
+  /// No description provided for @storageBrowserEmptyFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder is empty'**
+  String get storageBrowserEmptyFolder;
+
+  /// No description provided for @storageBrowserCreateFolderTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Create folder'**
+  String get storageBrowserCreateFolderTitle;
+
+  /// No description provided for @storageBrowserCreateFolderHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder name'**
+  String get storageBrowserCreateFolderHint;
+
+  /// No description provided for @storageBrowserCreateFolderAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Create'**
+  String get storageBrowserCreateFolderAction;
+
+  /// No description provided for @storageBrowserFolderCreated.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder created'**
+  String get storageBrowserFolderCreated;
+
+  /// No description provided for @storageBrowserUploadNotConfigured.
+  ///
+  /// In en, this message translates to:
+  /// **'Upload is not configured yet'**
+  String get storageBrowserUploadNotConfigured;
+
+  /// No description provided for @storageBrowserLoadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load folder'**
+  String get storageBrowserLoadFailed;
+
+  /// No description provided for @storageBrowserCreateFolderFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to create folder'**
+  String get storageBrowserCreateFolderFailed;
+
+  /// No description provided for @storageBrowserApiError.
+  ///
+  /// In en, this message translates to:
+  /// **'API error: {status} {message}'**
+  String storageBrowserApiError(String status, String message);
 }
 
 class _AppLocalizationsDelegate
