@@ -25,6 +25,8 @@ class FilePreviewScreen extends StatefulWidget {
 }
 
 class _FilePreviewScreenState extends State<FilePreviewScreen> {
+  static const _maxPdfPreviewBytes = 25 * 1024 * 1024; // 25 MB
+
   bool _isLoading = true;
   String? _previewUrl;
   String? _errorMessage;
@@ -76,31 +78,40 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
       final kind = _resolveKind(widget.file);
 
       if (kind == _PreviewKind.pdf) {
-        try {
-          final response = await http.get(Uri.parse(url));
-          if (response.statusCode >= 200 && response.statusCode < 300) {
-            _pdfBytes = response.bodyBytes;
-          } else {
+        final fileSize = widget.file.sizeBytes;
+        final exceedsMaxSize =
+            fileSize > 0 && fileSize > _maxPdfPreviewBytes.toDouble();
+        if (exceedsMaxSize) {
+          _errorMessage = l10n.filePreviewPdfTooLarge;
+        } else {
+          try {
+            final response = await http.get(Uri.parse(url));
+            if (response.statusCode >= 200 && response.statusCode < 300) {
+              _pdfBytes = response.bodyBytes;
+            } else {
+              _errorMessage = l10n.filePreviewPdfLoadFailed;
+            }
+          } catch (_) {
             _errorMessage = l10n.filePreviewPdfLoadFailed;
           }
-        } catch (_) {
-          _errorMessage = l10n.filePreviewPdfLoadFailed;
         }
       }
 
       if (kind == _PreviewKind.video) {
-        VideoPlayerController? controller;
-        var initialized = false;
+        final previousController = _videoController;
+        final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+        _videoController = controller;
+        await previousController?.dispose();
+
         try {
-          controller = VideoPlayerController.networkUrl(Uri.parse(url));
           await controller.initialize();
+          if (!mounted) return;
           await controller.setLooping(true);
-          initialized = true;
-          _videoController = controller;
         } catch (_) {
-          if (!initialized) {
-            await controller?.dispose();
+          if (identical(_videoController, controller)) {
+            _videoController = null;
           }
+          await controller.dispose();
           _errorMessage = l10n.filePreviewVideoInitFailed;
         }
       }

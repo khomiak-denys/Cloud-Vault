@@ -132,6 +132,7 @@
   ,"filePreviewLoadFailed": "Failed to load preview"
   ,"filePreviewUnsupportedType": "This file type is not supported for in-app preview"
   ,"filePreviewPdfLoadFailed": "Failed to load PDF preview"
+  ,"filePreviewPdfTooLarge": "PDF is too large for in-app preview. Open externally."
   ,"filePreviewVideoInitFailed": "Failed to initialize video preview"
   ,"filePreviewPlay": "Play"
   ,"filePreviewPause": "Pause"

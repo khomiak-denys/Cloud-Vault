@@ -409,6 +409,10 @@ class AppLocalizationsUk extends AppLocalizations {
       'Не вдалося завантажити PDF для перегляду';
 
   @override
+  String get filePreviewPdfTooLarge =>
+      'PDF завеликий для вбудованого перегляду. Відкрийте зовні.';
+
+  @override
   String get filePreviewVideoInitFailed =>
       'Не вдалося ініціалізувати перегляд відео';
 

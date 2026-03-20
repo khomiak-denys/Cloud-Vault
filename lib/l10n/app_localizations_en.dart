@@ -405,6 +405,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filePreviewPdfLoadFailed => 'Failed to load PDF preview';
 
   @override
+  String get filePreviewPdfTooLarge =>
+      'PDF is too large for in-app preview. Open externally.';
+
+  @override
   String get filePreviewVideoInitFailed => 'Failed to initialize video preview';
 
   @override

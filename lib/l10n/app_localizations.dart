@@ -866,6 +866,12 @@ abstract class AppLocalizations {
   /// **'Failed to load PDF preview'**
   String get filePreviewPdfLoadFailed;
 
+  /// No description provided for @filePreviewPdfTooLarge.
+  ///
+  /// In en, this message translates to:
+  /// **'PDF is too large for in-app preview. Open externally.'**
+  String get filePreviewPdfTooLarge;
+
   /// No description provided for @filePreviewVideoInitFailed.
   ///
   /// In en, this message translates to:
