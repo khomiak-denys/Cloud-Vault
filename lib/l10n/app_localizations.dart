@@ -872,6 +872,18 @@ abstract class AppLocalizations {
   /// **'PDF is too large for in-app preview. Open externally.'**
   String get filePreviewPdfTooLarge;
 
+  /// No description provided for @filePreviewDownloadTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview download timed out. Try opening externally.'**
+  String get filePreviewDownloadTimeout;
+
+  /// No description provided for @filePreviewBlockedUrlScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Blocked URL scheme for security.'**
+  String get filePreviewBlockedUrlScheme;
+
   /// No description provided for @filePreviewVideoInitFailed.
   ///
   /// In en, this message translates to:

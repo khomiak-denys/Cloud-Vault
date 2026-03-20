@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:cloud_vault/l10n/app_localizations.dart';
@@ -26,6 +27,7 @@ class FilePreviewScreen extends StatefulWidget {
 
 class _FilePreviewScreenState extends State<FilePreviewScreen> {
   static const _maxPdfPreviewBytes = 25 * 1024 * 1024; // 25 MB
+  static const _downloadTimeout = Duration(seconds: 20);
 
   bool _isLoading = true;
   String? _previewUrl;
@@ -74,6 +76,14 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
         });
         return;
       }
+      final uri = Uri.tryParse(url);
+      if (uri == null || !_isAllowedRemoteUri(uri)) {
+        setState(() {
+          _errorMessage = l10n.filePreviewBlockedUrlScheme;
+          _isLoading = false;
+        });
+        return;
+      }
 
       final kind = _resolveKind(widget.file);
 
@@ -84,22 +94,18 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
         if (exceedsMaxSize) {
           _errorMessage = l10n.filePreviewPdfTooLarge;
         } else {
-          try {
-            final response = await http.get(Uri.parse(url));
-            if (response.statusCode >= 200 && response.statusCode < 300) {
-              _pdfBytes = response.bodyBytes;
-            } else {
-              _errorMessage = l10n.filePreviewPdfLoadFailed;
-            }
-          } catch (_) {
-            _errorMessage = l10n.filePreviewPdfLoadFailed;
+          final bytes = await _downloadPdfWithLimit(uri);
+          if (bytes == null) {
+            _errorMessage ??= l10n.filePreviewPdfLoadFailed;
+          } else {
+            _pdfBytes = bytes;
           }
         }
       }
 
       if (kind == _PreviewKind.video) {
         final previousController = _videoController;
-        final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+        final controller = VideoPlayerController.networkUrl(uri);
         _videoController = controller;
         await previousController?.dispose();
 
@@ -361,10 +367,58 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
     if (url == null || url.isEmpty) return;
 
     final uri = Uri.tryParse(url);
-    if (uri == null ||
-        !await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+    if (uri == null || !_isAllowedRemoteUri(uri)) {
+      _showSnack(l10n.filePreviewBlockedUrlScheme);
+      return;
+    }
+    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (!mounted) return;
       _showSnack(l10n.filePreviewUnavailable);
+    }
+  }
+
+  bool _isAllowedRemoteUri(Uri uri) {
+    final scheme = uri.scheme.toLowerCase();
+    return scheme == 'http' || scheme == 'https';
+  }
+
+  Future<Uint8List?> _downloadPdfWithLimit(Uri uri) async {
+    final l10n = AppLocalizations.of(context)!;
+    final client = http.Client();
+    try {
+      final request = http.Request('GET', uri);
+      final response = await client.send(request).timeout(_downloadTimeout);
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return null;
+      }
+
+      final contentLength = response.contentLength;
+      if (contentLength != null && contentLength > _maxPdfPreviewBytes) {
+        _errorMessage = l10n.filePreviewPdfTooLarge;
+        await response.stream.drain<void>();
+        return null;
+      }
+
+      final bytesBuilder = BytesBuilder(copy: false);
+      var downloadedBytes = 0;
+
+      await for (final chunk in response.stream.timeout(_downloadTimeout)) {
+        downloadedBytes += chunk.length;
+        if (downloadedBytes > _maxPdfPreviewBytes) {
+          _errorMessage = l10n.filePreviewPdfTooLarge;
+          return null;
+        }
+        bytesBuilder.add(chunk);
+      }
+
+      return bytesBuilder.takeBytes();
+    } on TimeoutException {
+      _errorMessage = l10n.filePreviewDownloadTimeout;
+      return null;
+    } catch (_) {
+      return null;
+    } finally {
+      client.close();
     }
   }
 

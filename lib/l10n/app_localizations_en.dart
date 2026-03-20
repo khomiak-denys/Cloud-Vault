@@ -409,6 +409,13 @@ class AppLocalizationsEn extends AppLocalizations {
       'PDF is too large for in-app preview. Open externally.';
 
   @override
+  String get filePreviewDownloadTimeout =>
+      'Preview download timed out. Try opening externally.';
+
+  @override
+  String get filePreviewBlockedUrlScheme => 'Blocked URL scheme for security.';
+
+  @override
   String get filePreviewVideoInitFailed => 'Failed to initialize video preview';
 
   @override

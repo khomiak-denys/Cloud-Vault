@@ -413,6 +413,14 @@ class AppLocalizationsUk extends AppLocalizations {
       'PDF завеликий для вбудованого перегляду. Відкрийте зовні.';
 
   @override
+  String get filePreviewDownloadTimeout =>
+      'Тайм-аут завантаження попереднього перегляду. Спробуйте відкрити зовні.';
+
+  @override
+  String get filePreviewBlockedUrlScheme =>
+      'Схему URL заблоковано з міркувань безпеки.';
+
+  @override
   String get filePreviewVideoInitFailed =>
       'Не вдалося ініціалізувати перегляд відео';
 
