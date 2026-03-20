@@ -10,10 +10,12 @@ class DashboardStoragesSection extends StatelessWidget {
     super.key,
     required this.items,
     required this.onAddTap,
+    required this.onStorageTap,
   });
 
   final List<VaultItem> items;
   final VoidCallback onAddTap;
+  final ValueChanged<VaultItem> onStorageTap;
 
   @override
   Widget build(BuildContext context) {
@@ -68,7 +70,10 @@ class DashboardStoragesSection extends StatelessWidget {
                 .map(
                   (item) => Padding(
                     padding: const EdgeInsets.only(bottom: 2),
-                    child: VaultCard(item: item),
+                    child: VaultCard(
+                      item: item,
+                      onTap: () => onStorageTap(item),
+                    ),
                   ),
                 )
                 .toList(),
