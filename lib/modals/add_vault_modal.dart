@@ -4,6 +4,7 @@ import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../api/api_config.dart';
 import '../api/api_exception.dart';
 import '../data/app_services.dart';
 import '../data/provider_options_data.dart';
@@ -139,7 +140,9 @@ Future<bool> showAddVaultModal(BuildContext context) async {
                                             final option =
                                                 addVaultOptions[selectedIndex!];
                                             final providerId =
-                                                _providerIdForTitle(option.title);
+                                                _providerIdForTitle(
+                                                  option.title,
+                                                );
 
                                             if (providerId == null) {
                                               _showSnack(
@@ -150,12 +153,16 @@ Future<bool> showAddVaultModal(BuildContext context) async {
                                             }
 
                                             try {
+                                              final redirectUri =
+                                                  _connectRedirectUriForProvider(
+                                                    providerId,
+                                                  );
                                               final authorizeUrl =
                                                   await appApiRepository
                                                       .startProviderConnect(
                                                         providerId,
                                                         redirectUri:
-                                                            'cloudvault://oauth-callback',
+                                                            redirectUri,
                                                       );
 
                                               if (authorizeUrl == null ||
@@ -193,7 +200,8 @@ Future<bool> showAddVaultModal(BuildContext context) async {
                                               if (!context.mounted) return;
                                               _showSnack(
                                                 context,
-                                                'API error: ${e.statusCode ?? ''} ${e.message}'.trim(),
+                                                'API error: ${e.statusCode ?? ''} ${e.message}'
+                                                    .trim(),
                                               );
                                             } catch (_) {
                                               if (!context.mounted) return;
@@ -204,12 +212,14 @@ Future<bool> showAddVaultModal(BuildContext context) async {
                                             }
                                           },
                                     style: ButtonStyle(
-                                      backgroundColor: const WidgetStatePropertyAll(
-                                        primaryBtnBg,
-                                      ),
-                                      foregroundColor: const WidgetStatePropertyAll(
-                                        primaryBtnFg,
-                                      ),
+                                      backgroundColor:
+                                          const WidgetStatePropertyAll(
+                                            primaryBtnBg,
+                                          ),
+                                      foregroundColor:
+                                          const WidgetStatePropertyAll(
+                                            primaryBtnFg,
+                                          ),
                                       overlayColor: pressOnlyOverlay(
                                         const Color(0x33FFFFFF),
                                       ),
@@ -265,6 +275,20 @@ String? _providerIdForTitle(String title) {
     default:
       return null;
   }
+}
+
+String? _connectRedirectUriForProvider(String providerId) {
+  const oauthProviders = {'google-drive', 'dropbox', 'onedrive'};
+  if (!oauthProviders.contains(providerId)) {
+    return null;
+  }
+
+  final base = ApiConfig.baseUrl.endsWith('/')
+      ? ApiConfig.baseUrl
+      : '${ApiConfig.baseUrl}/';
+  return Uri.parse(
+    base,
+  ).resolve('providers/$providerId/connect/callback').toString();
 }
 
 void _showSnack(BuildContext context, String message) {
