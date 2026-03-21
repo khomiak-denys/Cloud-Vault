@@ -315,10 +315,14 @@ class ApiRepository {
 
   Future<void> createFolder({
     required String connectionId,
+    String? providerId,
     required String parentId,
     required String folderName,
   }) async {
-    final normalizedParentId = _normalizeStoragePath(parentId);
+    final normalizedParentId = _normalizeListPath(
+      parentId,
+      providerId: providerId,
+    );
     await _client.postJson(
       '/files/create-folder',
       body: <String, dynamic>{
