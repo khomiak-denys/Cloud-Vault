@@ -94,7 +94,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
         if (exceedsMaxSize) {
           _errorMessage = l10n.filePreviewPdfTooLarge;
         } else {
-          final bytes = await _downloadPdfWithLimit(uri);
+          final bytes = await _downloadPdfWithLimit(uri, l10n);
           if (bytes == null) {
             _errorMessage ??= l10n.filePreviewPdfLoadFailed;
           } else {
@@ -297,24 +297,27 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              FilledButton.tonalIcon(
-                onPressed: () {
-                  setState(() {
-                    if (controller.value.isPlaying) {
-                      controller.pause();
-                    } else {
-                      controller.play();
-                    }
-                  });
+              ValueListenableBuilder<VideoPlayerValue>(
+                valueListenable: controller,
+                builder: (context, value, child) {
+                  return FilledButton.tonalIcon(
+                    onPressed: () {
+                      if (value.isPlaying) {
+                        controller.pause();
+                      } else {
+                        controller.play();
+                      }
+                    },
+                    icon: Icon(
+                      value.isPlaying ? Icons.pause : Icons.play_arrow,
+                    ),
+                    label: Text(
+                      value.isPlaying
+                          ? l10n.filePreviewPause
+                          : l10n.filePreviewPlay,
+                    ),
+                  );
                 },
-                icon: Icon(
-                  controller.value.isPlaying ? Icons.pause : Icons.play_arrow,
-                ),
-                label: Text(
-                  controller.value.isPlaying
-                      ? l10n.filePreviewPause
-                      : l10n.filePreviewPlay,
-                ),
               ),
             ],
           ),
@@ -382,8 +385,10 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
     return scheme == 'http' || scheme == 'https';
   }
 
-  Future<Uint8List?> _downloadPdfWithLimit(Uri uri) async {
-    final l10n = AppLocalizations.of(context)!;
+  Future<Uint8List?> _downloadPdfWithLimit(
+    Uri uri,
+    AppLocalizations l10n,
+  ) async {
     final client = http.Client();
     try {
       final request = http.Request('GET', uri);
