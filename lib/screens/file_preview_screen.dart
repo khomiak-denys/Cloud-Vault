@@ -400,23 +400,46 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
       final contentLength = response.contentLength;
       if (contentLength != null && contentLength > _maxPdfPreviewBytes) {
         _errorMessage = l10n.filePreviewPdfTooLarge;
-        await response.stream.drain<void>();
         return null;
       }
 
       final bytesBuilder = BytesBuilder(copy: false);
       var downloadedBytes = 0;
+      final completer = Completer<Uint8List?>();
+      late final StreamSubscription<List<int>> subscription;
 
-      await for (final chunk in response.stream.timeout(_downloadTimeout)) {
-        downloadedBytes += chunk.length;
-        if (downloadedBytes > _maxPdfPreviewBytes) {
-          _errorMessage = l10n.filePreviewPdfTooLarge;
-          return null;
+      void completeOnce(Uint8List? value) {
+        if (!completer.isCompleted) {
+          completer.complete(value);
         }
-        bytesBuilder.add(chunk);
       }
 
-      return bytesBuilder.takeBytes();
+      subscription = response.stream
+          .timeout(_downloadTimeout)
+          .listen(
+            (chunk) {
+              downloadedBytes += chunk.length;
+              if (downloadedBytes > _maxPdfPreviewBytes) {
+                _errorMessage = l10n.filePreviewPdfTooLarge;
+                subscription.cancel();
+                completeOnce(null);
+                return;
+              }
+              bytesBuilder.add(chunk);
+            },
+            onError: (Object error, StackTrace stackTrace) {
+              if (error is TimeoutException) {
+                _errorMessage = l10n.filePreviewDownloadTimeout;
+              }
+              completeOnce(null);
+            },
+            onDone: () => completeOnce(bytesBuilder.takeBytes()),
+            cancelOnError: true,
+          );
+
+      final result = await completer.future;
+      await subscription.cancel();
+      return result;
     } on TimeoutException {
       _errorMessage = l10n.filePreviewDownloadTimeout;
       return null;

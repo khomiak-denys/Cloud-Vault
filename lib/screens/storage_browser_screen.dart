@@ -8,7 +8,7 @@ import '../data/file_actions_handler.dart';
 import '../models/recent_file_item.dart';
 import '../models/vault_item.dart';
 import '../modals/file_actions_modal.dart';
-import '../screens/file_preview_screen.dart';
+import 'file_preview_screen.dart';
 import '../theme/app_theme_colors.dart';
 import '../widgets/mobile_screen_shell.dart';
 import '../widgets/search/search_header.dart';
