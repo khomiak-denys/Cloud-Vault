@@ -163,7 +163,7 @@ class ApiRepository {
   Future<List<ApiFileItem>> listFiles({
     required String connectionId,
     String path = '/',
-    int pageSize = 100,
+    int pageSize = _maxFilesListPageSize,
   }) async {
     final normalizedPageSize = pageSize.clamp(1, _maxFilesListPageSize).toInt();
     final normalizedPath = _normalizeStoragePath(path);
