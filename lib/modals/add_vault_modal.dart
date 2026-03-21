@@ -4,14 +4,13 @@ import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../api/api_config.dart';
 import '../api/api_exception.dart';
 import '../data/app_services.dart';
 import '../data/provider_options_data.dart';
 import '../theme/app_theme_colors.dart';
 import '../utils/interaction_styles.dart';
 import '../widgets/add_vault_option_tile.dart';
-
-const _oauthCallbackBaseUrl = 'http://localhost:3000/v1/providers';
 
 Future<bool> showAddVaultModal(BuildContext context) async {
   final l10n = AppLocalizations.of(context)!;
@@ -279,18 +278,17 @@ String? _providerIdForTitle(String title) {
 }
 
 String? _connectRedirectUriForProvider(String providerId) {
-  switch (providerId) {
-    case 'google-drive':
-      return '$_oauthCallbackBaseUrl/google-drive/connect/callback';
-    case 'dropbox':
-      return '$_oauthCallbackBaseUrl/dropbox/connect/callback';
-    case 'onedrive':
-      return '$_oauthCallbackBaseUrl/onedrive/connect/callback';
-    case 'mega':
-      return null;
-    default:
-      return null;
+  const oauthProviders = {'google-drive', 'dropbox', 'onedrive'};
+  if (!oauthProviders.contains(providerId)) {
+    return null;
   }
+
+  final base = ApiConfig.baseUrl.endsWith('/')
+      ? ApiConfig.baseUrl
+      : '${ApiConfig.baseUrl}/';
+  return Uri.parse(
+    base,
+  ).resolve('providers/$providerId/connect/callback').toString();
 }
 
 void _showSnack(BuildContext context, String message) {
