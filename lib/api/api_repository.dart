@@ -80,6 +80,9 @@ class ApiStorageUsageReport {
 class ApiRepository {
   ApiRepository(this._client);
 
+  static const int _maxFilesListPageSize = 100;
+  static const String _storageApiRootPath = 'root';
+
   final ApiClient _client;
 
   Future<ApiUser?> me() async {
@@ -99,24 +102,31 @@ class ApiRepository {
     final json = await _client.getJson('/connections');
     final list = _extractList(json);
 
-    return list.map((item) {
-      return ApiConnection(
-        id: _str(item['id']) ?? _str(item['_id']) ?? '',
-        providerId: _str(item['providerId']) ?? _str(item['provider']) ?? '',
-        providerName: _str(item['providerName']) ??
-            _str(item['displayName']) ??
-            _str(item['provider']) ??
-            'Storage',
-        usedBytes: _num(item['usedBytes']) ??
-            _num(item['usage']?['usedBytes']) ??
-            _num(item['storage']?['used']) ??
-            0,
-        totalBytes: _num(item['totalBytes']) ??
-            _num(item['usage']?['totalBytes']) ??
-            _num(item['storage']?['total']) ??
-            0,
-      );
-    }).where((c) => c.id.isNotEmpty).toList();
+    return list
+        .map((item) {
+          return ApiConnection(
+            id: _str(item['id']) ?? _str(item['_id']) ?? '',
+            providerId:
+                _str(item['providerId']) ?? _str(item['provider']) ?? '',
+            providerName:
+                _str(item['providerName']) ??
+                _str(item['displayName']) ??
+                _str(item['provider']) ??
+                'Storage',
+            usedBytes:
+                _num(item['usedBytes']) ??
+                _num(item['usage']?['usedBytes']) ??
+                _num(item['storage']?['used']) ??
+                0,
+            totalBytes:
+                _num(item['totalBytes']) ??
+                _num(item['usage']?['totalBytes']) ??
+                _num(item['storage']?['total']) ??
+                0,
+          );
+        })
+        .where((c) => c.id.isNotEmpty)
+        .toList();
   }
 
   Future<String?> startProviderConnect(
@@ -144,9 +154,7 @@ class ApiRepository {
     await _client.deleteJson('/connections/$id');
   }
 
-  Future<List<ApiFileItem>> recentFiles({
-    int pageSize = 20,
-  }) async {
+  Future<List<ApiFileItem>> recentFiles({int pageSize = 20}) async {
     final query = <String, String>{'pageSize': '$pageSize'};
     final json = await _client.getJson('/files/recent', query: query);
     return _parseFileItems(json);
@@ -155,12 +163,14 @@ class ApiRepository {
   Future<List<ApiFileItem>> listFiles({
     required String connectionId,
     String path = '/',
-    int pageSize = 200,
+    int pageSize = _maxFilesListPageSize,
   }) async {
+    final normalizedPageSize = pageSize.clamp(1, _maxFilesListPageSize).toInt();
+    final normalizedPath = _normalizeStoragePath(path);
     final payload = <String, dynamic>{
       'connectionId': connectionId,
-      'path': path,
-      'pageSize': pageSize,
+      'path': normalizedPath,
+      'pageSize': normalizedPageSize,
     };
     final json = await _client.postJson('/files/list', body: payload);
     return _parseFileItems(json);
@@ -181,10 +191,7 @@ class ApiRepository {
       payload['cursor'] = cursor;
     }
 
-    final json = await _client.postJson(
-      '/files/search',
-      body: payload,
-    );
+    final json = await _client.postJson('/files/search', body: payload);
     return _parseFileItems(json);
   }
 
@@ -224,7 +231,10 @@ class ApiRepository {
     );
   }
 
-  Future<String?> downloadUrl({required String connectionId, required String fileId}) async {
+  Future<String?> downloadUrl({
+    required String connectionId,
+    required String fileId,
+  }) async {
     final json = await _client.postJson(
       '/files/download-url',
       body: <String, dynamic>{'connectionId': connectionId, 'fileId': fileId},
@@ -233,7 +243,10 @@ class ApiRepository {
     return _str(obj['url']);
   }
 
-  Future<String?> shareLink({required String connectionId, required String fileId}) async {
+  Future<String?> shareLink({
+    required String connectionId,
+    required String fileId,
+  }) async {
     final json = await _client.postJson(
       '/files/share-link',
       body: <String, dynamic>{'connectionId': connectionId, 'fileId': fileId},
@@ -257,7 +270,10 @@ class ApiRepository {
     );
   }
 
-  Future<void> deleteFile({required String connectionId, required String fileId}) async {
+  Future<void> deleteFile({
+    required String connectionId,
+    required String fileId,
+  }) async {
     await _client.postJson(
       '/files/delete',
       body: <String, dynamic>{'connectionId': connectionId, 'fileId': fileId},
@@ -269,11 +285,12 @@ class ApiRepository {
     required String parentPath,
     required String name,
   }) async {
+    final normalizedParentPath = _normalizeStoragePath(parentPath);
     await _client.postJson(
       '/files/folders/create',
       body: <String, dynamic>{
         'connectionId': connectionId,
-        'parentPath': parentPath,
+        'parentPath': normalizedParentPath,
         'name': name,
       },
     );
@@ -296,15 +313,19 @@ class ApiRepository {
         : null;
     final list = _extractList(json);
 
-    final connections = list.map((item) {
-      return ApiConnection(
-        id: _str(item['connectionId']) ?? _str(item['id']) ?? '',
-        providerId: _str(item['providerId']) ?? '',
-        providerName: _str(item['providerName']) ?? _str(item['name']) ?? 'Storage',
-        usedBytes: _num(item['usedBytes']) ?? 0,
-        totalBytes: _num(item['totalBytes']) ?? 0,
-      );
-    }).where((c) => c.id.isNotEmpty).toList();
+    final connections = list
+        .map((item) {
+          return ApiConnection(
+            id: _str(item['connectionId']) ?? _str(item['id']) ?? '',
+            providerId: _str(item['providerId']) ?? '',
+            providerName:
+                _str(item['providerName']) ?? _str(item['name']) ?? 'Storage',
+            usedBytes: _num(item['usedBytes']) ?? 0,
+            totalBytes: _num(item['totalBytes']) ?? 0,
+          );
+        })
+        .where((c) => c.id.isNotEmpty)
+        .toList();
 
     return ApiStorageUsageReport(
       connections: connections,
@@ -320,15 +341,20 @@ class ApiRepository {
   }
 
   Future<List<ApiStorageRecommendation>> recommendations() async {
-    final json = await _client.getJson('/analytics/storage-optimization-recommendations');
+    final json = await _client.getJson(
+      '/analytics/storage-optimization-recommendations',
+    );
     final list = _extractList(json);
 
-    return list.map((item) {
-      return ApiStorageRecommendation(
-        title: _str(item['title']) ?? 'Recommendation',
-        body: _str(item['description']) ?? _str(item['body']) ?? '',
-      );
-    }).where((r) => r.body.isNotEmpty).toList();
+    return list
+        .map((item) {
+          return ApiStorageRecommendation(
+            title: _str(item['title']) ?? 'Recommendation',
+            body: _str(item['description']) ?? _str(item['body']) ?? '',
+          );
+        })
+        .where((r) => r.body.isNotEmpty)
+        .toList();
   }
 
   List<ApiFileItem> _parseFileItems(Map<String, dynamic> json) {
@@ -337,11 +363,13 @@ class ApiRepository {
     final rootProviderId = _str(json['providerId']);
 
     return list.map((item) {
-      final modifiedRaw = _str(item['modifiedTime']) ??
+      final modifiedRaw =
+          _str(item['modifiedTime']) ??
           _str(item['updatedAt']) ??
           _str(item['modifiedAt']) ??
           _str(item['createdAt']);
-      final fileName = _str(item['fileName']) ?? _str(item['name']) ?? 'Unknown';
+      final fileName =
+          _str(item['fileName']) ?? _str(item['name']) ?? 'Unknown';
       final filePath = _str(item['path']) ?? _str(item['parentPath']) ?? '/';
       final itemConnectionId = _str(item['connectionId']);
       final safeRootConnectionId = rootConnectionId == 'all'
@@ -351,20 +379,61 @@ class ApiRepository {
       return ApiFileItem(
         // Prefer provider-native file identifier (fileId/path) for file actions.
         id: _str(item['fileId']) ?? filePath,
-        connectionId: itemConnectionId ??
-            safeRootConnectionId ??
-            rootProviderId ??
-            '',
+        connectionId:
+            itemConnectionId ?? safeRootConnectionId ?? rootProviderId ?? '',
         name: fileName,
         path: filePath,
         sizeBytes: _num(item['sizeBytes']) ?? _num(item['size']) ?? 0,
         modifiedAt: DateTime.tryParse(modifiedRaw ?? '') ?? DateTime.now(),
-        providerName: _str(item['providerName']) ?? _str(item['provider']) ?? 'Storage',
+        providerName:
+            _str(item['providerName']) ?? _str(item['provider']) ?? 'Storage',
         isFavorite: item['isFavorite'] == true || item['favorite'] == true,
-        kind: _str(item['kind']) ?? (_str(item['mimeType'])?.contains('folder') == true ? 'folder' : 'file'),
+        kind:
+            _str(item['kind']) ??
+            (_str(item['mimeType'])?.contains('folder') == true
+                ? 'folder'
+                : 'file'),
         mimeType: _str(item['mimeType']),
       );
     }).toList();
+  }
+
+  String _normalizeStoragePath(String path) {
+    final trimmed = path.trim();
+    if (trimmed.isEmpty || trimmed == '/') {
+      return _storageApiRootPath;
+    }
+
+    var normalized = trimmed
+        .replaceAll('\\', '/')
+        .replaceAll(RegExp('/+'), '/');
+    if (normalized.isEmpty || normalized == '/') {
+      return _storageApiRootPath;
+    }
+    if (normalized.endsWith('/') && normalized.length > 1) {
+      normalized = normalized.substring(0, normalized.length - 1);
+    }
+
+    if (normalized == _storageApiRootPath ||
+        normalized == '/$_storageApiRootPath') {
+      return _storageApiRootPath;
+    }
+
+    if (normalized.startsWith('/')) {
+      normalized = normalized.substring(1);
+    }
+    if (normalized.isEmpty || normalized == '/') {
+      return _storageApiRootPath;
+    }
+
+    if (normalized == _storageApiRootPath) {
+      return _storageApiRootPath;
+    }
+    if (normalized.startsWith('$_storageApiRootPath/')) {
+      return normalized;
+    }
+
+    return '$_storageApiRootPath/$normalized';
   }
 }
 
@@ -392,12 +461,22 @@ Map<String, dynamic>? _extractObject(Map<String, dynamic> json) {
 }
 
 List<Map<String, dynamic>> _extractList(Map<String, dynamic> json) {
-  const keys = ['items', 'data', 'results', 'connections', 'files', 'recommendations'];
+  const keys = [
+    'items',
+    'data',
+    'results',
+    'connections',
+    'files',
+    'recommendations',
+  ];
 
   for (final key in keys) {
     final value = json[key];
     if (value is List) {
-      return value.whereType<Map>().map((e) => Map<String, dynamic>.from(e)).toList();
+      return value
+          .whereType<Map>()
+          .map((e) => Map<String, dynamic>.from(e))
+          .toList();
     }
     if (value is Map<String, dynamic>) {
       for (final nested in keys) {
