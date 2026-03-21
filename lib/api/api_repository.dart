@@ -282,16 +282,16 @@ class ApiRepository {
 
   Future<void> createFolder({
     required String connectionId,
-    required String parentPath,
-    required String name,
+    required String parentId,
+    required String folderName,
   }) async {
-    final normalizedParentPath = _normalizeStoragePath(parentPath);
+    final normalizedParentId = _normalizeStoragePath(parentId);
     await _client.postJson(
-      '/files/folders/create',
+      '/files/create-folder',
       body: <String, dynamic>{
         'connectionId': connectionId,
-        'parentPath': normalizedParentPath,
-        'name': name,
+        'parentId': normalizedParentId,
+        'folderName': folderName,
       },
     );
   }
