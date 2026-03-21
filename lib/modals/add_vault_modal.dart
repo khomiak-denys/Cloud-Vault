@@ -1,6 +1,8 @@
 import 'dart:ui';
 
+import 'package:cloud_vault/api/api_config.dart';
 import 'package:cloud_vault/l10n/app_localizations.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -11,13 +13,28 @@ import '../theme/app_theme_colors.dart';
 import '../utils/interaction_styles.dart';
 import '../widgets/add_vault_option_tile.dart';
 
-Future<bool> showAddVaultModal(BuildContext context) async {
+class AddVaultFlowResult {
+  const AddVaultFlowResult({
+    required this.didStartConnect,
+    required this.expectsAppCallback,
+  });
+
+  final bool didStartConnect;
+  final bool expectsAppCallback;
+}
+
+const AddVaultFlowResult _noConnectResult = AddVaultFlowResult(
+  didStartConnect: false,
+  expectsAppCallback: false,
+);
+
+Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
   final l10n = AppLocalizations.of(context)!;
   final colors = AppThemeColors.of(context);
   const primaryBtnBg = Color(0xFF2662E7);
   const primaryBtnFg = Color(0xFFEAF2FF);
 
-  final result = await showGeneralDialog<bool>(
+  final result = await showGeneralDialog<AddVaultFlowResult>(
     context: context,
     barrierLabel: 'Add vault',
     barrierDismissible: true,
@@ -193,7 +210,15 @@ Future<bool> showAddVaultModal(BuildContext context) async {
                                               }
 
                                               if (context.mounted) {
-                                                Navigator.of(context).pop(true);
+                                                Navigator.of(context).pop(
+                                                  AddVaultFlowResult(
+                                                    didStartConnect: true,
+                                                    expectsAppCallback:
+                                                        _expectsAppCallback(
+                                                          redirectUri,
+                                                        ),
+                                                  ),
+                                                );
                                               }
                                             } on ApiException catch (e) {
                                               if (!context.mounted) return;
@@ -258,7 +283,7 @@ Future<bool> showAddVaultModal(BuildContext context) async {
     },
   );
 
-  return result ?? false;
+  return result ?? _noConnectResult;
 }
 
 String? _providerIdForTitle(String title) {
@@ -281,8 +306,29 @@ String? _connectRedirectUriForProvider(String providerId) {
   if (!oauthProviders.contains(providerId)) {
     return null;
   }
-  return 'cloudvault://oauth-callback';
+
+  if (_supportsAppSchemeRedirect) {
+    return _appOauthCallbackUri;
+  }
+
+  final base = ApiConfig.baseUrl.endsWith('/')
+      ? ApiConfig.baseUrl
+      : '${ApiConfig.baseUrl}/';
+  return Uri.parse(
+    base,
+  ).resolve('providers/$providerId/connect/callback').toString();
 }
+
+bool _expectsAppCallback(String? redirectUri) =>
+    redirectUri?.toLowerCase().startsWith(_appOauthCallbackUri) == true;
+
+bool get _supportsAppSchemeRedirect {
+  if (kIsWeb) return false;
+  return defaultTargetPlatform == TargetPlatform.android ||
+      defaultTargetPlatform == TargetPlatform.iOS;
+}
+
+const _appOauthCallbackUri = 'cloudvault://oauth-callback';
 
 void _showSnack(BuildContext context, String message) {
   ScaffoldMessenger.of(context)

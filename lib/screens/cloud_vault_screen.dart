@@ -184,11 +184,20 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
             label: 'Retry',
             onPressed: () async {
               if (!mounted) return;
-              await showAddVaultModal(context);
+              await _startAddProviderFlow();
             },
           ),
         ),
       );
+  }
+
+  Future<void> _startAddProviderFlow() async {
+    final result = await showAddVaultModal(context);
+    if (!result.didStartConnect) return;
+
+    if (!result.expectsAppCallback) {
+      await _load(forceRefresh: true);
+    }
   }
 
   String _providerDisplayName(String providerId) {
@@ -227,7 +236,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
                       DashboardStoragesSection(
                         items: _vaultItems,
                         onAddTap: () async {
-                          await showAddVaultModal(context);
+                          await _startAddProviderFlow();
                         },
                         onStorageTap: (storage) {
                           Navigator.of(context).push(

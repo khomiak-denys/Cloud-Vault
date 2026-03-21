@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:async';
 
 import 'package:app_links/app_links.dart';
@@ -22,8 +23,11 @@ class OAuthDeepLinkService {
   OAuthDeepLinkService();
 
   final AppLinks _appLinks = AppLinks();
-  final StreamController<OAuthCallbackEvent> _events =
-      StreamController<OAuthCallbackEvent>.broadcast();
+  final Queue<OAuthCallbackEvent> _pendingEvents = Queue<OAuthCallbackEvent>();
+  late final StreamController<OAuthCallbackEvent> _events =
+      StreamController<OAuthCallbackEvent>.broadcast(
+        onListen: _flushPendingEvents,
+      );
 
   StreamSubscription<Uri>? _subscription;
   bool _initialized = false;
@@ -64,14 +68,45 @@ class OAuthDeepLinkService {
     final connectionId = uri.queryParameters['connectionId']?.trim() ?? '';
     final error = uri.queryParameters['error']?.trim();
 
-    _events.add(
+    if (status.isEmpty) return;
+    final normalizedStatus = status.toLowerCase();
+    final normalizedError = (error == null || error.isEmpty) ? null : error;
+
+    if (normalizedStatus == 'success' &&
+        (providerId.isEmpty || connectionId.isEmpty)) {
+      _emit(
+        OAuthCallbackEvent(
+          status: 'error',
+          providerId: providerId,
+          connectionId: connectionId,
+          error: 'Malformed OAuth callback payload',
+        ),
+      );
+      return;
+    }
+
+    _emit(
       OAuthCallbackEvent(
-        status: status,
+        status: normalizedStatus,
         providerId: providerId,
         connectionId: connectionId,
-        error: (error == null || error.isEmpty) ? null : error,
+        error: normalizedError,
       ),
     );
+  }
+
+  void _emit(OAuthCallbackEvent event) {
+    if (_events.hasListener) {
+      _events.add(event);
+      return;
+    }
+    _pendingEvents.add(event);
+  }
+
+  void _flushPendingEvents() {
+    while (_events.hasListener && _pendingEvents.isNotEmpty) {
+      _events.add(_pendingEvents.removeFirst());
+    }
   }
 }
 

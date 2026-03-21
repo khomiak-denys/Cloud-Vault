@@ -194,11 +194,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
             label: 'Retry',
             onPressed: () async {
               if (!mounted) return;
-              await showAddVaultModal(context);
+              await _startAddProviderFlow();
             },
           ),
         ),
       );
+  }
+
+  Future<void> _startAddProviderFlow() async {
+    final result = await showAddVaultModal(context);
+    if (!result.didStartConnect) return;
+
+    if (!result.expectsAppCallback) {
+      await _refreshConnectionsOnly();
+    }
   }
 
   String _providerDisplayName(String providerId) {
@@ -388,7 +397,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               connectedLabel: l10n.connected,
                               items: _vaultItems,
                               onAddTap: () async {
-                                await showAddVaultModal(context);
+                                await _startAddProviderFlow();
                               },
                               onDisconnect: _handleDisconnect,
                             ),
