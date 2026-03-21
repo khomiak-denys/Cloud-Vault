@@ -10,6 +10,7 @@ import '../data/api_mappers.dart';
 import '../data/app_services.dart';
 import '../data/cache_keys.dart';
 import '../data/oauth_deep_link_service.dart';
+import '../data/provider_labels.dart';
 import '../modals/add_vault_modal.dart';
 import '../modals/language_modal.dart';
 import '../models/vault_item.dart';
@@ -141,14 +142,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _refreshConnectionsOnly() async {
+  Future<bool> _refreshConnectionsOnly() async {
     try {
       final connections = await appApiRepository.connections();
       final mappedVaultItems = connections
           .map(mapConnectionToVaultItem)
           .toList();
 
-      if (!mounted) return;
+      if (!mounted) return false;
       setState(() {
         _connections = connections;
         _vaultItems = mappedVaultItems;
@@ -163,12 +164,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         ttl: _cacheTtl,
       );
+      return true;
     } on ApiException catch (e) {
-      if (!mounted) return;
+      if (!mounted) return false;
       _showToast('API error: ${e.statusCode ?? ''} ${e.message}'.trim());
+      return false;
     } catch (_) {
-      if (!mounted) return;
+      if (!mounted) return false;
       _showToast('Failed to refresh connected storages');
+      return false;
     }
   }
 
@@ -176,9 +180,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (!mounted) return;
 
     if (event.isSuccess) {
-      final providerName = _providerDisplayName(event.providerId);
+      final refreshed = await _refreshConnectionsOnly();
+      if (!mounted || !refreshed) return;
+      final hasConnection = _connections.any(
+        (item) => item.id == event.connectionId,
+      );
+      if (!hasConnection) {
+        _showToast(
+          'Connection callback received, but storage is not available yet',
+        );
+        return;
+      }
+      final providerName = providerDisplayName(event.providerId);
       _showToast('$providerName connected successfully');
-      await _refreshConnectionsOnly();
       return;
     }
 
@@ -207,21 +221,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     if (!result.expectsAppCallback) {
       await _refreshConnectionsOnly();
-    }
-  }
-
-  String _providerDisplayName(String providerId) {
-    switch (providerId.toLowerCase()) {
-      case 'google-drive':
-        return 'Google Drive';
-      case 'dropbox':
-        return 'Dropbox';
-      case 'onedrive':
-        return 'OneDrive';
-      case 'mega':
-        return 'MEGA';
-      default:
-        return 'Storage';
     }
   }
 

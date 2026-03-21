@@ -8,6 +8,7 @@ import '../data/api_mappers.dart';
 import '../data/app_services.dart';
 import '../data/file_actions_handler.dart';
 import '../data/oauth_deep_link_service.dart';
+import '../data/provider_labels.dart';
 import '../modals/add_vault_modal.dart';
 import '../modals/file_actions_modal.dart';
 import '../models/recent_file_item.dart';
@@ -54,7 +55,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
     super.dispose();
   }
 
-  Future<void> _load({bool forceRefresh = false}) async {
+  Future<bool> _load({bool forceRefresh = false}) async {
     if (!forceRefresh) {
       final cached = appCacheStore.get<_DashboardBundle>(_cacheKey);
       if (cached != null) {
@@ -65,7 +66,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
           _totalBytes = cached.totalBytes;
           _isLoading = false;
         });
-        return;
+        return true;
       }
     }
 
@@ -115,19 +116,22 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
         ttl: _cacheTtl,
       );
 
-      if (!mounted) return;
+      if (!mounted) return false;
       setState(() {
         _vaultItems = mappedVaultItems;
         _recentFiles = mappedRecentFiles;
         _totalUsedBytes = totalUsedBytes;
         _totalBytes = totalBytes;
       });
+      return true;
     } on ApiException catch (e) {
-      if (!mounted) return;
+      if (!mounted) return false;
       _showSnack('API error: ${e.statusCode ?? ''} ${e.message}'.trim());
+      return false;
     } catch (_) {
-      if (!mounted) return;
+      if (!mounted) return false;
       _showSnack('Failed to load dashboard data');
+      return false;
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -166,9 +170,19 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
     if (!mounted) return;
 
     if (event.isSuccess) {
-      final providerName = _providerDisplayName(event.providerId);
+      final refreshed = await _load(forceRefresh: true);
+      if (!mounted || !refreshed) return;
+      final hasConnection = _vaultItems.any(
+        (item) => item.id == event.connectionId,
+      );
+      if (!hasConnection) {
+        _showSnack(
+          'Connection callback received, but storage is not available yet',
+        );
+        return;
+      }
+      final providerName = providerDisplayName(event.providerId);
       _showSnack('$providerName connected successfully');
-      await _load(forceRefresh: true);
       return;
     }
 
@@ -197,21 +211,6 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
 
     if (!result.expectsAppCallback) {
       await _load(forceRefresh: true);
-    }
-  }
-
-  String _providerDisplayName(String providerId) {
-    switch (providerId.toLowerCase()) {
-      case 'google-drive':
-        return 'Google Drive';
-      case 'dropbox':
-        return 'Dropbox';
-      case 'onedrive':
-        return 'OneDrive';
-      case 'mega':
-        return 'MEGA';
-      default:
-        return 'Storage';
     }
   }
 

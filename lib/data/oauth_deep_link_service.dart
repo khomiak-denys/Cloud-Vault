@@ -21,6 +21,7 @@ class OAuthCallbackEvent {
 
 class OAuthDeepLinkService {
   OAuthDeepLinkService();
+  static const int _maxPendingEvents = 1;
 
   final AppLinks _appLinks = AppLinks();
   final Queue<OAuthCallbackEvent> _pendingEvents = Queue<OAuthCallbackEvent>();
@@ -99,6 +100,9 @@ class OAuthDeepLinkService {
     if (_events.hasListener) {
       _events.add(event);
       return;
+    }
+    while (_pendingEvents.length >= _maxPendingEvents) {
+      _pendingEvents.removeFirst();
     }
     _pendingEvents.add(event);
   }
