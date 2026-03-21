@@ -81,7 +81,7 @@ class ApiRepository {
   ApiRepository(this._client);
 
   static const int _maxFilesListPageSize = 100;
-  static const String _filesListRootPath = 'root';
+  static const String _storageApiRootPath = 'root';
 
   final ApiClient _client;
 
@@ -166,7 +166,7 @@ class ApiRepository {
     int pageSize = 100,
   }) async {
     final normalizedPageSize = pageSize.clamp(1, _maxFilesListPageSize).toInt();
-    final normalizedPath = _normalizeFilesListPath(path);
+    final normalizedPath = _normalizeStoragePath(path);
     final payload = <String, dynamic>{
       'connectionId': connectionId,
       'path': normalizedPath,
@@ -285,11 +285,12 @@ class ApiRepository {
     required String parentPath,
     required String name,
   }) async {
+    final normalizedParentPath = _normalizeStoragePath(parentPath);
     await _client.postJson(
       '/files/folders/create',
       body: <String, dynamic>{
         'connectionId': connectionId,
-        'parentPath': parentPath,
+        'parentPath': normalizedParentPath,
         'name': name,
       },
     );
@@ -397,10 +398,10 @@ class ApiRepository {
     }).toList();
   }
 
-  String _normalizeFilesListPath(String path) {
+  String _normalizeStoragePath(String path) {
     final trimmed = path.trim();
     if (trimmed.isEmpty || trimmed == '/') {
-      return _filesListRootPath;
+      return _storageApiRootPath;
     }
     return trimmed;
   }
