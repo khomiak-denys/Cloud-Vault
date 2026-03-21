@@ -139,7 +139,9 @@ Future<bool> showAddVaultModal(BuildContext context) async {
                                             final option =
                                                 addVaultOptions[selectedIndex!];
                                             final providerId =
-                                                _providerIdForTitle(option.title);
+                                                _providerIdForTitle(
+                                                  option.title,
+                                                );
 
                                             if (providerId == null) {
                                               _showSnack(
@@ -150,12 +152,16 @@ Future<bool> showAddVaultModal(BuildContext context) async {
                                             }
 
                                             try {
+                                              final redirectUri =
+                                                  _connectRedirectUriForProvider(
+                                                    providerId,
+                                                  );
                                               final authorizeUrl =
                                                   await appApiRepository
                                                       .startProviderConnect(
                                                         providerId,
                                                         redirectUri:
-                                                            'cloudvault://oauth-callback',
+                                                            redirectUri,
                                                       );
 
                                               if (authorizeUrl == null ||
@@ -193,7 +199,8 @@ Future<bool> showAddVaultModal(BuildContext context) async {
                                               if (!context.mounted) return;
                                               _showSnack(
                                                 context,
-                                                'API error: ${e.statusCode ?? ''} ${e.message}'.trim(),
+                                                'API error: ${e.statusCode ?? ''} ${e.message}'
+                                                    .trim(),
                                               );
                                             } catch (_) {
                                               if (!context.mounted) return;
@@ -204,12 +211,14 @@ Future<bool> showAddVaultModal(BuildContext context) async {
                                             }
                                           },
                                     style: ButtonStyle(
-                                      backgroundColor: const WidgetStatePropertyAll(
-                                        primaryBtnBg,
-                                      ),
-                                      foregroundColor: const WidgetStatePropertyAll(
-                                        primaryBtnFg,
-                                      ),
+                                      backgroundColor:
+                                          const WidgetStatePropertyAll(
+                                            primaryBtnBg,
+                                          ),
+                                      foregroundColor:
+                                          const WidgetStatePropertyAll(
+                                            primaryBtnFg,
+                                          ),
                                       overlayColor: pressOnlyOverlay(
                                         const Color(0x33FFFFFF),
                                       ),
@@ -262,6 +271,21 @@ String? _providerIdForTitle(String title) {
       return 'onedrive';
     case 'mega':
       return 'mega';
+    default:
+      return null;
+  }
+}
+
+String? _connectRedirectUriForProvider(String providerId) {
+  switch (providerId) {
+    case 'google-drive':
+      return 'http://localhost:3000/v1/providers/google-drive/connect/callback';
+    case 'dropbox':
+      return 'http://localhost:3000/v1/providers/dropbox/connect/callback';
+    case 'onedrive':
+      return 'http://localhost:3000/v1/providers/onedrive/connect/callback';
+    case 'mega':
+      return null;
     default:
       return null;
   }
