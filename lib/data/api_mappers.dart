@@ -44,7 +44,7 @@ RecentFileItem mapApiFileToRecentFileItem(ApiFileItem file) {
     id: file.id,
     connectionId: file.connectionId,
     title: file.name,
-    subtitle: '${file.providerName} - $formattedDate - $sizeLabel',
+    subtitle: '${file.providerName} - $formattedDate',
     icon: _fileIcon(file.name, file.mimeType, file.kind),
     iconColor: _fileIconColor(file.name, file.mimeType, file.kind),
     storageName: file.providerName,

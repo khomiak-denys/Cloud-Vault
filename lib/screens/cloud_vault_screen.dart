@@ -70,17 +70,22 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
       final files = results[1] as List<ApiFileItem>;
       final usageReport = results[2] as ApiStorageUsageReport?;
       final usage = usageReport?.connections ?? const <ApiConnection>[];
-      final enrichedConnections = _mergeConnectionsWithUsage(connections, usage);
+      final enrichedConnections = _mergeConnectionsWithUsage(
+        connections,
+        usage,
+      );
       final mappedVaultItems = enrichedConnections
           .map(mapConnectionToVaultItem)
           .toList();
       final mappedRecentFiles = files.map(mapApiFileToRecentFileItem).toList();
-      final totalUsedBytes = usageReport?.usedBytes ??
+      final totalUsedBytes =
+          usageReport?.usedBytes ??
           enrichedConnections.fold<double>(
             0,
             (acc, connection) => acc + connection.usedBytes,
           );
-      final totalBytes = usageReport?.totalBytes ??
+      final totalBytes =
+          usageReport?.totalBytes ??
           enrichedConnections.fold<double>(
             0,
             (acc, connection) => acc + connection.totalBytes,
@@ -165,15 +170,18 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
                       DashboardStoragesSection(
                         items: _vaultItems,
                         onAddTap: () async {
-                          await showAddVaultModal(context);
-                          await _load(forceRefresh: true);
+                          final didStartConnect = await showAddVaultModal(
+                            context,
+                          );
+                          if (didStartConnect) {
+                            await _load(forceRefresh: true);
+                          }
                         },
                         onStorageTap: (storage) {
                           Navigator.of(context).push(
                             MaterialPageRoute<void>(
-                              builder: (_) => StorageBrowserScreen(
-                                storage: storage,
-                              ),
+                              builder: (_) =>
+                                  StorageBrowserScreen(storage: storage),
                             ),
                           );
                         },
@@ -224,8 +232,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
     for (final connection in connections) {
       if (connection.providerId.isEmpty) continue;
       final key = connection.providerId.toLowerCase();
-      connectionProviderCounts[key] =
-          (connectionProviderCounts[key] ?? 0) + 1;
+      connectionProviderCounts[key] = (connectionProviderCounts[key] ?? 0) + 1;
     }
     final usageProviderCounts = <String, int>{};
     for (final item in usage) {
@@ -236,10 +243,12 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
 
     return connections.map((connection) {
       final providerIdKey = connection.providerId.toLowerCase();
-      final canFallbackByProvider = providerIdKey.isNotEmpty &&
+      final canFallbackByProvider =
+          providerIdKey.isNotEmpty &&
           (connectionProviderCounts[providerIdKey] ?? 0) == 1 &&
           (usageProviderCounts[providerIdKey] ?? 0) == 1;
-      final matched = usageByKey[key(connection)] ??
+      final matched =
+          usageByKey[key(connection)] ??
           usageById[connection.id.toLowerCase()] ??
           (canFallbackByProvider ? usageByProvider[providerIdKey] : null);
 
