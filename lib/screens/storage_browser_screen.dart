@@ -48,6 +48,7 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
     try {
       final files = await appApiRepository.listFiles(
         connectionId: widget.storage.id,
+        providerId: widget.storage.providerId,
         path: requestedPath,
       );
 
@@ -87,7 +88,8 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
   }
 
   Future<void> _openFolder(RecentFileItem folder) async {
-    setState(() => _currentPath = _normalizePath(folder.pathLabel));
+    final nextPath = _isMegaProvider ? folder.id : folder.pathLabel;
+    setState(() => _currentPath = _normalizePath(nextPath));
     await _load();
   }
 
@@ -547,6 +549,9 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
     if (parts.length < 2) return '';
     return parts.last.toLowerCase();
   }
+
+  bool get _isMegaProvider =>
+      widget.storage.providerId.trim().toLowerCase() == 'mega';
 }
 
 class _PathChip extends StatelessWidget {
