@@ -403,7 +403,31 @@ class ApiRepository {
     if (trimmed.isEmpty || trimmed == '/') {
       return _storageApiRootPath;
     }
-    return trimmed;
+
+    var normalized = trimmed
+        .replaceAll('\\', '/')
+        .replaceAll(RegExp('/+'), '/');
+    if (normalized.endsWith('/') && normalized.length > 1) {
+      normalized = normalized.substring(0, normalized.length - 1);
+    }
+
+    if (normalized == _storageApiRootPath ||
+        normalized == '/$_storageApiRootPath') {
+      return _storageApiRootPath;
+    }
+
+    if (normalized.startsWith('/')) {
+      normalized = normalized.substring(1);
+    }
+
+    if (normalized == _storageApiRootPath) {
+      return _storageApiRootPath;
+    }
+    if (normalized.startsWith('$_storageApiRootPath/')) {
+      return normalized;
+    }
+
+    return '$_storageApiRootPath/$normalized';
   }
 }
 
