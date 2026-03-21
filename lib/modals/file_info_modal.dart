@@ -16,7 +16,6 @@ Future<void> showFileInfoModal(
   final l10n = AppLocalizations.of(context)!;
   final isDark = Theme.of(context).brightness == Brightness.dark;
   final colors = AppThemeColors.of(context);
-  String sizeLabel = file.sizeLabel;
   String modifiedLabel = file.modifiedLabel;
   String pathLabel = file.pathLabel;
 
@@ -29,8 +28,9 @@ Future<void> showFileInfoModal(
         ? response['data'] as Map<String, dynamic>
         : response;
 
-    sizeLabel = (data['sizeLabel'] ?? data['size'] ?? file.sizeLabel).toString();
-    modifiedLabel = (data['modifiedLabel'] ?? data['modifiedTime'] ?? file.modifiedLabel).toString();
+    modifiedLabel =
+        (data['modifiedLabel'] ?? data['modifiedTime'] ?? file.modifiedLabel)
+            .toString();
     pathLabel = (data['path'] ?? data['fullPath'] ?? file.pathLabel).toString();
   } on ApiException {
     // Keep existing labels when endpoint fails.
@@ -154,13 +154,6 @@ Future<void> showFileInfoModal(
                           ],
                         ),
                         const SizedBox(height: 26),
-                        _InfoTile(
-                          icon: Icons.sd_storage_outlined,
-                          label: l10n.size,
-                          value: sizeLabel,
-                          isDark: isDark,
-                        ),
-                        const SizedBox(height: 12),
                         _InfoTile(
                           icon: Icons.calendar_today_outlined,
                           label: l10n.modified,

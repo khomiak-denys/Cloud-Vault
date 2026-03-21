@@ -461,7 +461,7 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
                                       subtitle: Text(
                                         isFolder
                                             ? item.pathLabel
-                                            : '${item.modifiedLabel} - ${item.sizeLabel}',
+                                            : item.modifiedLabel,
                                         maxLines: 1,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
