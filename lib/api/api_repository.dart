@@ -180,13 +180,13 @@ class ApiRepository {
 
   String _normalizeListPath(String path, {String? providerId}) {
     final providerKey = providerId?.trim().toLowerCase();
-    if (providerKey == 'mega') {
-      return _normalizeMegaListPath(path);
+    if (providerKey == 'mega' || providerKey == 'onedrive') {
+      return _normalizeIdBasedListPath(path);
     }
     return _normalizeStoragePath(path);
   }
 
-  String _normalizeMegaListPath(String path) {
+  String _normalizeIdBasedListPath(String path) {
     final normalized = _normalizeStoragePath(path);
     if (normalized == _storageApiRootPath) {
       return _storageApiRootPath;
