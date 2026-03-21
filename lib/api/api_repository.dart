@@ -81,7 +81,8 @@ class ApiRepository {
   ApiRepository(this._client);
 
   static const int _maxFilesListPageSize = 100;
-  static const String _storageApiRootPath = 'root';
+  static const String storageApiRootPath = 'root';
+  static const String _storageApiRootPath = storageApiRootPath;
 
   final ApiClient _client;
 

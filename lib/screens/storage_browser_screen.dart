@@ -1,6 +1,7 @@
 import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
+import '../api/api_repository.dart';
 import '../api/api_exception.dart';
 import '../data/api_mappers.dart';
 import '../data/app_services.dart';
@@ -26,7 +27,7 @@ class StorageBrowserScreen extends StatefulWidget {
 
 class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
   static const _rootPath = '/';
-  static const _rootFolderId = 'root';
+  static const _rootFolderId = ApiRepository.storageApiRootPath;
 
   SearchCategory _category = SearchCategory.all;
   StorageBrowserSort _sort = StorageBrowserSort.modifiedDesc;
@@ -277,16 +278,17 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
                           ),
                           ...pathParts.asMap().entries.map((entry) {
                             final part = entry.value;
-                            final partPath =
-                                '/${pathParts.take(entry.key + 1).join('/')}';
+                            final partPath = _isMegaProvider
+                                ? null
+                                : '/${pathParts.take(entry.key + 1).join('/')}';
                             return _PathChip(
                               label: part,
                               isActive: _isMegaProvider
                                   ? entry.key == pathParts.length - 1
-                                  : _normalizePath(partPath) == _currentPath,
+                                  : _normalizePath(partPath!) == _currentPath,
                               onTap: () => _isMegaProvider
                                   ? _goToMegaDepth(entry.key + 1)
-                                  : _goToPath(partPath),
+                                  : _goToPath(partPath!),
                             );
                           }),
                         ],
