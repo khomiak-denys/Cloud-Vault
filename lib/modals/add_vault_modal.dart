@@ -11,6 +11,8 @@ import '../theme/app_theme_colors.dart';
 import '../utils/interaction_styles.dart';
 import '../widgets/add_vault_option_tile.dart';
 
+const _oauthCallbackBaseUrl = 'http://localhost:3000/v1/providers';
+
 Future<bool> showAddVaultModal(BuildContext context) async {
   final l10n = AppLocalizations.of(context)!;
   final colors = AppThemeColors.of(context);
@@ -279,11 +281,11 @@ String? _providerIdForTitle(String title) {
 String? _connectRedirectUriForProvider(String providerId) {
   switch (providerId) {
     case 'google-drive':
-      return 'http://localhost:3000/v1/providers/google-drive/connect/callback';
+      return '$_oauthCallbackBaseUrl/google-drive/connect/callback';
     case 'dropbox':
-      return 'http://localhost:3000/v1/providers/dropbox/connect/callback';
+      return '$_oauthCallbackBaseUrl/dropbox/connect/callback';
     case 'onedrive':
-      return 'http://localhost:3000/v1/providers/onedrive/connect/callback';
+      return '$_oauthCallbackBaseUrl/onedrive/connect/callback';
     case 'mega':
       return null;
     default:
