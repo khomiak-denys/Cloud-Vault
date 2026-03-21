@@ -80,6 +80,9 @@ class ApiStorageUsageReport {
 class ApiRepository {
   ApiRepository(this._client);
 
+  static const int _maxFilesListPageSize = 100;
+  static const String _filesListRootPath = 'root';
+
   final ApiClient _client;
 
   Future<ApiUser?> me() async {
@@ -162,10 +165,12 @@ class ApiRepository {
     String path = '/',
     int pageSize = 100,
   }) async {
+    final normalizedPageSize = pageSize.clamp(1, _maxFilesListPageSize).toInt();
+    final normalizedPath = _normalizeFilesListPath(path);
     final payload = <String, dynamic>{
       'connectionId': connectionId,
-      'path': path,
-      'pageSize': pageSize,
+      'path': normalizedPath,
+      'pageSize': normalizedPageSize,
     };
     final json = await _client.postJson('/files/list', body: payload);
     return _parseFileItems(json);
@@ -390,6 +395,14 @@ class ApiRepository {
         mimeType: _str(item['mimeType']),
       );
     }).toList();
+  }
+
+  String _normalizeFilesListPath(String path) {
+    final trimmed = path.trim();
+    if (trimmed.isEmpty || trimmed == '/') {
+      return _filesListRootPath;
+    }
+    return trimmed;
   }
 }
 
