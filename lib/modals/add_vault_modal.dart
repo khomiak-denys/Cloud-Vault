@@ -4,7 +4,6 @@ import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../api/api_config.dart';
 import '../api/api_exception.dart';
 import '../data/app_services.dart';
 import '../data/provider_options_data.dart';
@@ -282,13 +281,7 @@ String? _connectRedirectUriForProvider(String providerId) {
   if (!oauthProviders.contains(providerId)) {
     return null;
   }
-
-  final base = ApiConfig.baseUrl.endsWith('/')
-      ? ApiConfig.baseUrl
-      : '${ApiConfig.baseUrl}/';
-  return Uri.parse(
-    base,
-  ).resolve('providers/$providerId/connect/callback').toString();
+  return 'cloudvault://oauth-callback';
 }
 
 void _showSnack(BuildContext context, String message) {

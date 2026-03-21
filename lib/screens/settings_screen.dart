@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
@@ -7,6 +9,7 @@ import '../api/api_repository.dart';
 import '../data/api_mappers.dart';
 import '../data/app_services.dart';
 import '../data/cache_keys.dart';
+import '../data/oauth_deep_link_service.dart';
 import '../modals/add_vault_modal.dart';
 import '../modals/language_modal.dart';
 import '../models/vault_item.dart';
@@ -41,12 +44,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
   List<VaultItem> _vaultItems = const [];
   List<ApiConnection> _connections = const [];
   ApiUser? _me;
+  StreamSubscription<OAuthCallbackEvent>? _oauthCallbackSubscription;
 
   @override
   void initState() {
     super.initState();
     _load();
     _prefetchProfileUsage();
+    _oauthCallbackSubscription = appOAuthDeepLinkService.events.listen(
+      _handleOAuthCallback,
+    );
+  }
+
+  @override
+  void dispose() {
+    _oauthCallbackSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _load({bool forceRefresh = false}) async {
@@ -74,7 +87,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       final me = results[0] as ApiUser?;
       final connections = results[1] as List<ApiConnection>;
-      final mappedVaultItems = connections.map(mapConnectionToVaultItem).toList();
+      final mappedVaultItems = connections
+          .map(mapConnectionToVaultItem)
+          .toList();
 
       appCacheStore.set<_SettingsBundle>(
         _cacheKey,
@@ -112,7 +127,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     try {
       final usage = await appApiRepository.storageUsage();
-      final usedBytes = usage.fold<double>(0, (acc, item) => acc + item.usedBytes);
+      final usedBytes = usage.fold<double>(
+        0,
+        (acc, item) => acc + item.usedBytes,
+      );
       appCacheStore.set<double>(
         kProfileUsageCacheKey,
         usedBytes,
@@ -126,7 +144,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _refreshConnectionsOnly() async {
     try {
       final connections = await appApiRepository.connections();
-      final mappedVaultItems = connections.map(mapConnectionToVaultItem).toList();
+      final mappedVaultItems = connections
+          .map(mapConnectionToVaultItem)
+          .toList();
 
       if (!mounted) return;
       setState(() {
@@ -149,6 +169,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
     } catch (_) {
       if (!mounted) return;
       _showToast('Failed to refresh connected storages');
+    }
+  }
+
+  Future<void> _handleOAuthCallback(OAuthCallbackEvent event) async {
+    if (!mounted) return;
+
+    if (event.isSuccess) {
+      final providerName = _providerDisplayName(event.providerId);
+      _showToast('$providerName connected successfully');
+      await _refreshConnectionsOnly();
+      return;
+    }
+
+    final reason = event.error ?? 'OAuth connect failed';
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(reason),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: () async {
+              if (!mounted) return;
+              await showAddVaultModal(context);
+            },
+          ),
+        ),
+      );
+  }
+
+  String _providerDisplayName(String providerId) {
+    switch (providerId.toLowerCase()) {
+      case 'google-drive':
+        return 'Google Drive';
+      case 'dropbox':
+        return 'Dropbox';
+      case 'onedrive':
+        return 'OneDrive';
+      case 'mega':
+        return 'MEGA';
+      default:
+        return 'Storage';
     }
   }
 
@@ -324,10 +388,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               connectedLabel: l10n.connected,
                               items: _vaultItems,
                               onAddTap: () async {
-                                final didStartConnect =
-                                    await showAddVaultModal(context);
-                                if (!didStartConnect) return;
-                                await _refreshConnectionsOnly();
+                                await showAddVaultModal(context);
                               },
                               onDisconnect: _handleDisconnect,
                             ),
