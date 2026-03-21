@@ -81,7 +81,8 @@ class ApiRepository {
   ApiRepository(this._client);
 
   static const int _maxFilesListPageSize = 100;
-  static const String _storageApiRootPath = 'root';
+  static const String storageApiRootPath = 'root';
+  static const String _storageApiRootPath = storageApiRootPath;
 
   final ApiClient _client;
 
@@ -162,11 +163,12 @@ class ApiRepository {
 
   Future<List<ApiFileItem>> listFiles({
     required String connectionId,
+    String? providerId,
     String path = '/',
     int pageSize = _maxFilesListPageSize,
   }) async {
     final normalizedPageSize = pageSize.clamp(1, _maxFilesListPageSize).toInt();
-    final normalizedPath = _normalizeStoragePath(path);
+    final normalizedPath = _normalizeListPath(path, providerId: providerId);
     final payload = <String, dynamic>{
       'connectionId': connectionId,
       'path': normalizedPath,
@@ -174,6 +176,38 @@ class ApiRepository {
     };
     final json = await _client.postJson('/files/list', body: payload);
     return _parseFileItems(json);
+  }
+
+  String _normalizeListPath(String path, {String? providerId}) {
+    final providerKey = providerId?.trim().toLowerCase();
+    if (providerKey == 'mega') {
+      return _normalizeMegaListPath(path);
+    }
+    return _normalizeStoragePath(path);
+  }
+
+  String _normalizeMegaListPath(String path) {
+    final normalized = _normalizeStoragePath(path);
+    if (normalized == _storageApiRootPath) {
+      return _storageApiRootPath;
+    }
+
+    final segments = normalized
+        .replaceAll('\\', '/')
+        .replaceAll(RegExp('/+'), '/')
+        .split('/')
+        .where((segment) => segment.trim().isNotEmpty)
+        .toList();
+
+    if (segments.isEmpty) {
+      return _storageApiRootPath;
+    }
+
+    if (segments.first == _storageApiRootPath && segments.length == 1) {
+      return _storageApiRootPath;
+    }
+
+    return segments.last;
   }
 
   Future<List<ApiFileItem>> searchFiles(
@@ -282,16 +316,20 @@ class ApiRepository {
 
   Future<void> createFolder({
     required String connectionId,
-    required String parentPath,
-    required String name,
+    String? providerId,
+    required String parentId,
+    required String folderName,
   }) async {
-    final normalizedParentPath = _normalizeStoragePath(parentPath);
+    final normalizedParentId = _normalizeListPath(
+      parentId,
+      providerId: providerId,
+    );
     await _client.postJson(
-      '/files/folders/create',
+      '/files/create-folder',
       body: <String, dynamic>{
         'connectionId': connectionId,
-        'parentPath': normalizedParentPath,
-        'name': name,
+        'parentId': normalizedParentId,
+        'folderName': folderName,
       },
     );
   }

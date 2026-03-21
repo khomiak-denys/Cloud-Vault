@@ -1,6 +1,7 @@
 import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
+import '../api/api_repository.dart';
 import '../api/api_exception.dart';
 import '../data/api_mappers.dart';
 import '../data/app_services.dart';
@@ -26,11 +27,13 @@ class StorageBrowserScreen extends StatefulWidget {
 
 class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
   static const _rootPath = '/';
+  static const _rootFolderId = ApiRepository.storageApiRootPath;
 
   SearchCategory _category = SearchCategory.all;
   StorageBrowserSort _sort = StorageBrowserSort.modifiedDesc;
   bool _isLoading = true;
   String _currentPath = _rootPath;
+  List<_MegaBreadcrumbNode> _megaBreadcrumbs = const [];
   List<RecentFileItem> _items = const [];
   int _loadRequestId = 0;
 
@@ -41,19 +44,21 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
   }
 
   Future<void> _load() async {
-    final requestedPath = _currentPath;
+    final requestedPath = _listRequestPath;
+    final requestedNavigationKey = _navigationStateKey;
     final requestId = ++_loadRequestId;
     setState(() => _isLoading = true);
 
     try {
       final files = await appApiRepository.listFiles(
         connectionId: widget.storage.id,
+        providerId: widget.storage.providerId,
         path: requestedPath,
       );
 
       if (!mounted ||
           requestId != _loadRequestId ||
-          requestedPath != _currentPath) {
+          requestedNavigationKey != _navigationStateKey) {
         return;
       }
 
@@ -63,7 +68,7 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
     } on ApiException catch (e) {
       if (!mounted ||
           requestId != _loadRequestId ||
-          requestedPath != _currentPath) {
+          requestedNavigationKey != _navigationStateKey) {
         return;
       }
 
@@ -72,7 +77,7 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
     } catch (_) {
       if (!mounted ||
           requestId != _loadRequestId ||
-          requestedPath != _currentPath) {
+          requestedNavigationKey != _navigationStateKey) {
         return;
       }
 
@@ -87,16 +92,50 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
   }
 
   Future<void> _openFolder(RecentFileItem folder) async {
-    setState(() => _currentPath = _normalizePath(folder.pathLabel));
+    if (_isMegaProvider) {
+      setState(() {
+        _megaBreadcrumbs = [
+          ..._megaBreadcrumbs,
+          _MegaBreadcrumbNode(id: folder.id, label: folder.title),
+        ];
+        _currentPath = _megaDisplayPath;
+      });
+    } else {
+      setState(() => _currentPath = _normalizePath(folder.pathLabel));
+    }
     await _load();
   }
 
   Future<void> _goToPath(String path) async {
+    if (_isMegaProvider) {
+      final normalized = _normalizePath(path);
+      if (normalized == _rootPath) {
+        setState(() {
+          _megaBreadcrumbs = const [];
+          _currentPath = _rootPath;
+        });
+        await _load();
+      }
+      return;
+    }
+
     setState(() => _currentPath = _normalizePath(path));
     await _load();
   }
 
   Future<void> _goUp() async {
+    if (_isMegaProvider) {
+      if (_megaBreadcrumbs.isEmpty) return;
+      setState(() {
+        _megaBreadcrumbs = _megaBreadcrumbs
+            .take(_megaBreadcrumbs.length - 1)
+            .toList();
+        _currentPath = _megaDisplayPath;
+      });
+      await _load();
+      return;
+    }
+
     if (_currentPath == _rootPath) return;
 
     setState(() => _currentPath = _parentPath(_currentPath));
@@ -140,8 +179,9 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
     try {
       await appApiRepository.createFolder(
         connectionId: widget.storage.id,
-        parentPath: _currentPath,
-        name: name.trim(),
+        providerId: widget.storage.providerId,
+        parentId: _isMegaProvider ? _currentMegaFolderId : _currentPath,
+        folderName: name.trim(),
       );
       if (!mounted) return;
 
@@ -186,7 +226,9 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
     final colors = AppThemeColors.of(context);
     final filtered = _applyCategoryFilter(_items);
     final sorted = _applySort(filtered);
-    final pathParts = _pathParts(_currentPath);
+    final pathParts = _isMegaProvider
+        ? _megaBreadcrumbs.map((node) => node.label).toList()
+        : _pathParts(_currentPath);
 
     return Scaffold(
       body: MobileScreenShell(
@@ -236,13 +278,17 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
                           ),
                           ...pathParts.asMap().entries.map((entry) {
                             final part = entry.value;
-                            final partPath =
-                                '/${pathParts.take(entry.key + 1).join('/')}';
+                            final partPath = _isMegaProvider
+                                ? null
+                                : '/${pathParts.take(entry.key + 1).join('/')}';
                             return _PathChip(
                               label: part,
-                              isActive:
-                                  _normalizePath(partPath) == _currentPath,
-                              onTap: () => _goToPath(partPath),
+                              isActive: _isMegaProvider
+                                  ? entry.key == pathParts.length - 1
+                                  : _normalizePath(partPath!) == _currentPath,
+                              onTap: () => _isMegaProvider
+                                  ? _goToMegaDepth(entry.key + 1)
+                                  : _goToPath(partPath!),
                             );
                           }),
                         ],
@@ -547,6 +593,41 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
     if (parts.length < 2) return '';
     return parts.last.toLowerCase();
   }
+
+  String get _currentMegaFolderId =>
+      _megaBreadcrumbs.isEmpty ? _rootFolderId : _megaBreadcrumbs.last.id;
+
+  String get _megaDisplayPath {
+    if (_megaBreadcrumbs.isEmpty) return _rootPath;
+    return '/${_megaBreadcrumbs.map((node) => node.label).join('/')}';
+  }
+
+  String get _listRequestPath =>
+      _isMegaProvider ? _currentMegaFolderId : _currentPath;
+
+  String get _navigationStateKey =>
+      _isMegaProvider ? '$_currentPath|$_currentMegaFolderId' : _currentPath;
+
+  Future<void> _goToMegaDepth(int depth) async {
+    if (!_isMegaProvider) return;
+    if (depth < 0 || depth > _megaBreadcrumbs.length) return;
+
+    setState(() {
+      _megaBreadcrumbs = _megaBreadcrumbs.take(depth).toList();
+      _currentPath = _megaDisplayPath;
+    });
+    await _load();
+  }
+
+  bool get _isMegaProvider =>
+      widget.storage.providerId.trim().toLowerCase() == 'mega';
+}
+
+class _MegaBreadcrumbNode {
+  const _MegaBreadcrumbNode({required this.id, required this.label});
+
+  final String id;
+  final String label;
 }
 
 class _PathChip extends StatelessWidget {
