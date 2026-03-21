@@ -46,9 +46,10 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
     setState(() => _isLoading = true);
 
     try {
+      final requestPath = requestedPath == _rootPath ? 'root' : requestedPath;
       final files = await appApiRepository.listFiles(
         connectionId: widget.storage.id,
-        path: requestedPath,
+        path: requestPath,
       );
 
       if (!mounted ||
