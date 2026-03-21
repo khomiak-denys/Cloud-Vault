@@ -407,6 +407,9 @@ class ApiRepository {
     var normalized = trimmed
         .replaceAll('\\', '/')
         .replaceAll(RegExp('/+'), '/');
+    if (normalized.isEmpty || normalized == '/') {
+      return _storageApiRootPath;
+    }
     if (normalized.endsWith('/') && normalized.length > 1) {
       normalized = normalized.substring(0, normalized.length - 1);
     }
@@ -418,6 +421,9 @@ class ApiRepository {
 
     if (normalized.startsWith('/')) {
       normalized = normalized.substring(1);
+    }
+    if (normalized.isEmpty || normalized == '/') {
+      return _storageApiRootPath;
     }
 
     if (normalized == _storageApiRootPath) {
