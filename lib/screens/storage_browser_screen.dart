@@ -140,8 +140,8 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
     try {
       await appApiRepository.createFolder(
         connectionId: widget.storage.id,
-        parentPath: _currentPath,
-        name: name.trim(),
+        parentId: _currentPath,
+        folderName: name.trim(),
       );
       if (!mounted) return;
 
