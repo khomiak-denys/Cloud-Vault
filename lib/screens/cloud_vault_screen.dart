@@ -137,37 +137,6 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
     }
   }
 
-  Future<void> _refreshConnectionsOnly() async {
-    try {
-      final connections = await appApiRepository.connections();
-      final mappedVaultItems = connections
-          .map(mapConnectionToVaultItem)
-          .toList();
-
-      if (!mounted) return;
-      setState(() {
-        _vaultItems = mappedVaultItems;
-      });
-
-      appCacheStore.set<_DashboardBundle>(
-        _cacheKey,
-        _DashboardBundle(
-          vaultItems: mappedVaultItems,
-          recentFiles: _recentFiles,
-          totalUsedBytes: _totalUsedBytes,
-          totalBytes: _totalBytes,
-        ),
-        ttl: _cacheTtl,
-      );
-    } on ApiException catch (e) {
-      if (!mounted) return;
-      _showSnack('API error: ${e.statusCode ?? ''} ${e.message}'.trim());
-    } catch (_) {
-      if (!mounted) return;
-      _showSnack('Failed to refresh connected storages');
-    }
-  }
-
   void _showSnack(String message) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
@@ -205,7 +174,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
                             context,
                           );
                           if (didStartConnect) {
-                            await _refreshConnectionsOnly();
+                            await _load(forceRefresh: true);
                           }
                         },
                         onStorageTap: (storage) {
