@@ -137,58 +137,34 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
     }
   }
 
-  Future<void> _refreshAfterAddProvider() async {
-    setState(() => _isLoading = true);
-
+  Future<void> _refreshConnectionsOnly() async {
     try {
-      final results = await Future.wait([
-        appApiRepository.connections(),
-        appApiRepository.recentFiles(pageSize: 20),
-      ]);
-
-      final connections = results[0] as List<ApiConnection>;
-      final files = results[1] as List<ApiFileItem>;
+      final connections = await appApiRepository.connections();
       final mappedVaultItems = connections
           .map(mapConnectionToVaultItem)
           .toList();
-      final mappedRecentFiles = files.map(mapApiFileToRecentFileItem).toList();
-      final totalUsedBytes = connections.fold<double>(
-        0,
-        (acc, connection) => acc + connection.usedBytes,
-      );
-      final totalBytes = connections.fold<double>(
-        0,
-        (acc, connection) => acc + connection.totalBytes,
-      );
+
+      if (!mounted) return;
+      setState(() {
+        _vaultItems = mappedVaultItems;
+      });
 
       appCacheStore.set<_DashboardBundle>(
         _cacheKey,
         _DashboardBundle(
           vaultItems: mappedVaultItems,
-          recentFiles: mappedRecentFiles,
-          totalUsedBytes: totalUsedBytes,
-          totalBytes: totalBytes,
+          recentFiles: _recentFiles,
+          totalUsedBytes: _totalUsedBytes,
+          totalBytes: _totalBytes,
         ),
         ttl: _cacheTtl,
       );
-
-      if (!mounted) return;
-      setState(() {
-        _vaultItems = mappedVaultItems;
-        _recentFiles = mappedRecentFiles;
-        _totalUsedBytes = totalUsedBytes;
-        _totalBytes = totalBytes;
-      });
     } on ApiException catch (e) {
       if (!mounted) return;
       _showSnack('API error: ${e.statusCode ?? ''} ${e.message}'.trim());
     } catch (_) {
       if (!mounted) return;
-      _showSnack('Failed to refresh dashboard data');
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      _showSnack('Failed to refresh connected storages');
     }
   }
 
@@ -229,7 +205,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
                             context,
                           );
                           if (didStartConnect) {
-                            await _refreshAfterAddProvider();
+                            await _refreshConnectionsOnly();
                           }
                         },
                         onStorageTap: (storage) {
