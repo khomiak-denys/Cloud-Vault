@@ -381,4 +381,54 @@ class AppLocalizationsEn extends AppLocalizations {
   String storageBrowserApiError(Object message, Object status) {
     return 'API error: $status $message';
   }
+
+  @override
+  String get filePreviewLoading => 'Loading preview...';
+
+  @override
+  String get filePreviewFolderUnsupported => 'Folder preview is not available';
+
+  @override
+  String get filePreviewUnavailable => 'Preview unavailable';
+
+  @override
+  String get filePreviewOpenExternal => 'Open externally';
+
+  @override
+  String get filePreviewOpenExternalFailed => 'Failed to open externally';
+
+  @override
+  String get filePreviewLoadFailed => 'Failed to load preview';
+
+  @override
+  String get filePreviewUnsupportedType =>
+      'This file type is not supported for in-app preview';
+
+  @override
+  String get filePreviewPdfLoadFailed => 'Failed to load PDF preview';
+
+  @override
+  String get filePreviewPdfTooLarge =>
+      'PDF is too large for in-app preview. Open externally.';
+
+  @override
+  String get filePreviewDownloadTimeout =>
+      'Preview download timed out. Try opening externally.';
+
+  @override
+  String get filePreviewBlockedUrlScheme => 'Blocked URL scheme for security.';
+
+  @override
+  String get filePreviewVideoInitFailed => 'Failed to initialize video preview';
+
+  @override
+  String get filePreviewPlay => 'Play';
+
+  @override
+  String get filePreviewPause => 'Pause';
+
+  @override
+  String filePreviewApiError(Object message, Object status) {
+    return 'API error: $status $message';
+  }
 }

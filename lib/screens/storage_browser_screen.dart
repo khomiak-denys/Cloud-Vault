@@ -8,6 +8,7 @@ import '../data/file_actions_handler.dart';
 import '../models/recent_file_item.dart';
 import '../models/vault_item.dart';
 import '../modals/file_actions_modal.dart';
+import 'file_preview_screen.dart';
 import '../theme/app_theme_colors.dart';
 import '../widgets/mobile_screen_shell.dart';
 import '../widgets/search/search_header.dart';
@@ -423,10 +424,13 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
                                       ),
                                       onTap: isFolder
                                           ? () => _openFolder(item)
-                                          : () => showFileActionsModal(
-                                              context,
-                                              item,
-                                              onActionTap: _onFileAction,
+                                          : () => Navigator.of(context).push(
+                                              MaterialPageRoute<void>(
+                                                builder: (_) =>
+                                                    FilePreviewScreen(
+                                                      file: item,
+                                                    ),
+                                              ),
                                             ),
                                       trailing: isFolder
                                           ? null

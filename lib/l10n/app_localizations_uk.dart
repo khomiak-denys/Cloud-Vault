@@ -382,4 +382,59 @@ class AppLocalizationsUk extends AppLocalizations {
   String storageBrowserApiError(Object message, Object status) {
     return 'Помилка API: $status $message';
   }
+
+  @override
+  String get filePreviewLoading => 'Завантаження перегляду...';
+
+  @override
+  String get filePreviewFolderUnsupported =>
+      'Попередній перегляд папки недоступний';
+
+  @override
+  String get filePreviewUnavailable => 'Попередній перегляд недоступний';
+
+  @override
+  String get filePreviewOpenExternal => 'Відкрити зовні';
+
+  @override
+  String get filePreviewOpenExternalFailed => 'Не вдалося відкрити зовні';
+
+  @override
+  String get filePreviewLoadFailed =>
+      'Не вдалося завантажити попередній перегляд';
+
+  @override
+  String get filePreviewUnsupportedType =>
+      'Цей тип файлу не підтримується для вбудованого перегляду';
+
+  @override
+  String get filePreviewPdfLoadFailed =>
+      'Не вдалося завантажити PDF для перегляду';
+
+  @override
+  String get filePreviewPdfTooLarge =>
+      'PDF завеликий для вбудованого перегляду. Відкрийте зовні.';
+
+  @override
+  String get filePreviewDownloadTimeout =>
+      'Тайм-аут завантаження попереднього перегляду. Спробуйте відкрити зовні.';
+
+  @override
+  String get filePreviewBlockedUrlScheme =>
+      'Схему URL заблоковано з міркувань безпеки.';
+
+  @override
+  String get filePreviewVideoInitFailed =>
+      'Не вдалося ініціалізувати перегляд відео';
+
+  @override
+  String get filePreviewPlay => 'Відтворити';
+
+  @override
+  String get filePreviewPause => 'Пауза';
+
+  @override
+  String filePreviewApiError(Object message, Object status) {
+    return 'Помилка API: $status $message';
+  }
 }
