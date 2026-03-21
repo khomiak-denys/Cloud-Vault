@@ -104,6 +104,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
       }
 
       if (kind == _PreviewKind.video) {
+        if (!mounted) return;
         final previousController = _videoController;
         final controller = VideoPlayerController.networkUrl(uri);
         _videoController = controller;
@@ -111,7 +112,13 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
 
         try {
           await controller.initialize();
-          if (!mounted) return;
+          if (!mounted) {
+            if (identical(_videoController, controller)) {
+              _videoController = null;
+            }
+            await controller.dispose();
+            return;
+          }
           await controller.setLooping(true);
         } catch (_) {
           if (identical(_videoController, controller)) {
