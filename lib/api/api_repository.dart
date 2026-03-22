@@ -77,6 +77,18 @@ class ApiStorageUsageReport {
   final double? usagePercent;
 }
 
+class ApiMegaConnectResult {
+  const ApiMegaConnectResult({
+    required this.connectionId,
+    required this.providerId,
+    required this.accountEmail,
+  });
+
+  final String connectionId;
+  final String providerId;
+  final String accountEmail;
+}
+
 class ApiRepository {
   ApiRepository(this._client);
 
@@ -149,6 +161,29 @@ class ApiRepository {
 
     final obj = _extractObject(json) ?? json;
     return _str(obj['authorizeUrl']) ?? _str(obj['url']);
+  }
+
+  Future<ApiMegaConnectResult> startMegaConnect({
+    required String email,
+    required String password,
+    String? secondFactorCode,
+  }) async {
+    final json = await _client.postJson(
+      '/providers/mega/connect/start',
+      body: <String, dynamic>{
+        'email': email,
+        'password': password,
+        if (secondFactorCode != null && secondFactorCode.isNotEmpty)
+          'secondFactorCode': secondFactorCode,
+      },
+    );
+
+    final obj = _extractObject(json) ?? json;
+    return ApiMegaConnectResult(
+      connectionId: _str(obj['connectionId']) ?? '',
+      providerId: _str(obj['providerId']) ?? 'mega',
+      accountEmail: _str(obj['accountEmail']) ?? email,
+    );
   }
 
   Future<void> disconnectConnection(String id) async {

@@ -28,6 +28,18 @@ const AddVaultFlowResult _noConnectResult = AddVaultFlowResult(
   expectsAppCallback: false,
 );
 
+class _MegaConnectFormData {
+  const _MegaConnectFormData({
+    required this.email,
+    required this.password,
+    this.secondFactorCode,
+  });
+
+  final String email;
+  final String password;
+  final String? secondFactorCode;
+}
+
 Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
   final l10n = AppLocalizations.of(context)!;
   final colors = AppThemeColors.of(context);
@@ -169,6 +181,36 @@ Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
                                             }
 
                                             try {
+                                              if (providerId == 'mega') {
+                                                final credentials =
+                                                    await _showMegaConnectModal(
+                                                      context,
+                                                    );
+                                                if (credentials == null) {
+                                                  return;
+                                                }
+
+                                                await appApiRepository
+                                                    .startMegaConnect(
+                                                      email: credentials.email,
+                                                      password:
+                                                          credentials.password,
+                                                      secondFactorCode:
+                                                          credentials
+                                                              .secondFactorCode,
+                                                    );
+
+                                                if (context.mounted) {
+                                                  Navigator.of(context).pop(
+                                                    const AddVaultFlowResult(
+                                                      didStartConnect: true,
+                                                      expectsAppCallback: false,
+                                                    ),
+                                                  );
+                                                }
+                                                return;
+                                              }
+
                                               final redirectUri =
                                                   _connectRedirectUriForProvider(
                                                     providerId,
@@ -340,4 +382,116 @@ void _showSnack(BuildContext context, String message) {
         duration: const Duration(seconds: 2),
       ),
     );
+}
+
+Future<_MegaConnectFormData?> _showMegaConnectModal(BuildContext context) {
+  final colors = AppThemeColors.of(context);
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final secondFactorController = TextEditingController();
+
+  return showDialog<_MegaConnectFormData>(
+    context: context,
+    builder: (context) {
+      bool obscurePassword = true;
+      bool isSubmitting = false;
+
+      return StatefulBuilder(
+        builder: (context, setState) {
+          Future<void> submit() async {
+            final email = emailController.text.trim();
+            final password = passwordController.text;
+            final secondFactor = secondFactorController.text.trim();
+
+            if (email.isEmpty || password.isEmpty) {
+              _showSnack(context, 'Email and password are required');
+              return;
+            }
+
+            setState(() => isSubmitting = true);
+            Navigator.of(context).pop(
+              _MegaConnectFormData(
+                email: email,
+                password: password,
+                secondFactorCode: secondFactor.isEmpty ? null : secondFactor,
+              ),
+            );
+          }
+
+          return AlertDialog(
+            backgroundColor: colors.modalBackground,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(color: colors.modalBorder),
+            ),
+            title: Text(
+              'Connect MEGA',
+              style: TextStyle(
+                color: colors.primaryText,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      hintText: 'user@example.com',
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: obscurePassword,
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      suffixIcon: IconButton(
+                        onPressed: () => setState(
+                          () => obscurePassword = !obscurePassword,
+                        ),
+                        icon: Icon(
+                          obscurePassword
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: secondFactorController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: '2FA code (optional)',
+                      hintText: '123456',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: isSubmitting
+                    ? null
+                    : () => Navigator.of(context).pop(),
+                child: const Text('Cancel'),
+              ),
+              FilledButton(
+                onPressed: isSubmitting ? null : submit,
+                child: const Text('Connect'),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  ).whenComplete(() {
+    emailController.dispose();
+    passwordController.dispose();
+    secondFactorController.dispose();
+  });
 }
