@@ -29,6 +29,7 @@ class OAuthDeepLinkService {
     'provider_unavailable',
     'connection_failed',
     'malformed_callback',
+    'invalid_status',
   };
 
   final AppLinks _appLinks = AppLinks();

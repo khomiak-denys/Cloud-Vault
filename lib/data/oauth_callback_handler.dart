@@ -30,7 +30,19 @@ Future<void> handleOAuthCallbackEvent({
     return;
   }
 
+  if (event.status.toLowerCase() == 'cancelled') {
+    showMessage(_mapOAuthCancelledMessage(event.error));
+    return;
+  }
+
   showErrorWithRetry(_mapOAuthErrorToMessage(event.error), onRetry);
+}
+
+String _mapOAuthCancelledMessage(String? errorCode) {
+  if (errorCode?.toLowerCase() == 'access_denied') {
+    return 'Authorization was cancelled';
+  }
+  return 'Connection was cancelled';
 }
 
 String _mapOAuthErrorToMessage(String? errorCode) {
