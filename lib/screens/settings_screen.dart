@@ -9,8 +9,8 @@ import '../api/api_repository.dart';
 import '../data/api_mappers.dart';
 import '../data/app_services.dart';
 import '../data/cache_keys.dart';
+import '../data/oauth_callback_handler.dart';
 import '../data/oauth_deep_link_service.dart';
-import '../data/provider_labels.dart';
 import '../modals/add_vault_modal.dart';
 import '../modals/language_modal.dart';
 import '../models/vault_item.dart';
@@ -178,37 +178,33 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _handleOAuthCallback(OAuthCallbackEvent event) async {
     if (!mounted) return;
+    await handleOAuthCallbackEvent(
+      event: event,
+      refreshOnSuccess: _refreshConnectionsOnly,
+      hasConnection: (connectionId) =>
+          _connections.any((item) => item.id == connectionId),
+      showMessage: _showToast,
+      showErrorWithRetry: _showOAuthErrorWithRetry,
+      onRetry: _startAddProviderFlow,
+    );
+  }
 
-    if (event.isSuccess) {
-      final refreshed = await _refreshConnectionsOnly();
-      if (!mounted || !refreshed) return;
-      final hasConnection = _connections.any(
-        (item) => item.id == event.connectionId,
-      );
-      if (!hasConnection) {
-        _showToast(
-          'Connection callback received, but storage is not available yet',
-        );
-        return;
-      }
-      final providerName = providerDisplayName(event.providerId);
-      _showToast('$providerName connected successfully');
-      return;
-    }
-
-    final reason = event.error ?? 'OAuth connect failed';
+  void _showOAuthErrorWithRetry(
+    String message,
+    Future<void> Function() onRetry,
+  ) {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(
-          content: Text(reason),
+          content: Text(message),
           behavior: SnackBarBehavior.floating,
           duration: const Duration(seconds: 4),
           action: SnackBarAction(
             label: 'Retry',
             onPressed: () async {
               if (!mounted) return;
-              await _startAddProviderFlow();
+              await onRetry();
             },
           ),
         ),

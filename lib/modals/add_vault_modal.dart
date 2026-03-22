@@ -1,11 +1,11 @@
 import 'dart:ui';
 
-import 'package:cloud_vault/api/api_config.dart';
 import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../api/api_config.dart';
 import '../api/api_exception.dart';
 import '../data/app_services.dart';
 import '../data/provider_options_data.dart';
