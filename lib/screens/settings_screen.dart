@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 
@@ -7,6 +9,8 @@ import '../api/api_repository.dart';
 import '../data/api_mappers.dart';
 import '../data/app_services.dart';
 import '../data/cache_keys.dart';
+import '../data/oauth_callback_handler.dart';
+import '../data/oauth_deep_link_service.dart';
 import '../modals/add_vault_modal.dart';
 import '../modals/language_modal.dart';
 import '../models/vault_item.dart';
@@ -41,12 +45,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
   List<VaultItem> _vaultItems = const [];
   List<ApiConnection> _connections = const [];
   ApiUser? _me;
+  StreamSubscription<OAuthCallbackEvent>? _oauthCallbackSubscription;
 
   @override
   void initState() {
     super.initState();
     _load();
     _prefetchProfileUsage();
+    _oauthCallbackSubscription = appOAuthDeepLinkService.events.listen(
+      _handleOAuthCallback,
+    );
+  }
+
+  @override
+  void dispose() {
+    _oauthCallbackSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _load({bool forceRefresh = false}) async {
@@ -74,7 +88,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
       final me = results[0] as ApiUser?;
       final connections = results[1] as List<ApiConnection>;
-      final mappedVaultItems = connections.map(mapConnectionToVaultItem).toList();
+      final mappedVaultItems = connections
+          .map(mapConnectionToVaultItem)
+          .toList();
 
       appCacheStore.set<_SettingsBundle>(
         _cacheKey,
@@ -112,7 +128,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     try {
       final usage = await appApiRepository.storageUsage();
-      final usedBytes = usage.fold<double>(0, (acc, item) => acc + item.usedBytes);
+      final usedBytes = usage.fold<double>(
+        0,
+        (acc, item) => acc + item.usedBytes,
+      );
       appCacheStore.set<double>(
         kProfileUsageCacheKey,
         usedBytes,
@@ -123,12 +142,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _refreshConnectionsOnly() async {
+  Future<bool> _refreshConnectionsOnly() async {
     try {
       final connections = await appApiRepository.connections();
-      final mappedVaultItems = connections.map(mapConnectionToVaultItem).toList();
+      final mappedVaultItems = connections
+          .map(mapConnectionToVaultItem)
+          .toList();
 
-      if (!mounted) return;
+      if (!mounted) return false;
       setState(() {
         _connections = connections;
         _vaultItems = mappedVaultItems;
@@ -143,12 +164,59 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ),
         ttl: _cacheTtl,
       );
+      return true;
     } on ApiException catch (e) {
-      if (!mounted) return;
+      if (!mounted) return false;
       _showToast('API error: ${e.statusCode ?? ''} ${e.message}'.trim());
+      return false;
     } catch (_) {
-      if (!mounted) return;
+      if (!mounted) return false;
       _showToast('Failed to refresh connected storages');
+      return false;
+    }
+  }
+
+  Future<void> _handleOAuthCallback(OAuthCallbackEvent event) async {
+    if (!mounted) return;
+    await handleOAuthCallbackEvent(
+      event: event,
+      refreshOnSuccess: _refreshConnectionsOnly,
+      hasConnection: (connectionId) =>
+          _connections.any((item) => item.id == connectionId),
+      showMessage: _showToast,
+      showErrorWithRetry: _showOAuthErrorWithRetry,
+      onRetry: _startAddProviderFlow,
+    );
+  }
+
+  void _showOAuthErrorWithRetry(
+    String message,
+    Future<void> Function() onRetry,
+  ) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: () async {
+              if (!mounted) return;
+              await onRetry();
+            },
+          ),
+        ),
+      );
+  }
+
+  Future<void> _startAddProviderFlow() async {
+    final result = await showAddVaultModal(context);
+    if (!result.didStartConnect) return;
+
+    if (!result.expectsAppCallback) {
+      await _refreshConnectionsOnly();
     }
   }
 
@@ -324,10 +392,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               connectedLabel: l10n.connected,
                               items: _vaultItems,
                               onAddTap: () async {
-                                final didStartConnect =
-                                    await showAddVaultModal(context);
-                                if (!didStartConnect) return;
-                                await _refreshConnectionsOnly();
+                                await _startAddProviderFlow();
                               },
                               onDisconnect: _handleDisconnect,
                             ),

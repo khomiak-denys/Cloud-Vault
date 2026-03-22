@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../api/api_exception.dart';
@@ -5,6 +7,8 @@ import '../api/api_repository.dart';
 import '../data/api_mappers.dart';
 import '../data/app_services.dart';
 import '../data/file_actions_handler.dart';
+import '../data/oauth_callback_handler.dart';
+import '../data/oauth_deep_link_service.dart';
 import '../modals/add_vault_modal.dart';
 import '../modals/file_actions_modal.dart';
 import '../models/recent_file_item.dart';
@@ -32,13 +36,24 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
   List<VaultItem> _vaultItems = const [];
   List<RecentFileItem> _recentFiles = const [];
   bool _isLoading = true;
+  bool _lastLoadSucceeded = true;
   double _totalUsedBytes = 0;
   double _totalBytes = 0;
+  StreamSubscription<OAuthCallbackEvent>? _oauthCallbackSubscription;
 
   @override
   void initState() {
     super.initState();
     _load();
+    _oauthCallbackSubscription = appOAuthDeepLinkService.events.listen(
+      _handleOAuthCallback,
+    );
+  }
+
+  @override
+  void dispose() {
+    _oauthCallbackSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _load({bool forceRefresh = false}) async {
@@ -52,6 +67,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
           _totalBytes = cached.totalBytes;
           _isLoading = false;
         });
+        _lastLoadSucceeded = true;
         return;
       }
     }
@@ -109,12 +125,15 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
         _totalUsedBytes = totalUsedBytes;
         _totalBytes = totalBytes;
       });
+      _lastLoadSucceeded = true;
     } on ApiException catch (e) {
       if (!mounted) return;
       _showSnack('API error: ${e.statusCode ?? ''} ${e.message}'.trim());
+      _lastLoadSucceeded = false;
     } catch (_) {
       if (!mounted) return;
       _showSnack('Failed to load dashboard data');
+      _lastLoadSucceeded = false;
     } finally {
       if (mounted) {
         setState(() => _isLoading = false);
@@ -149,6 +168,53 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
       );
   }
 
+  Future<void> _handleOAuthCallback(OAuthCallbackEvent event) async {
+    if (!mounted) return;
+    await handleOAuthCallbackEvent(
+      event: event,
+      refreshOnSuccess: () async {
+        await _load(forceRefresh: true);
+        return mounted && _lastLoadSucceeded;
+      },
+      hasConnection: (connectionId) =>
+          _vaultItems.any((item) => item.id == connectionId),
+      showMessage: _showSnack,
+      showErrorWithRetry: _showOAuthErrorWithRetry,
+      onRetry: _startAddProviderFlow,
+    );
+  }
+
+  void _showOAuthErrorWithRetry(
+    String message,
+    Future<void> Function() onRetry,
+  ) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 4),
+          action: SnackBarAction(
+            label: 'Retry',
+            onPressed: () async {
+              if (!mounted) return;
+              await onRetry();
+            },
+          ),
+        ),
+      );
+  }
+
+  Future<void> _startAddProviderFlow() async {
+    final result = await showAddVaultModal(context);
+    if (!result.didStartConnect) return;
+
+    if (!result.expectsAppCallback) {
+      await _load(forceRefresh: true);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final percentUsed = _totalBytes > 0
@@ -170,12 +236,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
                       DashboardStoragesSection(
                         items: _vaultItems,
                         onAddTap: () async {
-                          final didStartConnect = await showAddVaultModal(
-                            context,
-                          );
-                          if (didStartConnect) {
-                            await _load(forceRefresh: true);
-                          }
+                          await _startAddProviderFlow();
                         },
                         onStorageTap: (storage) {
                           Navigator.of(context).push(
