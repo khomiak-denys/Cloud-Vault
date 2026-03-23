@@ -529,10 +529,11 @@ String? _str(dynamic value) {
 String _normalizeProviderId(String? providerId) {
   final raw = providerId?.trim() ?? '';
   if (raw.isEmpty) return '';
-  if (raw.toLowerCase() == 'google') {
+  final normalized = raw.toLowerCase();
+  if (normalized == 'google') {
     return 'google-drive';
   }
-  return raw;
+  return normalized;
 }
 
 double? _num(dynamic value) {
