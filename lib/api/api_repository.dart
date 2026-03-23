@@ -120,8 +120,9 @@ class ApiRepository {
         .map((item) {
           return ApiConnection(
             id: _str(item['id']) ?? _str(item['_id']) ?? '',
-            providerId:
-                _str(item['providerId']) ?? _str(item['provider']) ?? '',
+            providerId: _normalizeProviderId(
+              _str(item['providerId']) ?? _str(item['provider']),
+            ),
             providerName:
                 _str(item['providerName']) ??
                 _str(item['displayName']) ??
@@ -181,7 +182,7 @@ class ApiRepository {
 
     final obj = _extractObject(json) ?? json;
     final connectionId = _str(obj['connectionId'])?.trim() ?? '';
-    final providerId = _str(obj['providerId'])?.trim() ?? 'mega';
+    final providerId = _normalizeProviderId(_str(obj['providerId']) ?? 'mega');
     final accountEmail = _str(obj['accountEmail'])?.trim() ?? email;
     if (connectionId.isEmpty) {
       throw ApiException('Invalid MEGA connect response: missing connectionId');
@@ -222,8 +223,11 @@ class ApiRepository {
   }
 
   String _normalizeListPath(String path, {String? providerId}) {
-    final providerKey = providerId?.trim().toLowerCase();
-    if (providerKey == 'mega' || providerKey == 'onedrive') {
+    final providerKey = _normalizeProviderId(providerId).toLowerCase();
+    if (providerKey == 'mega' ||
+        providerKey == 'onedrive' ||
+        providerKey == 'google-drive' ||
+        providerKey == 'dropbox') {
       return _normalizeIdBasedListPath(path);
     }
     return _normalizeStoragePath(path);
@@ -398,7 +402,7 @@ class ApiRepository {
         .map((item) {
           return ApiConnection(
             id: _str(item['connectionId']) ?? _str(item['id']) ?? '',
-            providerId: _str(item['providerId']) ?? '',
+            providerId: _normalizeProviderId(_str(item['providerId'])),
             providerName:
                 _str(item['providerName']) ?? _str(item['name']) ?? 'Storage',
             usedBytes: _num(item['usedBytes']) ?? 0,
@@ -441,7 +445,6 @@ class ApiRepository {
   List<ApiFileItem> _parseFileItems(Map<String, dynamic> json) {
     final list = _extractList(json);
     final rootConnectionId = _str(json['connectionId']);
-    final rootProviderId = _str(json['providerId']);
 
     return list.map((item) {
       final modifiedRaw =
@@ -460,8 +463,7 @@ class ApiRepository {
       return ApiFileItem(
         // Prefer provider-native file identifier (fileId/path) for file actions.
         id: _str(item['fileId']) ?? filePath,
-        connectionId:
-            itemConnectionId ?? safeRootConnectionId ?? rootProviderId ?? '',
+        connectionId: itemConnectionId ?? safeRootConnectionId ?? '',
         name: fileName,
         path: filePath,
         sizeBytes: _num(item['sizeBytes']) ?? _num(item['size']) ?? 0,
@@ -522,6 +524,16 @@ String? _str(dynamic value) {
   if (value == null) return null;
   if (value is String) return value;
   return value.toString();
+}
+
+String _normalizeProviderId(String? providerId) {
+  final raw = providerId?.trim() ?? '';
+  if (raw.isEmpty) return '';
+  final normalized = raw.toLowerCase();
+  if (normalized == 'google') {
+    return 'google-drive';
+  }
+  return normalized;
 }
 
 double? _num(dynamic value) {
