@@ -223,7 +223,11 @@ class ApiRepository {
 
   String _normalizeListPath(String path, {String? providerId}) {
     final providerKey = providerId?.trim().toLowerCase();
-    if (providerKey == 'mega' || providerKey == 'onedrive') {
+    if (providerKey == 'mega' ||
+        providerKey == 'onedrive' ||
+        providerKey == 'google-drive' ||
+        providerKey == 'google' ||
+        providerKey == 'dropbox') {
       return _normalizeIdBasedListPath(path);
     }
     return _normalizeStoragePath(path);
