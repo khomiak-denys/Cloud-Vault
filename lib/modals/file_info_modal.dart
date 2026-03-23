@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 import '../api/api_exception.dart';
 import '../data/app_services.dart';
@@ -17,7 +18,7 @@ Future<void> showFileInfoModal(
   final isDark = Theme.of(context).brightness == Brightness.dark;
   final colors = AppThemeColors.of(context);
   String modifiedLabel = file.modifiedLabel;
-  String pathLabel = file.pathLabel;
+  String providerLabel = file.storageName;
 
   try {
     final response = await appApiRepository.fileProperties(
@@ -28,10 +29,13 @@ Future<void> showFileInfoModal(
         ? response['data'] as Map<String, dynamic>
         : response;
 
-    modifiedLabel =
-        (data['modifiedLabel'] ?? data['modifiedTime'] ?? file.modifiedLabel)
+    modifiedLabel = _formatDateOnly(
+      data['modifiedTime'] ?? data['modifiedAt'] ?? data['updatedAt'],
+      fallback: file.modifiedLabel,
+    );
+    providerLabel =
+        (data['providerName'] ?? data['provider'] ?? file.storageName)
             .toString();
-    pathLabel = (data['path'] ?? data['fullPath'] ?? file.pathLabel).toString();
   } on ApiException {
     // Keep existing labels when endpoint fails.
   } catch (_) {
@@ -163,8 +167,8 @@ Future<void> showFileInfoModal(
                         const SizedBox(height: 12),
                         _InfoTile(
                           icon: Icons.description_outlined,
-                          label: l10n.path,
-                          value: pathLabel,
+                          label: l10n.provider,
+                          value: providerLabel,
                           isDark: isDark,
                         ),
                         const SizedBox(height: 26),
@@ -201,6 +205,14 @@ Future<void> showFileInfoModal(
       );
     },
   );
+}
+
+String _formatDateOnly(dynamic rawValue, {required String fallback}) {
+  final raw = rawValue?.toString().trim() ?? '';
+  if (raw.isEmpty) return fallback;
+  final parsed = DateTime.tryParse(raw);
+  if (parsed == null) return fallback;
+  return DateFormat('yyyy-MM-dd').format(parsed);
 }
 
 class _InfoTile extends StatelessWidget {

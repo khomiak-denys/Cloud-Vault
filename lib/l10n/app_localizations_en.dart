@@ -278,6 +278,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get modified => 'Modified';
 
   @override
+  String get provider => 'Provider';
+
+  @override
   String get path => 'Path';
 
   @override

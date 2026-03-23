@@ -37,7 +37,7 @@ StorageUsageItem mapConnectionToStorageUsageItem(ApiConnection connection) {
 }
 
 RecentFileItem mapApiFileToRecentFileItem(ApiFileItem file) {
-  final formattedDate = DateFormat('yyyy-MM-dd HH:mm').format(file.modifiedAt);
+  final formattedDate = DateFormat('yyyy-MM-dd').format(file.modifiedAt);
   final sizeLabel = formatBytes(file.sizeBytes);
 
   return RecentFileItem(
@@ -52,7 +52,7 @@ RecentFileItem mapApiFileToRecentFileItem(ApiFileItem file) {
     modifiedLabel: formattedDate,
     sizeBytes: file.sizeBytes,
     modifiedAt: file.modifiedAt,
-    pathLabel: file.path,
+    pathLabel: file.providerName,
     isFavorite: file.isFavorite,
     kind: file.kind,
     mimeType: file.mimeType,

@@ -23,7 +23,13 @@
   "videos": "Videos",
   "sortByType": "Type (A-Z)",
   "foundFiles": "Found {count} files",
-  "@@foundFiles": {"placeholders": {"count": {"type": "int"}}},
+  "@@foundFiles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "analytics": "Analytics",
   "analyticsSubtitle": "Storage usage statistics",
   "totalSpace": "Total space",
@@ -31,7 +37,13 @@
   "freeSpace": "Free",
   "warning": "Warning!",
   "warningBody": "{storages} are almost full. Consider cleanup or upgrade.",
-  "@@warningBody": {"placeholders": {"storages": {"type": "String"}}},
+  "@@warningBody": {
+    "placeholders": {
+      "storages": {
+        "type": "String"
+      }
+    }
+  },
   "distributionByStorage": "Distribution by storages",
   "usageVsFree": "Usage vs free space",
   "recommendations": "Recommendations",
@@ -78,7 +90,13 @@
   "notificationsEnabledToast": "Notifications enabled",
   "notificationsDisabledToast": "Notifications disabled",
   "disconnectedToast": "{storage} disconnected",
-  "@@disconnectedToast": {"placeholders": {"storage": {"type": "String"}}},
+  "@@disconnectedToast": {
+    "placeholders": {
+      "storage": {
+        "type": "String"
+      }
+    }
+  },
   "fileActionsRemoveStar": "Remove star",
   "fileActionsAddStar": "Add star",
   "fileActionsDownload": "Download",
@@ -90,59 +108,78 @@
   "fileInfo": "File information",
   "size": "Size",
   "modified": "Modified",
+  "provider": "Provider",
   "path": "Path",
-  "close": "Close"
-  ,"authLoginTitle": "Sign in"
-  ,"authLoginSubtitle": "Access your CloudVault account"
-  ,"authRegisterTitle": "Create account"
-  ,"authRegisterSubtitle": "Start managing all your clouds"
-  ,"authName": "Name"
-  ,"authEmail": "Email"
-  ,"authPassword": "Password"
-  ,"authConfirmPassword": "Confirm password"
-  ,"authSignIn": "Sign in"
-  ,"authSignUp": "Sign up"
-  ,"authGoRegister": "Don't have an account? Sign up"
-  ,"authGoLogin": "Already have an account? Sign in"
-  ,"authAllCloudsOnePlace": "All clouds in one place"
-  ,"authRememberMe": "Remember me"
-  ,"authForgotPassword": "Forgot password?"
-  ,"authAgreeWith": "I agree with"
-  ,"authTerms": "terms of use"
-  ,"authAnd": "and"
-  ,"authPrivacyPolicy": "privacy policy"
-  ,"storageBrowserRoot": "Root"
-  ,"storageBrowserUp": "Up"
-  ,"storageBrowserNewFolder": "New folder"
-  ,"storageBrowserUpload": "Upload"
-  ,"storageBrowserEmptyFolder": "Folder is empty"
-  ,"storageBrowserCreateFolderTitle": "Create folder"
-  ,"storageBrowserCreateFolderHint": "Folder name"
-  ,"storageBrowserCreateFolderAction": "Create"
-  ,"storageBrowserFolderCreated": "Folder created"
-  ,"storageBrowserUploadNotConfigured": "Upload is not configured yet"
-  ,"storageBrowserLoadFailed": "Failed to load folder"
-  ,"storageBrowserCreateFolderFailed": "Failed to create folder"
-  ,"storageBrowserApiError": "API error: {status} {message}"
-  ,"@@storageBrowserApiError": {"placeholders": {"status": {"type": "String"}, "message": {"type": "String"}}}
-  ,"filePreviewLoading": "Loading preview..."
-  ,"filePreviewFolderUnsupported": "Folder preview is not available"
-  ,"filePreviewUnavailable": "Preview unavailable"
-  ,"filePreviewOpenExternal": "Open externally"
-  ,"filePreviewOpenExternalFailed": "Failed to open externally"
-  ,"filePreviewLoadFailed": "Failed to load preview"
-  ,"filePreviewUnsupportedType": "This file type is not supported for in-app preview"
-  ,"filePreviewPdfLoadFailed": "Failed to load PDF preview"
-  ,"filePreviewPdfTooLarge": "PDF is too large for in-app preview. Open externally."
-  ,"filePreviewDownloadTimeout": "Preview download timed out. Try opening externally."
-  ,"filePreviewBlockedUrlScheme": "Blocked URL scheme for security."
-  ,"filePreviewVideoInitFailed": "Failed to initialize video preview"
-  ,"filePreviewPlay": "Play"
-  ,"filePreviewPause": "Pause"
-  ,"megaConnectTitle": "Connect MEGA"
-  ,"megaSecondFactorCodeOptional": "2FA code (optional)"
-  ,"megaCredentialsRequired": "Email and password are required"
-  ,"megaConnectFailed": "Failed to connect MEGA"
-  ,"filePreviewApiError": "API error: {status} {message}"
-  ,"@@filePreviewApiError": {"placeholders": {"status": {"type": "String"}, "message": {"type": "String"}}}
+  "close": "Close",
+  "authLoginTitle": "Sign in",
+  "authLoginSubtitle": "Access your CloudVault account",
+  "authRegisterTitle": "Create account",
+  "authRegisterSubtitle": "Start managing all your clouds",
+  "authName": "Name",
+  "authEmail": "Email",
+  "authPassword": "Password",
+  "authConfirmPassword": "Confirm password",
+  "authSignIn": "Sign in",
+  "authSignUp": "Sign up",
+  "authGoRegister": "Don't have an account? Sign up",
+  "authGoLogin": "Already have an account? Sign in",
+  "authAllCloudsOnePlace": "All clouds in one place",
+  "authRememberMe": "Remember me",
+  "authForgotPassword": "Forgot password?",
+  "authAgreeWith": "I agree with",
+  "authTerms": "terms of use",
+  "authAnd": "and",
+  "authPrivacyPolicy": "privacy policy",
+  "storageBrowserRoot": "Root",
+  "storageBrowserUp": "Up",
+  "storageBrowserNewFolder": "New folder",
+  "storageBrowserUpload": "Upload",
+  "storageBrowserEmptyFolder": "Folder is empty",
+  "storageBrowserCreateFolderTitle": "Create folder",
+  "storageBrowserCreateFolderHint": "Folder name",
+  "storageBrowserCreateFolderAction": "Create",
+  "storageBrowserFolderCreated": "Folder created",
+  "storageBrowserUploadNotConfigured": "Upload is not configured yet",
+  "storageBrowserLoadFailed": "Failed to load folder",
+  "storageBrowserCreateFolderFailed": "Failed to create folder",
+  "storageBrowserApiError": "API error: {status} {message}",
+  "@@storageBrowserApiError": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      },
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "filePreviewLoading": "Loading preview...",
+  "filePreviewFolderUnsupported": "Folder preview is not available",
+  "filePreviewUnavailable": "Preview unavailable",
+  "filePreviewOpenExternal": "Open externally",
+  "filePreviewOpenExternalFailed": "Failed to open externally",
+  "filePreviewLoadFailed": "Failed to load preview",
+  "filePreviewUnsupportedType": "This file type is not supported for in-app preview",
+  "filePreviewPdfLoadFailed": "Failed to load PDF preview",
+  "filePreviewPdfTooLarge": "PDF is too large for in-app preview. Open externally.",
+  "filePreviewDownloadTimeout": "Preview download timed out. Try opening externally.",
+  "filePreviewBlockedUrlScheme": "Blocked URL scheme for security.",
+  "filePreviewVideoInitFailed": "Failed to initialize video preview",
+  "filePreviewPlay": "Play",
+  "filePreviewPause": "Pause",
+  "megaConnectTitle": "Connect MEGA",
+  "megaSecondFactorCodeOptional": "2FA code (optional)",
+  "megaCredentialsRequired": "Email and password are required",
+  "megaConnectFailed": "Failed to connect MEGA",
+  "filePreviewApiError": "API error: {status} {message}",
+  "@@filePreviewApiError": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      },
+      "message": {
+        "type": "String"
+      }
+    }
+  }
 }

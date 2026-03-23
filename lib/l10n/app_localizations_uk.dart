@@ -279,6 +279,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get modified => 'Змінено';
 
   @override
+  String get provider => '?????????';
+
+  @override
   String get path => 'Шлях';
 
   @override
