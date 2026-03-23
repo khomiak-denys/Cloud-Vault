@@ -411,7 +411,7 @@ Future<bool> _showMegaConnectModal(
               } else {
                 _showSnack(
                   context,
-                  l10n.storageBrowserApiError(status, message),
+                  l10n.storageBrowserApiError(message, status),
                 );
               }
               setState(() => isSubmitting = false);
