@@ -185,6 +185,7 @@ Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
                                                 final credentials =
                                                     await _showMegaConnectModal(
                                                       context,
+                                                      l10n,
                                                     );
                                                 if (credentials == null) {
                                                   return;
@@ -384,7 +385,10 @@ void _showSnack(BuildContext context, String message) {
     );
 }
 
-Future<_MegaConnectFormData?> _showMegaConnectModal(BuildContext context) {
+Future<_MegaConnectFormData?> _showMegaConnectModal(
+  BuildContext context,
+  AppLocalizations l10n,
+) {
   final colors = AppThemeColors.of(context);
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
@@ -404,7 +408,7 @@ Future<_MegaConnectFormData?> _showMegaConnectModal(BuildContext context) {
             final secondFactor = secondFactorController.text.trim();
 
             if (email.isEmpty || password.isEmpty) {
-              _showSnack(context, 'Email and password are required');
+              _showSnack(context, l10n.megaCredentialsRequired);
               return;
             }
 
@@ -425,7 +429,7 @@ Future<_MegaConnectFormData?> _showMegaConnectModal(BuildContext context) {
               side: BorderSide(color: colors.modalBorder),
             ),
             title: Text(
-              'Connect MEGA',
+              l10n.megaConnectTitle,
               style: TextStyle(
                 color: colors.primaryText,
                 fontWeight: FontWeight.w700,
@@ -438,9 +442,9 @@ Future<_MegaConnectFormData?> _showMegaConnectModal(BuildContext context) {
                   TextField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      hintText: 'user@example.com',
+                    decoration: InputDecoration(
+                      labelText: l10n.authEmail,
+                      hintText: l10n.authEmail,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -448,7 +452,7 @@ Future<_MegaConnectFormData?> _showMegaConnectModal(BuildContext context) {
                     controller: passwordController,
                     obscureText: obscurePassword,
                     decoration: InputDecoration(
-                      labelText: 'Password',
+                      labelText: l10n.authPassword,
                       suffixIcon: IconButton(
                         onPressed: () => setState(
                           () => obscurePassword = !obscurePassword,
@@ -465,9 +469,9 @@ Future<_MegaConnectFormData?> _showMegaConnectModal(BuildContext context) {
                   TextField(
                     controller: secondFactorController,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(
-                      labelText: '2FA code (optional)',
-                      hintText: '123456',
+                    decoration: InputDecoration(
+                      labelText: l10n.megaSecondFactorCodeOptional,
+                      hintText: l10n.megaSecondFactorCodeOptional,
                     ),
                   ),
                 ],
@@ -478,11 +482,11 @@ Future<_MegaConnectFormData?> _showMegaConnectModal(BuildContext context) {
                 onPressed: isSubmitting
                     ? null
                     : () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
+                child: Text(l10n.cancel),
               ),
               FilledButton(
                 onPressed: isSubmitting ? null : submit,
-                child: const Text('Connect'),
+                child: Text(l10n.connect),
               ),
             ],
           );

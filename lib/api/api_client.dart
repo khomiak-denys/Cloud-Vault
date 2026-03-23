@@ -10,6 +10,16 @@ import 'auth_session.dart';
 
 class ApiClient {
   ApiClient({http.Client? httpClient}) : _httpClient = httpClient ?? http.Client();
+  static const Set<String> _sensitiveBodyKeys = {
+    'password',
+    'secondfactorcode',
+    'token',
+    'access_token',
+    'refresh_token',
+    'authorization',
+    'bearer',
+    'appcheck',
+  };
 
   final http.Client _httpClient;
 
@@ -182,8 +192,35 @@ class ApiClient {
   }) {
     debugPrint('[API][request] $method $uri');
     if (body != null) {
-      debugPrint('[API][request-body] ${jsonEncode(body)}');
+      debugPrint('[API][request-body] ${jsonEncode(_redactSensitive(body))}');
     }
+  }
+
+  dynamic _redactSensitive(dynamic value, {String? key}) {
+    if (_isSensitiveKey(key)) {
+      return '***REDACTED***';
+    }
+    if (value is Map) {
+      return value.map(
+        (k, v) => MapEntry(
+          k,
+          _redactSensitive(v, key: k?.toString()),
+        ),
+      );
+    }
+    if (value is List) {
+      return value.map((item) => _redactSensitive(item)).toList();
+    }
+    return value;
+  }
+
+  bool _isSensitiveKey(String? key) {
+    if (key == null || key.isEmpty) return false;
+    final normalized = key.toLowerCase().trim();
+    if (_sensitiveBodyKeys.contains(normalized)) return true;
+    return normalized.contains('password') ||
+        normalized.contains('token') ||
+        normalized.contains('secret');
   }
 
   void _logApiResponse({

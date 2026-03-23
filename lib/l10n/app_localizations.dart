@@ -908,6 +908,24 @@ abstract class AppLocalizations {
   /// **'Pause'**
   String get filePreviewPause;
 
+  /// No description provided for @megaConnectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect MEGA'**
+  String get megaConnectTitle;
+
+  /// No description provided for @megaSecondFactorCodeOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'2FA code (optional)'**
+  String get megaSecondFactorCodeOptional;
+
+  /// No description provided for @megaCredentialsRequired.
+  ///
+  /// In en, this message translates to:
+  /// **'Email and password are required'**
+  String get megaCredentialsRequired;
+
   /// No description provided for @filePreviewApiError.
   ///
   /// In en, this message translates to:
