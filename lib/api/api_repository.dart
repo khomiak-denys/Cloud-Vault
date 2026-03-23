@@ -223,7 +223,7 @@ class ApiRepository {
   }
 
   String _normalizeListPath(String path, {String? providerId}) {
-    final providerKey = providerId?.trim().toLowerCase();
+    final providerKey = _normalizeProviderId(providerId).toLowerCase();
     if (providerKey == 'mega' ||
         providerKey == 'onedrive' ||
         providerKey == 'google-drive' ||
@@ -445,7 +445,6 @@ class ApiRepository {
   List<ApiFileItem> _parseFileItems(Map<String, dynamic> json) {
     final list = _extractList(json);
     final rootConnectionId = _str(json['connectionId']);
-    final rootProviderId = _normalizeProviderId(_str(json['providerId']));
 
     return list.map((item) {
       final modifiedRaw =
@@ -464,8 +463,7 @@ class ApiRepository {
       return ApiFileItem(
         // Prefer provider-native file identifier (fileId/path) for file actions.
         id: _str(item['fileId']) ?? filePath,
-        connectionId:
-            itemConnectionId ?? safeRootConnectionId ?? rootProviderId,
+        connectionId: itemConnectionId ?? safeRootConnectionId ?? '',
         name: fileName,
         path: filePath,
         sizeBytes: _num(item['sizeBytes']) ?? _num(item['size']) ?? 0,
