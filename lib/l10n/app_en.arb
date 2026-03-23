@@ -139,6 +139,10 @@
   ,"filePreviewVideoInitFailed": "Failed to initialize video preview"
   ,"filePreviewPlay": "Play"
   ,"filePreviewPause": "Pause"
+  ,"megaConnectTitle": "Connect MEGA"
+  ,"megaSecondFactorCodeOptional": "2FA code (optional)"
+  ,"megaCredentialsRequired": "Email and password are required"
+  ,"megaConnectFailed": "Failed to connect MEGA"
   ,"filePreviewApiError": "API error: {status} {message}"
   ,"@@filePreviewApiError": {"placeholders": {"status": {"type": "String"}, "message": {"type": "String"}}}
 }

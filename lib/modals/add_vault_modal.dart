@@ -169,6 +169,27 @@ Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
                                             }
 
                                             try {
+                                              if (providerId == 'mega') {
+                                                final connected =
+                                                    await _showMegaConnectModal(
+                                                      context,
+                                                      l10n,
+                                                    );
+                                                if (!connected) {
+                                                  return;
+                                                }
+
+                                                if (context.mounted) {
+                                                  Navigator.of(context).pop(
+                                                    const AddVaultFlowResult(
+                                                      didStartConnect: true,
+                                                      expectsAppCallback: false,
+                                                    ),
+                                                  );
+                                                }
+                                                return;
+                                              }
+
                                               final redirectUri =
                                                   _connectRedirectUriForProvider(
                                                     providerId,
@@ -340,4 +361,159 @@ void _showSnack(BuildContext context, String message) {
         duration: const Duration(seconds: 2),
       ),
     );
+}
+
+Future<bool> _showMegaConnectModal(
+  BuildContext context,
+  AppLocalizations l10n,
+) {
+  final colors = AppThemeColors.of(context);
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
+  final secondFactorController = TextEditingController();
+
+  return showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) {
+      bool obscurePassword = true;
+      bool isSubmitting = false;
+
+      return StatefulBuilder(
+        builder: (context, setState) {
+          Future<void> submit() async {
+            final email = emailController.text.trim();
+            final password = passwordController.text;
+            final secondFactor = secondFactorController.text.trim();
+
+            if (email.isEmpty || password.isEmpty) {
+              _showSnack(context, l10n.megaCredentialsRequired);
+              return;
+            }
+
+            setState(() => isSubmitting = true);
+            try {
+              await appApiRepository.startMegaConnect(
+                email: email,
+                password: password,
+                secondFactorCode: secondFactor.isEmpty ? null : secondFactor,
+              );
+              if (context.mounted) {
+                Navigator.of(context).pop(true);
+              }
+            } on ApiException catch (e) {
+              if (!context.mounted) return;
+              final status = e.statusCode?.toString() ?? '';
+              final message = e.message.trim();
+              if (message.isEmpty ||
+                  message.toLowerCase() == 'request failed') {
+                _showSnack(context, l10n.megaConnectFailed);
+              } else {
+                _showSnack(
+                  context,
+                  l10n.storageBrowserApiError(message, status),
+                );
+              }
+              setState(() => isSubmitting = false);
+            } catch (_) {
+              if (!context.mounted) return;
+              _showSnack(context, l10n.megaConnectFailed);
+              setState(() => isSubmitting = false);
+            }
+          }
+
+          return AlertDialog(
+            backgroundColor: colors.modalBackground,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+              side: BorderSide(color: colors.modalBorder),
+            ),
+            title: Text(
+              l10n.megaConnectTitle,
+              style: TextStyle(
+                color: colors.primaryText,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TextField(
+                    controller: emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    autofillHints: const [AutofillHints.username, AutofillHints.email],
+                    enabled: !isSubmitting,
+                    decoration: InputDecoration(
+                      labelText: l10n.authEmail,
+                      hintText: l10n.authEmail,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: passwordController,
+                    obscureText: obscurePassword,
+                    enabled: !isSubmitting,
+                    keyboardType: TextInputType.visiblePassword,
+                    autofillHints: const [AutofillHints.password],
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    decoration: InputDecoration(
+                      labelText: l10n.authPassword,
+                      suffixIcon: IconButton(
+                        onPressed: () => setState(
+                          () => obscurePassword = !obscurePassword,
+                        ),
+                        icon: Icon(
+                          obscurePassword
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  TextField(
+                    controller: secondFactorController,
+                    keyboardType: TextInputType.number,
+                    autocorrect: false,
+                    enableSuggestions: false,
+                    enabled: !isSubmitting,
+                    decoration: InputDecoration(
+                      labelText: l10n.megaSecondFactorCodeOptional,
+                      hintText: l10n.megaSecondFactorCodeOptional,
+                    ),
+                  ),
+                  if (isSubmitting) ...[
+                    const SizedBox(height: 14),
+                    const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: isSubmitting
+                    ? null
+                    : () => Navigator.of(context).pop(false),
+                child: Text(l10n.cancel),
+              ),
+              FilledButton(
+                onPressed: isSubmitting ? null : submit,
+                child: Text(l10n.connect),
+              ),
+            ],
+          );
+        },
+      );
+    },
+  ).whenComplete(() {
+    emailController.dispose();
+    passwordController.dispose();
+    secondFactorController.dispose();
+  }).then((value) => value == true);
 }

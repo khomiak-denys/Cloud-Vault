@@ -23,7 +23,13 @@
   "videos": "Відео",
   "sortByType": "Тип (A-Z)",
   "foundFiles": "Знайдено {count} файлів",
-  "@@foundFiles": {"placeholders": {"count": {"type": "int"}}},
+  "@@foundFiles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "analytics": "Аналітика",
   "analyticsSubtitle": "Статистика використання сховищ",
   "totalSpace": "Всього простору",
@@ -31,7 +37,13 @@
   "freeSpace": "Вільно",
   "warning": "Увага!",
   "warningBody": "{storages} майже заповнені. Розгляньте можливість очистки або розширення.",
-  "@@warningBody": {"placeholders": {"storages": {"type": "String"}}},
+  "@@warningBody": {
+    "placeholders": {
+      "storages": {
+        "type": "String"
+      }
+    }
+  },
   "distributionByStorage": "Розподіл по сховищах",
   "usageVsFree": "Використання vs Вільний простір",
   "recommendations": "Рекомендації",
@@ -78,7 +90,13 @@
   "notificationsEnabledToast": "Сповіщення увімкнено",
   "notificationsDisabledToast": "Сповіщення вимкнено",
   "disconnectedToast": "{storage} відключено",
-  "@@disconnectedToast": {"placeholders": {"storage": {"type": "String"}}},
+  "@@disconnectedToast": {
+    "placeholders": {
+      "storage": {
+        "type": "String"
+      }
+    }
+  },
   "fileActionsRemoveStar": "Прибрати зірочку",
   "fileActionsAddStar": "Додати зірочку",
   "fileActionsDownload": "Завантажити",
@@ -91,54 +109,76 @@
   "size": "Розмір",
   "modified": "Змінено",
   "path": "Шлях",
-  "close": "Закрити"
-  ,"authLoginTitle": "Вхід"
-  ,"authLoginSubtitle": "Увійдіть у ваш CloudVault акаунт"
-  ,"authRegisterTitle": "Реєстрація"
-  ,"authRegisterSubtitle": "Почніть керувати всіма своїми хмарами"
-  ,"authName": "Ім'я"
-  ,"authEmail": "Email"
-  ,"authPassword": "Пароль"
-  ,"authConfirmPassword": "Підтвердіть пароль"
-  ,"authSignIn": "Увійти"
-  ,"authSignUp": "Зареєструватися"
-  ,"authGoRegister": "Ще немає акаунта? Зареєструватися"
-  ,"authGoLogin": "Вже маєте акаунт? Увійти"
-  ,"authAllCloudsOnePlace": "Всі хмари в одному місці"
-  ,"authRememberMe": "Запам'ятати мене"
-  ,"authForgotPassword": "Забули пароль?"
-  ,"authAgreeWith": "Я погоджуюсь з"
-  ,"authTerms": "умовами використання"
-  ,"authAnd": "та"
-  ,"authPrivacyPolicy": "політикою конфіденційності"
-  ,"storageBrowserRoot": "Корінь"
-  ,"storageBrowserUp": "Вгору"
-  ,"storageBrowserNewFolder": "Нова папка"
-  ,"storageBrowserUpload": "Завантажити"
-  ,"storageBrowserEmptyFolder": "Папка порожня"
-  ,"storageBrowserCreateFolderTitle": "Створити папку"
-  ,"storageBrowserCreateFolderHint": "Назва папки"
-  ,"storageBrowserCreateFolderAction": "Створити"
-  ,"storageBrowserFolderCreated": "Папку створено"
-  ,"storageBrowserUploadNotConfigured": "Завантаження ще не налаштовано"
-  ,"storageBrowserLoadFailed": "Не вдалося завантажити папку"
-  ,"storageBrowserCreateFolderFailed": "Не вдалося створити папку"
-  ,"storageBrowserApiError": "Помилка API: {status} {message}"
-  ,"@@storageBrowserApiError": {"placeholders": {"status": {"type": "String"}, "message": {"type": "String"}}}
-  ,"filePreviewLoading": "Завантаження перегляду..."
-  ,"filePreviewFolderUnsupported": "Попередній перегляд папки недоступний"
-  ,"filePreviewUnavailable": "Попередній перегляд недоступний"
-  ,"filePreviewOpenExternal": "Відкрити зовні"
-  ,"filePreviewOpenExternalFailed": "Не вдалося відкрити зовні"
-  ,"filePreviewLoadFailed": "Не вдалося завантажити попередній перегляд"
-  ,"filePreviewUnsupportedType": "Цей тип файлу не підтримується для вбудованого перегляду"
-  ,"filePreviewPdfLoadFailed": "Не вдалося завантажити PDF для перегляду"
-  ,"filePreviewPdfTooLarge": "PDF завеликий для вбудованого перегляду. Відкрийте зовні."
-  ,"filePreviewDownloadTimeout": "Тайм-аут завантаження попереднього перегляду. Спробуйте відкрити зовні."
-  ,"filePreviewBlockedUrlScheme": "Схему URL заблоковано з міркувань безпеки."
-  ,"filePreviewVideoInitFailed": "Не вдалося ініціалізувати перегляд відео"
-  ,"filePreviewPlay": "Відтворити"
-  ,"filePreviewPause": "Пауза"
-  ,"filePreviewApiError": "Помилка API: {status} {message}"
-  ,"@@filePreviewApiError": {"placeholders": {"status": {"type": "String"}, "message": {"type": "String"}}}
+  "close": "Закрити",
+  "authLoginTitle": "Вхід",
+  "authLoginSubtitle": "Увійдіть у ваш CloudVault акаунт",
+  "authRegisterTitle": "Реєстрація",
+  "authRegisterSubtitle": "Почніть керувати всіма своїми хмарами",
+  "authName": "Ім'я",
+  "authEmail": "Email",
+  "authPassword": "Пароль",
+  "authConfirmPassword": "Підтвердіть пароль",
+  "authSignIn": "Увійти",
+  "authSignUp": "Зареєструватися",
+  "authGoRegister": "Ще немає акаунта? Зареєструватися",
+  "authGoLogin": "Вже маєте акаунт? Увійти",
+  "authAllCloudsOnePlace": "Всі хмари в одному місці",
+  "authRememberMe": "Запам'ятати мене",
+  "authForgotPassword": "Забули пароль?",
+  "authAgreeWith": "Я погоджуюсь з",
+  "authTerms": "умовами використання",
+  "authAnd": "та",
+  "authPrivacyPolicy": "політикою конфіденційності",
+  "storageBrowserRoot": "Корінь",
+  "storageBrowserUp": "Вгору",
+  "storageBrowserNewFolder": "Нова папка",
+  "storageBrowserUpload": "Завантажити",
+  "storageBrowserEmptyFolder": "Папка порожня",
+  "storageBrowserCreateFolderTitle": "Створити папку",
+  "storageBrowserCreateFolderHint": "Назва папки",
+  "storageBrowserCreateFolderAction": "Створити",
+  "storageBrowserFolderCreated": "Папку створено",
+  "storageBrowserUploadNotConfigured": "Завантаження ще не налаштовано",
+  "storageBrowserLoadFailed": "Не вдалося завантажити папку",
+  "storageBrowserCreateFolderFailed": "Не вдалося створити папку",
+  "storageBrowserApiError": "Помилка API: {status} {message}",
+  "@@storageBrowserApiError": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      },
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "filePreviewLoading": "Завантаження перегляду...",
+  "filePreviewFolderUnsupported": "Попередній перегляд папки недоступний",
+  "filePreviewUnavailable": "Попередній перегляд недоступний",
+  "filePreviewOpenExternal": "Відкрити зовні",
+  "filePreviewOpenExternalFailed": "Не вдалося відкрити зовні",
+  "filePreviewLoadFailed": "Не вдалося завантажити попередній перегляд",
+  "filePreviewUnsupportedType": "Цей тип файлу не підтримується для вбудованого перегляду",
+  "filePreviewPdfLoadFailed": "Не вдалося завантажити PDF для перегляду",
+  "filePreviewPdfTooLarge": "PDF завеликий для вбудованого перегляду. Відкрийте зовні.",
+  "filePreviewDownloadTimeout": "Тайм-аут завантаження попереднього перегляду. Спробуйте відкрити зовні.",
+  "filePreviewBlockedUrlScheme": "Схему URL заблоковано з міркувань безпеки.",
+  "filePreviewVideoInitFailed": "Не вдалося ініціалізувати перегляд відео",
+  "filePreviewPlay": "Відтворити",
+  "filePreviewPause": "Пауза",
+  "filePreviewApiError": "Помилка API: {status} {message}",
+  "@@filePreviewApiError": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      },
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "megaConnectTitle": "Підключити MEGA",
+  "megaSecondFactorCodeOptional": "Код 2FA (необов'язково)",
+  "megaCredentialsRequired": "Email і пароль обов'язкові",
+  "megaConnectFailed": "Не вдалося підключити MEGA"
 }

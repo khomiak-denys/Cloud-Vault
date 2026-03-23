@@ -434,6 +434,18 @@ class AppLocalizationsUk extends AppLocalizations {
   String get filePreviewPause => 'Пауза';
 
   @override
+  String get megaConnectTitle => 'Підключити MEGA';
+
+  @override
+  String get megaSecondFactorCodeOptional => 'Код 2FA (необов\'язково)';
+
+  @override
+  String get megaCredentialsRequired => 'Email і пароль обов\'язкові';
+
+  @override
+  String get megaConnectFailed => 'Не вдалося підключити MEGA';
+
+  @override
   String filePreviewApiError(Object message, Object status) {
     return 'Помилка API: $status $message';
   }

@@ -428,6 +428,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filePreviewPause => 'Pause';
 
   @override
+  String get megaConnectTitle => 'Connect MEGA';
+
+  @override
+  String get megaSecondFactorCodeOptional => '2FA code (optional)';
+
+  @override
+  String get megaCredentialsRequired => 'Email and password are required';
+
+  @override
+  String get megaConnectFailed => 'Failed to connect MEGA';
+
+  @override
   String filePreviewApiError(Object message, Object status) {
     return 'API error: $status $message';
   }
