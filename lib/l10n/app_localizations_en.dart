@@ -437,6 +437,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get megaCredentialsRequired => 'Email and password are required';
 
   @override
+  String get megaConnectFailed => 'Failed to connect MEGA';
+
+  @override
   String filePreviewApiError(Object message, Object status) {
     return 'API error: $status $message';
   }

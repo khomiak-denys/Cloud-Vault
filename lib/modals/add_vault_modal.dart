@@ -403,14 +403,21 @@ Future<bool> _showMegaConnectModal(
               }
             } on ApiException catch (e) {
               if (!context.mounted) return;
-              _showSnack(
-                context,
-                'API error: ${e.statusCode ?? ''} ${e.message}'.trim(),
-              );
+              final status = e.statusCode?.toString() ?? '';
+              final message = e.message.trim();
+              if (message.isEmpty ||
+                  message.toLowerCase() == 'request failed') {
+                _showSnack(context, l10n.megaConnectFailed);
+              } else {
+                _showSnack(
+                  context,
+                  l10n.storageBrowserApiError(status, message),
+                );
+              }
               setState(() => isSubmitting = false);
             } catch (_) {
               if (!context.mounted) return;
-              _showSnack(context, 'Failed to connect MEGA');
+              _showSnack(context, l10n.megaConnectFailed);
               setState(() => isSubmitting = false);
             }
           }
@@ -435,6 +442,7 @@ Future<bool> _showMegaConnectModal(
                   TextField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
+                    autofillHints: const [AutofillHints.username, AutofillHints.email],
                     enabled: !isSubmitting,
                     decoration: InputDecoration(
                       labelText: l10n.authEmail,
@@ -446,6 +454,10 @@ Future<bool> _showMegaConnectModal(
                     controller: passwordController,
                     obscureText: obscurePassword,
                     enabled: !isSubmitting,
+                    keyboardType: TextInputType.visiblePassword,
+                    autofillHints: const [AutofillHints.password],
+                    autocorrect: false,
+                    enableSuggestions: false,
                     decoration: InputDecoration(
                       labelText: l10n.authPassword,
                       suffixIcon: IconButton(
@@ -464,6 +476,8 @@ Future<bool> _showMegaConnectModal(
                   TextField(
                     controller: secondFactorController,
                     keyboardType: TextInputType.number,
+                    autocorrect: false,
+                    enableSuggestions: false,
                     enabled: !isSubmitting,
                     decoration: InputDecoration(
                       labelText: l10n.megaSecondFactorCodeOptional,

@@ -67,13 +67,13 @@ class AppLocalizationsUk extends AppLocalizations {
   String get documents => 'Документи';
 
   @override
-  String get images => 'Р—РѕР±СЂР°Р¶РµРЅРЅСЏ';
+  String get images => 'Зображення';
 
   @override
   String get videos => 'Відео';
 
   @override
-  String get sortByType => 'РўРёРї (A-Z)';
+  String get sortByType => 'Тип (A-Z)';
 
   @override
   String foundFiles(Object count) {
@@ -96,7 +96,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get freeSpace => 'Вільно';
 
   @override
-  String get warning => 'РЈРІР°РіР°!';
+  String get warning => 'Увага!';
 
   @override
   String warningBody(Object storages) {
@@ -119,7 +119,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get pdfReportTitle => 'Звіт про використання сховищ';
 
   @override
-  String get generatedAt => 'Р—РіРµРЅРµСЂРѕРІР°РЅРѕ';
+  String get generatedAt => 'Згенеровано';
 
   @override
   String get pdfExportFailed => 'Не вдалося експортувати PDF';
@@ -148,7 +148,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get connected => 'Підключено';
 
   @override
-  String get account => 'РђРљРђРЈРќРў';
+  String get account => 'АКАУНТ';
 
   @override
   String get preferences => 'НАЛАШТУВАННЯ';
@@ -157,7 +157,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get other => 'ІНШЕ';
 
   @override
-  String get profile => 'РџСЂРѕС„С–Р»СЊ';
+  String get profile => 'Профіль';
 
   @override
   String get profileEdit => 'Редагувати';
@@ -166,7 +166,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get profileSave => 'Зберегти';
 
   @override
-  String get profileSaved => 'РџСЂРѕС„С–Р»СЊ РѕРЅРѕРІР»РµРЅРѕ';
+  String get profileSaved => 'Профіль оновлено';
 
   @override
   String get profilePersonalInfo => 'Особиста інформація';
@@ -178,13 +178,13 @@ class AppLocalizationsUk extends AppLocalizations {
   String get profileStoragesStat => 'Сховищ';
 
   @override
-  String get language => 'РњРѕРІР°';
+  String get language => 'Мова';
 
   @override
   String get chooseLanguage => 'Оберіть мову застосунку';
 
   @override
-  String get languageUkrainian => 'РЈРєСЂР°С—РЅСЃСЊРєР°';
+  String get languageUkrainian => 'Українська';
 
   @override
   String get languageEnglish => 'Англійська';
@@ -205,13 +205,13 @@ class AppLocalizationsUk extends AppLocalizations {
   String get logout => 'Вийти';
 
   @override
-  String get enabled => 'РЈРІС–РјРєРЅРµРЅРѕ';
+  String get enabled => 'Увімкнено';
 
   @override
   String get disabled => 'Вимкнено';
 
   @override
-  String get premiumPlan => 'РџСЂРµРјС–СѓРј РїР»Р°РЅ';
+  String get premiumPlan => 'Преміум план';
 
   @override
   String get premiumValidUntil => 'Дійсний до 23 лютого 2027';
@@ -273,10 +273,10 @@ class AppLocalizationsUk extends AppLocalizations {
   String get fileInfo => 'Інформація про файл';
 
   @override
-  String get size => 'Р РѕР·РјС–СЂ';
+  String get size => 'Розмір';
 
   @override
-  String get modified => 'Р—РјС–РЅРµРЅРѕ';
+  String get modified => 'Змінено';
 
   @override
   String get path => 'Шлях';
@@ -303,7 +303,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get authEmail => 'Email';
 
   @override
-  String get authPassword => 'РџР°СЂРѕР»СЊ';
+  String get authPassword => 'Пароль';
 
   @override
   String get authConfirmPassword => 'Підтвердіть пароль';
@@ -330,7 +330,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get authForgotPassword => 'Забули пароль?';
 
   @override
-  String get authAgreeWith => 'РЇ РїРѕРіРѕРґР¶СѓСЋСЃСЊ Р·';
+  String get authAgreeWith => 'Я погоджуюсь з';
 
   @override
   String get authTerms => 'умовами використання';
@@ -342,25 +342,25 @@ class AppLocalizationsUk extends AppLocalizations {
   String get authPrivacyPolicy => 'політикою конфіденційності';
 
   @override
-  String get storageBrowserRoot => 'РљРѕСЂС–РЅСЊ';
+  String get storageBrowserRoot => 'Корінь';
 
   @override
   String get storageBrowserUp => 'Вгору';
 
   @override
-  String get storageBrowserNewFolder => 'РќРѕРІР° РїР°РїРєР°';
+  String get storageBrowserNewFolder => 'Нова папка';
 
   @override
   String get storageBrowserUpload => 'Завантажити';
 
   @override
-  String get storageBrowserEmptyFolder => 'РџР°РїРєР° РїРѕСЂРѕР¶РЅСЏ';
+  String get storageBrowserEmptyFolder => 'Папка порожня';
 
   @override
   String get storageBrowserCreateFolderTitle => 'Створити папку';
 
   @override
-  String get storageBrowserCreateFolderHint => 'РќР°Р·РІР° РїР°РїРєРё';
+  String get storageBrowserCreateFolderHint => 'Назва папки';
 
   @override
   String get storageBrowserCreateFolderAction => 'Створити';
@@ -380,7 +380,7 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String storageBrowserApiError(Object message, Object status) {
-    return 'РџРѕРјРёР»РєР° API: $status $message';
+    return 'Помилка API: $status $message';
   }
 
   @override
@@ -431,7 +431,7 @@ class AppLocalizationsUk extends AppLocalizations {
   String get filePreviewPlay => 'Відтворити';
 
   @override
-  String get filePreviewPause => 'РџР°СѓР·Р°';
+  String get filePreviewPause => 'Пауза';
 
   @override
   String get megaConnectTitle => 'Підключити MEGA';
@@ -443,7 +443,10 @@ class AppLocalizationsUk extends AppLocalizations {
   String get megaCredentialsRequired => 'Email і пароль обов\'язкові';
 
   @override
+  String get megaConnectFailed => 'Не вдалося підключити MEGA';
+
+  @override
   String filePreviewApiError(Object message, Object status) {
-    return 'РџРѕРјРёР»РєР° API: $status $message';
+    return 'Помилка API: $status $message';
   }
 }

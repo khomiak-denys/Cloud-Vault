@@ -926,6 +926,12 @@ abstract class AppLocalizations {
   /// **'Email and password are required'**
   String get megaCredentialsRequired;
 
+  /// No description provided for @megaConnectFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to connect MEGA'**
+  String get megaConnectFailed;
+
   /// No description provided for @filePreviewApiError.
   ///
   /// In en, this message translates to:
