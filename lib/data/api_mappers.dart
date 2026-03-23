@@ -52,7 +52,7 @@ RecentFileItem mapApiFileToRecentFileItem(ApiFileItem file) {
     modifiedLabel: formattedDate,
     sizeBytes: file.sizeBytes,
     modifiedAt: file.modifiedAt,
-    pathLabel: file.providerName,
+    pathLabel: file.path,
     isFavorite: file.isFavorite,
     kind: file.kind,
     mimeType: file.mimeType,
