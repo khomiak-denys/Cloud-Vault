@@ -28,18 +28,6 @@ const AddVaultFlowResult _noConnectResult = AddVaultFlowResult(
   expectsAppCallback: false,
 );
 
-class _MegaConnectFormData {
-  const _MegaConnectFormData({
-    required this.email,
-    required this.password,
-    this.secondFactorCode,
-  });
-
-  final String email;
-  final String password;
-  final String? secondFactorCode;
-}
-
 Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
   final l10n = AppLocalizations.of(context)!;
   final colors = AppThemeColors.of(context);
@@ -182,24 +170,14 @@ Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
 
                                             try {
                                               if (providerId == 'mega') {
-                                                final credentials =
+                                                final connected =
                                                     await _showMegaConnectModal(
                                                       context,
                                                       l10n,
                                                     );
-                                                if (credentials == null) {
+                                                if (!connected) {
                                                   return;
                                                 }
-
-                                                await appApiRepository
-                                                    .startMegaConnect(
-                                                      email: credentials.email,
-                                                      password:
-                                                          credentials.password,
-                                                      secondFactorCode:
-                                                          credentials
-                                                              .secondFactorCode,
-                                                    );
 
                                                 if (context.mounted) {
                                                   Navigator.of(context).pop(
@@ -385,7 +363,7 @@ void _showSnack(BuildContext context, String message) {
     );
 }
 
-Future<_MegaConnectFormData?> _showMegaConnectModal(
+Future<bool> _showMegaConnectModal(
   BuildContext context,
   AppLocalizations l10n,
 ) {
@@ -394,8 +372,9 @@ Future<_MegaConnectFormData?> _showMegaConnectModal(
   final passwordController = TextEditingController();
   final secondFactorController = TextEditingController();
 
-  return showDialog<_MegaConnectFormData>(
+  return showDialog<bool>(
     context: context,
+    barrierDismissible: false,
     builder: (context) {
       bool obscurePassword = true;
       bool isSubmitting = false;
@@ -413,13 +392,27 @@ Future<_MegaConnectFormData?> _showMegaConnectModal(
             }
 
             setState(() => isSubmitting = true);
-            Navigator.of(context).pop(
-              _MegaConnectFormData(
+            try {
+              await appApiRepository.startMegaConnect(
                 email: email,
                 password: password,
                 secondFactorCode: secondFactor.isEmpty ? null : secondFactor,
-              ),
-            );
+              );
+              if (context.mounted) {
+                Navigator.of(context).pop(true);
+              }
+            } on ApiException catch (e) {
+              if (!context.mounted) return;
+              _showSnack(
+                context,
+                'API error: ${e.statusCode ?? ''} ${e.message}'.trim(),
+              );
+              setState(() => isSubmitting = false);
+            } catch (_) {
+              if (!context.mounted) return;
+              _showSnack(context, 'Failed to connect MEGA');
+              setState(() => isSubmitting = false);
+            }
           }
 
           return AlertDialog(
@@ -442,6 +435,7 @@ Future<_MegaConnectFormData?> _showMegaConnectModal(
                   TextField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
+                    enabled: !isSubmitting,
                     decoration: InputDecoration(
                       labelText: l10n.authEmail,
                       hintText: l10n.authEmail,
@@ -451,6 +445,7 @@ Future<_MegaConnectFormData?> _showMegaConnectModal(
                   TextField(
                     controller: passwordController,
                     obscureText: obscurePassword,
+                    enabled: !isSubmitting,
                     decoration: InputDecoration(
                       labelText: l10n.authPassword,
                       suffixIcon: IconButton(
@@ -469,11 +464,20 @@ Future<_MegaConnectFormData?> _showMegaConnectModal(
                   TextField(
                     controller: secondFactorController,
                     keyboardType: TextInputType.number,
+                    enabled: !isSubmitting,
                     decoration: InputDecoration(
                       labelText: l10n.megaSecondFactorCodeOptional,
                       hintText: l10n.megaSecondFactorCodeOptional,
                     ),
                   ),
+                  if (isSubmitting) ...[
+                    const SizedBox(height: 14),
+                    const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -481,7 +485,7 @@ Future<_MegaConnectFormData?> _showMegaConnectModal(
               TextButton(
                 onPressed: isSubmitting
                     ? null
-                    : () => Navigator.of(context).pop(),
+                    : () => Navigator.of(context).pop(false),
                 child: Text(l10n.cancel),
               ),
               FilledButton(
@@ -497,5 +501,5 @@ Future<_MegaConnectFormData?> _showMegaConnectModal(
     emailController.dispose();
     passwordController.dispose();
     secondFactorController.dispose();
-  });
+  }).then((value) => value == true);
 }

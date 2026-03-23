@@ -1,149 +1,183 @@
-﻿{
+{
   "@@locale": "uk",
   "appTitle": "CloudVault",
-  "navHome": "Р“РѕР»РѕРІРЅР°",
-  "navSearch": "РџРѕС€СѓРє",
-  "navAnalytics": "РђРЅР°Р»С–С‚РёРєР°",
-  "navSettings": "РќР°Р»Р°С€С‚СѓРІР°РЅРЅСЏ",
-  "manageClouds": "РљРµСЂСѓР№С‚Рµ РІСЃС–РјР° С…РјР°СЂР°РјРё",
-  "totalUsed": "Р’СЃСЊРѕРіРѕ РІРёРєРѕСЂРёСЃС‚Р°РЅРѕ",
-  "myStorages": "РњРѕС— СЃС…РѕРІРёС‰Р°",
-  "add": "Р”РѕРґР°С‚Рё",
-  "used": "Р’РёРєРѕСЂРёСЃС‚Р°РЅРѕ",
-  "recentFiles": "РќРµС‰РѕРґР°РІРЅС– С„Р°Р№Р»Рё",
-  "addStorage": "Р”РѕРґР°С‚Рё СЃС…РѕРІРёС‰Рµ",
-  "chooseCloudStorage": "Р’РёР±РµСЂС–С‚СЊ С…РјР°СЂРЅРµ СЃС…РѕРІРёС‰Рµ, СЏРєРµ РІРё С…РѕС‡РµС‚Рµ РїС–РґРєР»СЋС‡РёС‚Рё",
-  "connect": "РџС–РґРєР»СЋС‡РёС‚Рё",
-  "cancel": "РЎРєР°СЃСѓРІР°С‚Рё",
-  "search": "РџРѕС€СѓРє",
-  "searchHint": "РџРѕС€СѓРє С„Р°Р№Р»С–РІ",
-  "all": "Р’СЃС–",
-  "documents": "Р”РѕРєСѓРјРµРЅС‚Рё",
+  "navHome": "Головна",
+  "navSearch": "Пошук",
+  "navAnalytics": "Аналітика",
+  "navSettings": "Налаштування",
+  "manageClouds": "Керуйте всіма хмарами",
+  "totalUsed": "Всього використано",
+  "myStorages": "Мої сховища",
+  "add": "Додати",
+  "used": "Використано",
+  "recentFiles": "Нещодавні файли",
+  "addStorage": "Додати сховище",
+  "chooseCloudStorage": "Виберіть хмарне сховище, яке ви хочете підключити",
+  "connect": "Підключити",
+  "cancel": "Скасувати",
+  "search": "Пошук",
+  "searchHint": "Пошук файлів",
+  "all": "Всі",
+  "documents": "Документи",
   "images": "Р—РѕР±СЂР°Р¶РµРЅРЅСЏ",
-  "videos": "Р’С–РґРµРѕ",
+  "videos": "Відео",
   "sortByType": "РўРёРї (A-Z)",
-  "foundFiles": "Р—РЅР°Р№РґРµРЅРѕ {count} С„Р°Р№Р»С–РІ",
-  "@@foundFiles": {"placeholders": {"count": {"type": "int"}}},
-  "analytics": "РђРЅР°Р»С–С‚РёРєР°",
-  "analyticsSubtitle": "РЎС‚Р°С‚РёСЃС‚РёРєР° РІРёРєРѕСЂРёСЃС‚Р°РЅРЅСЏ СЃС…РѕРІРёС‰",
-  "totalSpace": "Р’СЃСЊРѕРіРѕ РїСЂРѕСЃС‚РѕСЂСѓ",
-  "usedSpace": "Р’РёРєРѕСЂРёСЃС‚Р°РЅРѕ",
-  "freeSpace": "Р’С–Р»СЊРЅРѕ",
+  "foundFiles": "Знайдено {count} файлів",
+  "@@foundFiles": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "analytics": "Аналітика",
+  "analyticsSubtitle": "Статистика використання сховищ",
+  "totalSpace": "Всього простору",
+  "usedSpace": "Використано",
+  "freeSpace": "Вільно",
   "warning": "РЈРІР°РіР°!",
-  "warningBody": "{storages} РјР°Р№Р¶Рµ Р·Р°РїРѕРІРЅРµРЅС–. Р РѕР·РіР»СЏРЅСЊС‚Рµ РјРѕР¶Р»РёРІС–СЃС‚СЊ РѕС‡РёСЃС‚РєРё Р°Р±Рѕ СЂРѕР·С€РёСЂРµРЅРЅСЏ.",
-  "@@warningBody": {"placeholders": {"storages": {"type": "String"}}},
-  "distributionByStorage": "Р РѕР·РїРѕРґС–Р» РїРѕ СЃС…РѕРІРёС‰Р°С…",
-  "usageVsFree": "Р’РёРєРѕСЂРёСЃС‚Р°РЅРЅСЏ vs Р’С–Р»СЊРЅРёР№ РїСЂРѕСЃС‚С–СЂ",
-  "recommendations": "Р РµРєРѕРјРµРЅРґР°С†С–С—",
-  "exportPdf": "Р•РєСЃРїРѕСЂС‚ PDF",
-  "pdfReportTitle": "Р—РІС–С‚ РїСЂРѕ РІРёРєРѕСЂРёСЃС‚Р°РЅРЅСЏ СЃС…РѕРІРёС‰",
+  "warningBody": "{storages} майже заповнені. Розгляньте можливість очистки або розширення.",
+  "@@warningBody": {
+    "placeholders": {
+      "storages": {
+        "type": "String"
+      }
+    }
+  },
+  "distributionByStorage": "Розподіл по сховищах",
+  "usageVsFree": "Використання vs Вільний простір",
+  "recommendations": "Рекомендації",
+  "exportPdf": "Експорт PDF",
+  "pdfReportTitle": "Звіт про використання сховищ",
   "generatedAt": "Р—РіРµРЅРµСЂРѕРІР°РЅРѕ",
-  "pdfExportFailed": "РќРµ РІРґР°Р»РѕСЃСЏ РµРєСЃРїРѕСЂС‚СѓРІР°С‚Рё PDF",
-  "tipOptimizeDropboxTitle": "РћРїС‚РёРјС–Р·СѓР№С‚Рµ Dropbox",
-  "tipOptimizeDropboxBody": "Р’Р°С€ Dropbox Р·Р°РїРѕРІРЅРµРЅРёР№ РЅР° 90%. Р’РёРґР°Р»С–С‚СЊ СЃС‚Р°СЂС– С„Р°Р№Р»Рё Р°Р±Рѕ РѕРЅРѕРІС–С‚СЊ С‚Р°СЂРёС„.",
-  "tipUseIcloudTitle": "Р’РёРєРѕСЂРёСЃС‚РѕРІСѓР№С‚Рµ iCloud",
-  "tipUseIcloudBody": "РЈ РІР°СЃ С” 4.2 Р“Р‘ РІС–Р»СЊРЅРѕРіРѕ РјС–СЃС†СЏ РІ iCloud. РџРµСЂРµРјС–СЃС‚С–С‚СЊ С‚СѓРґРё РІРµР»РёРєС– С„Р°Р№Р»Рё.",
-  "settings": "РќР°Р»Р°С€С‚СѓРІР°РЅРЅСЏ",
-  "connectedStorages": "РџС–РґРєР»СЋС‡РµРЅС– СЃС…РѕРІРёС‰Р°",
-  "connected": "РџС–РґРєР»СЋС‡РµРЅРѕ",
+  "pdfExportFailed": "Не вдалося експортувати PDF",
+  "tipOptimizeDropboxTitle": "Оптимізуйте Dropbox",
+  "tipOptimizeDropboxBody": "Ваш Dropbox заповнений на 90%. Видаліть старі файли або оновіть тариф.",
+  "tipUseIcloudTitle": "Використовуйте iCloud",
+  "tipUseIcloudBody": "У вас є 4.2 ГБ вільного місця в iCloud. Перемістіть туди великі файли.",
+  "settings": "Налаштування",
+  "connectedStorages": "Підключені сховища",
+  "connected": "Підключено",
   "account": "РђРљРђРЈРќРў",
-  "preferences": "РќРђР›РђРЁРўРЈР’РђРќРќРЇ",
-  "other": "Р†РќРЁР•",
+  "preferences": "НАЛАШТУВАННЯ",
+  "other": "ІНШЕ",
   "profile": "РџСЂРѕС„С–Р»СЊ",
-  "profileEdit": "Р РµРґР°РіСѓРІР°С‚Рё",
-  "profileSave": "Р—Р±РµСЂРµРіС‚Рё",
+  "profileEdit": "Редагувати",
+  "profileSave": "Зберегти",
   "profileSaved": "РџСЂРѕС„С–Р»СЊ РѕРЅРѕРІР»РµРЅРѕ",
-  "profilePersonalInfo": "РћСЃРѕР±РёСЃС‚Р° С–РЅС„РѕСЂРјР°С†С–СЏ",
-  "profileFilesStat": "Р¤Р°Р№Р»С–РІ",
-  "profileStoragesStat": "РЎС…РѕРІРёС‰",
+  "profilePersonalInfo": "Особиста інформація",
+  "profileFilesStat": "Файлів",
+  "profileStoragesStat": "Сховищ",
   "language": "РњРѕРІР°",
-  "chooseLanguage": "РћР±РµСЂС–С‚СЊ РјРѕРІСѓ Р·Р°СЃС‚РѕСЃСѓРЅРєСѓ",
+  "chooseLanguage": "Оберіть мову застосунку",
   "languageUkrainian": "РЈРєСЂР°С—РЅСЃСЊРєР°",
-  "languageEnglish": "РђРЅРіР»С–Р№СЃСЊРєР°",
-  "notifications": "РЎРїРѕРІС–С‰РµРЅРЅСЏ",
-  "darkTheme": "РўРµРјРЅР° С‚РµРјР°",
-  "privacy": "РљРѕРЅС„С–РґРµРЅС†С–Р№РЅС–СЃС‚СЊ",
-  "helpSupport": "Р”РѕРІС–РґРєР° С‚Р° РїС–РґС‚СЂРёРјРєР°",
-  "logout": "Р’РёР№С‚Рё",
+  "languageEnglish": "Англійська",
+  "notifications": "Сповіщення",
+  "darkTheme": "Темна тема",
+  "privacy": "Конфіденційність",
+  "helpSupport": "Довідка та підтримка",
+  "logout": "Вийти",
   "enabled": "РЈРІС–РјРєРЅРµРЅРѕ",
-  "disabled": "Р’РёРјРєРЅРµРЅРѕ",
+  "disabled": "Вимкнено",
   "premiumPlan": "РџСЂРµРјС–СѓРј РїР»Р°РЅ",
-  "premiumValidUntil": "Р”С–Р№СЃРЅРёР№ РґРѕ 23 Р»СЋС‚РѕРіРѕ 2027",
+  "premiumValidUntil": "Дійсний до 23 лютого 2027",
   "pro": "PRO",
-  "profileName": "Р†РІР°РЅ РџРµС‚СЂРµРЅРєРѕ",
+  "profileName": "Іван Петренко",
   "profileEmail": "ivan.petrenko@email.com",
   "appVersion": "CloudVault v1.0.0",
-  "themeEnabledToast": "РўРµРјРЅСѓ С‚РµРјСѓ СѓРІС–РјРєРЅРµРЅРѕ",
-  "themeDisabledToast": "РЎРІС–С‚Р»Сѓ С‚РµРјСѓ СѓРІС–РјРєРЅРµРЅРѕ",
-  "notificationsEnabledToast": "РЎРїРѕРІС–С‰РµРЅРЅСЏ СѓРІС–РјРєРЅРµРЅРѕ",
-  "notificationsDisabledToast": "РЎРїРѕРІС–С‰РµРЅРЅСЏ РІРёРјРєРЅРµРЅРѕ",
-  "disconnectedToast": "{storage} РІС–РґРєР»СЋС‡РµРЅРѕ",
-  "@@disconnectedToast": {"placeholders": {"storage": {"type": "String"}}},
-  "fileActionsRemoveStar": "РџСЂРёР±СЂР°С‚Рё Р·С–СЂРѕС‡РєСѓ",
-  "fileActionsAddStar": "Р”РѕРґР°С‚Рё Р·С–СЂРѕС‡РєСѓ",
-  "fileActionsDownload": "Р—Р°РІР°РЅС‚Р°Р¶РёС‚Рё",
-  "fileActionsShare": "РџРѕРґС–Р»РёС‚РёСЃСЏ",
-  "fileActionsCopyTo": "РљРѕРїС–СЋРІР°С‚Рё РІ...",
-  "fileActionsRename": "РџРµСЂРµР№РјРµРЅСѓРІР°С‚Рё",
-  "fileActionsInfo": "Р†РЅС„РѕСЂРјР°С†С–СЏ",
-  "fileActionsDelete": "Р’РёРґР°Р»РёС‚Рё",
-  "fileInfo": "Р†РЅС„РѕСЂРјР°С†С–СЏ РїСЂРѕ С„Р°Р№Р»",
+  "themeEnabledToast": "Темну тему увімкнено",
+  "themeDisabledToast": "Світлу тему увімкнено",
+  "notificationsEnabledToast": "Сповіщення увімкнено",
+  "notificationsDisabledToast": "Сповіщення вимкнено",
+  "disconnectedToast": "{storage} відключено",
+  "@@disconnectedToast": {
+    "placeholders": {
+      "storage": {
+        "type": "String"
+      }
+    }
+  },
+  "fileActionsRemoveStar": "Прибрати зірочку",
+  "fileActionsAddStar": "Додати зірочку",
+  "fileActionsDownload": "Завантажити",
+  "fileActionsShare": "Поділитися",
+  "fileActionsCopyTo": "Копіювати в...",
+  "fileActionsRename": "Перейменувати",
+  "fileActionsInfo": "Інформація",
+  "fileActionsDelete": "Видалити",
+  "fileInfo": "Інформація про файл",
   "size": "Р РѕР·РјС–СЂ",
   "modified": "Р—РјС–РЅРµРЅРѕ",
-  "path": "РЁР»СЏС…",
-  "close": "Р—Р°РєСЂРёС‚Рё"
-  ,"authLoginTitle": "Р’С…С–Рґ"
-  ,"authLoginSubtitle": "РЈРІС–Р№РґС–С‚СЊ Сѓ РІР°С€ CloudVault Р°РєР°СѓРЅС‚"
-  ,"authRegisterTitle": "Р РµС”СЃС‚СЂР°С†С–СЏ"
-  ,"authRegisterSubtitle": "РџРѕС‡РЅС–С‚СЊ РєРµСЂСѓРІР°С‚Рё РІСЃС–РјР° СЃРІРѕС—РјРё С…РјР°СЂР°РјРё"
-  ,"authName": "Р†Рј'СЏ"
-  ,"authEmail": "Email"
-  ,"authPassword": "РџР°СЂРѕР»СЊ"
-  ,"authConfirmPassword": "РџС–РґС‚РІРµСЂРґС–С‚СЊ РїР°СЂРѕР»СЊ"
-  ,"authSignIn": "РЈРІС–Р№С‚Рё"
-  ,"authSignUp": "Р—Р°СЂРµС”СЃС‚СЂСѓРІР°С‚РёСЃСЏ"
-  ,"authGoRegister": "Р©Рµ РЅРµРјР°С” Р°РєР°СѓРЅС‚Р°? Р—Р°СЂРµС”СЃС‚СЂСѓРІР°С‚РёСЃСЏ"
-  ,"authGoLogin": "Р’Р¶Рµ РјР°С”С‚Рµ Р°РєР°СѓРЅС‚? РЈРІС–Р№С‚Рё"
-  ,"authAllCloudsOnePlace": "Р’СЃС– С…РјР°СЂРё РІ РѕРґРЅРѕРјСѓ РјС–СЃС†С–"
-  ,"authRememberMe": "Р—Р°РїР°Рј'СЏС‚Р°С‚Рё РјРµРЅРµ"
-  ,"authForgotPassword": "Р—Р°Р±СѓР»Рё РїР°СЂРѕР»СЊ?"
-  ,"authAgreeWith": "РЇ РїРѕРіРѕРґР¶СѓСЋСЃСЊ Р·"
-  ,"authTerms": "СѓРјРѕРІР°РјРё РІРёРєРѕСЂРёСЃС‚Р°РЅРЅСЏ"
-  ,"authAnd": "С‚Р°"
-  ,"authPrivacyPolicy": "РїРѕР»С–С‚РёРєРѕСЋ РєРѕРЅС„С–РґРµРЅС†С–Р№РЅРѕСЃС‚С–"
-  ,"storageBrowserRoot": "РљРѕСЂС–РЅСЊ"
-  ,"storageBrowserUp": "Р’РіРѕСЂСѓ"
-  ,"storageBrowserNewFolder": "РќРѕРІР° РїР°РїРєР°"
-  ,"storageBrowserUpload": "Р—Р°РІР°РЅС‚Р°Р¶РёС‚Рё"
-  ,"storageBrowserEmptyFolder": "РџР°РїРєР° РїРѕСЂРѕР¶РЅСЏ"
-  ,"storageBrowserCreateFolderTitle": "РЎС‚РІРѕСЂРёС‚Рё РїР°РїРєСѓ"
-  ,"storageBrowserCreateFolderHint": "РќР°Р·РІР° РїР°РїРєРё"
-  ,"storageBrowserCreateFolderAction": "РЎС‚РІРѕСЂРёС‚Рё"
-  ,"storageBrowserFolderCreated": "РџР°РїРєСѓ СЃС‚РІРѕСЂРµРЅРѕ"
-  ,"storageBrowserUploadNotConfigured": "Р—Р°РІР°РЅС‚Р°Р¶РµРЅРЅСЏ С‰Рµ РЅРµ РЅР°Р»Р°С€С‚РѕРІР°РЅРѕ"
-  ,"storageBrowserLoadFailed": "РќРµ РІРґР°Р»РѕСЃСЏ Р·Р°РІР°РЅС‚Р°Р¶РёС‚Рё РїР°РїРєСѓ"
-  ,"storageBrowserCreateFolderFailed": "РќРµ РІРґР°Р»РѕСЃСЏ СЃС‚РІРѕСЂРёС‚Рё РїР°РїРєСѓ"
-  ,"storageBrowserApiError": "РџРѕРјРёР»РєР° API: {status} {message}"
-  ,"@@storageBrowserApiError": {"placeholders": {"status": {"type": "String"}, "message": {"type": "String"}}}
-  ,"filePreviewLoading": "Р—Р°РІР°РЅС‚Р°Р¶РµРЅРЅСЏ РїРµСЂРµРіР»СЏРґСѓ..."
-  ,"filePreviewFolderUnsupported": "РџРѕРїРµСЂРµРґРЅС–Р№ РїРµСЂРµРіР»СЏРґ РїР°РїРєРё РЅРµРґРѕСЃС‚СѓРїРЅРёР№"
-  ,"filePreviewUnavailable": "РџРѕРїРµСЂРµРґРЅС–Р№ РїРµСЂРµРіР»СЏРґ РЅРµРґРѕСЃС‚СѓРїРЅРёР№"
-  ,"filePreviewOpenExternal": "Р’С–РґРєСЂРёС‚Рё Р·РѕРІРЅС–"
-  ,"filePreviewOpenExternalFailed": "РќРµ РІРґР°Р»РѕСЃСЏ РІС–РґРєСЂРёС‚Рё Р·РѕРІРЅС–"
-  ,"filePreviewLoadFailed": "РќРµ РІРґР°Р»РѕСЃСЏ Р·Р°РІР°РЅС‚Р°Р¶РёС‚Рё РїРѕРїРµСЂРµРґРЅС–Р№ РїРµСЂРµРіР»СЏРґ"
-  ,"filePreviewUnsupportedType": "Р¦РµР№ С‚РёРї С„Р°Р№Р»Сѓ РЅРµ РїС–РґС‚СЂРёРјСѓС”С‚СЊСЃСЏ РґР»СЏ РІР±СѓРґРѕРІР°РЅРѕРіРѕ РїРµСЂРµРіР»СЏРґСѓ"
-  ,"filePreviewPdfLoadFailed": "РќРµ РІРґР°Р»РѕСЃСЏ Р·Р°РІР°РЅС‚Р°Р¶РёС‚Рё PDF РґР»СЏ РїРµСЂРµРіР»СЏРґСѓ"
-  ,"filePreviewPdfTooLarge": "PDF Р·Р°РІРµР»РёРєРёР№ РґР»СЏ РІР±СѓРґРѕРІР°РЅРѕРіРѕ РїРµСЂРµРіР»СЏРґСѓ. Р’С–РґРєСЂРёР№С‚Рµ Р·РѕРІРЅС–."
-  ,"filePreviewDownloadTimeout": "РўР°Р№Рј-Р°СѓС‚ Р·Р°РІР°РЅС‚Р°Р¶РµРЅРЅСЏ РїРѕРїРµСЂРµРґРЅСЊРѕРіРѕ РїРµСЂРµРіР»СЏРґСѓ. РЎРїСЂРѕР±СѓР№С‚Рµ РІС–РґРєСЂРёС‚Рё Р·РѕРІРЅС–."
-  ,"filePreviewBlockedUrlScheme": "РЎС…РµРјСѓ URL Р·Р°Р±Р»РѕРєРѕРІР°РЅРѕ Р· РјС–СЂРєСѓРІР°РЅСЊ Р±РµР·РїРµРєРё."
-  ,"filePreviewVideoInitFailed": "РќРµ РІРґР°Р»РѕСЃСЏ С–РЅС–С†С–Р°Р»С–Р·СѓРІР°С‚Рё РїРµСЂРµРіР»СЏРґ РІС–РґРµРѕ"
-  ,"filePreviewPlay": "Р’С–РґС‚РІРѕСЂРёС‚Рё"
-  ,"filePreviewPause": "РџР°СѓР·Р°"
-  ,"filePreviewApiError": "РџРѕРјРёР»РєР° API: {status} {message}"
-  ,"@@filePreviewApiError": {"placeholders": {"status": {"type": "String"}, "message": {"type": "String"}}}
-,
+  "path": "Шлях",
+  "close": "Закрити",
+  "authLoginTitle": "Вхід",
+  "authLoginSubtitle": "Увійдіть у ваш CloudVault акаунт",
+  "authRegisterTitle": "Реєстрація",
+  "authRegisterSubtitle": "Почніть керувати всіма своїми хмарами",
+  "authName": "Ім'я",
+  "authEmail": "Email",
+  "authPassword": "РџР°СЂРѕР»СЊ",
+  "authConfirmPassword": "Підтвердіть пароль",
+  "authSignIn": "Увійти",
+  "authSignUp": "Зареєструватися",
+  "authGoRegister": "Ще немає акаунта? Зареєструватися",
+  "authGoLogin": "Вже маєте акаунт? Увійти",
+  "authAllCloudsOnePlace": "Всі хмари в одному місці",
+  "authRememberMe": "Запам'ятати мене",
+  "authForgotPassword": "Забули пароль?",
+  "authAgreeWith": "РЇ РїРѕРіРѕРґР¶СѓСЋСЃСЊ Р·",
+  "authTerms": "умовами використання",
+  "authAnd": "та",
+  "authPrivacyPolicy": "політикою конфіденційності",
+  "storageBrowserRoot": "РљРѕСЂС–РЅСЊ",
+  "storageBrowserUp": "Вгору",
+  "storageBrowserNewFolder": "РќРѕРІР° РїР°РїРєР°",
+  "storageBrowserUpload": "Завантажити",
+  "storageBrowserEmptyFolder": "РџР°РїРєР° РїРѕСЂРѕР¶РЅСЏ",
+  "storageBrowserCreateFolderTitle": "Створити папку",
+  "storageBrowserCreateFolderHint": "РќР°Р·РІР° РїР°РїРєРё",
+  "storageBrowserCreateFolderAction": "Створити",
+  "storageBrowserFolderCreated": "Папку створено",
+  "storageBrowserUploadNotConfigured": "Завантаження ще не налаштовано",
+  "storageBrowserLoadFailed": "Не вдалося завантажити папку",
+  "storageBrowserCreateFolderFailed": "Не вдалося створити папку",
+  "storageBrowserApiError": "РџРѕРјРёР»РєР° API: {status} {message}",
+  "@@storageBrowserApiError": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      },
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "filePreviewLoading": "Завантаження перегляду...",
+  "filePreviewFolderUnsupported": "Попередній перегляд папки недоступний",
+  "filePreviewUnavailable": "Попередній перегляд недоступний",
+  "filePreviewOpenExternal": "Відкрити зовні",
+  "filePreviewOpenExternalFailed": "Не вдалося відкрити зовні",
+  "filePreviewLoadFailed": "Не вдалося завантажити попередній перегляд",
+  "filePreviewUnsupportedType": "Цей тип файлу не підтримується для вбудованого перегляду",
+  "filePreviewPdfLoadFailed": "Не вдалося завантажити PDF для перегляду",
+  "filePreviewPdfTooLarge": "PDF завеликий для вбудованого перегляду. Відкрийте зовні.",
+  "filePreviewDownloadTimeout": "Тайм-аут завантаження попереднього перегляду. Спробуйте відкрити зовні.",
+  "filePreviewBlockedUrlScheme": "Схему URL заблоковано з міркувань безпеки.",
+  "filePreviewVideoInitFailed": "Не вдалося ініціалізувати перегляд відео",
+  "filePreviewPlay": "Відтворити",
+  "filePreviewPause": "РџР°СѓР·Р°",
+  "filePreviewApiError": "РџРѕРјРёР»РєР° API: {status} {message}",
+  "@@filePreviewApiError": {
+    "placeholders": {
+      "status": {
+        "type": "String"
+      },
+      "message": {
+        "type": "String"
+      }
+    }
+  },
   "megaConnectTitle": "Підключити MEGA",
   "megaSecondFactorCodeOptional": "Код 2FA (необов'язково)",
   "megaCredentialsRequired": "Email і пароль обов'язкові"
 }
-

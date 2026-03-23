@@ -1,4 +1,5 @@
 import 'api_client.dart';
+import 'api_exception.dart';
 
 class ApiUser {
   const ApiUser({
@@ -179,10 +180,17 @@ class ApiRepository {
     );
 
     final obj = _extractObject(json) ?? json;
+    final connectionId = _str(obj['connectionId'])?.trim() ?? '';
+    final providerId = _str(obj['providerId'])?.trim() ?? 'mega';
+    final accountEmail = _str(obj['accountEmail'])?.trim() ?? email;
+    if (connectionId.isEmpty) {
+      throw ApiException('Invalid MEGA connect response: missing connectionId');
+    }
+
     return ApiMegaConnectResult(
-      connectionId: _str(obj['connectionId']) ?? '',
-      providerId: _str(obj['providerId']) ?? 'mega',
-      accountEmail: _str(obj['accountEmail']) ?? email,
+      connectionId: connectionId,
+      providerId: providerId,
+      accountEmail: accountEmail,
     );
   }
 
