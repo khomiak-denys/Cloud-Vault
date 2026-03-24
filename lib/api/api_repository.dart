@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import '../data/provider_identity.dart';
+import '../data/provider_labels.dart';
 import 'api_client.dart';
 import 'api_exception.dart';
 
@@ -246,7 +247,7 @@ class ApiRepository {
     return _parseFileItems(json);
   }
 
-  Future<List<ApiFileItem>> favoritesFiles({
+  Future<List<ApiFileItem>> favoriteFiles({
     int pageSize = 20,
     String? cursor,
     String? connectionId,
@@ -595,8 +596,9 @@ class ApiRepository {
         providerName:
             _str(item['providerName']) ??
             _str(item['provider']) ??
-            _providerNameFromId(_str(item['providerId']) ?? _str(item['provider'])) ??
-            'Storage',
+            providerDisplayName(
+              normalizeProviderId(_str(item['providerId']) ?? _str(item['provider'])),
+            ),
         isFavorite: item['isFavorite'] == true || item['favorite'] == true,
         kind:
             _str(item['kind']) ??
@@ -672,22 +674,6 @@ class ApiRepository {
     }
 
     return '$_storageApiRootPath/$normalized';
-  }
-}
-
-String? _providerNameFromId(String? providerId) {
-  final normalized = normalizeProviderId(providerId);
-  switch (normalized) {
-    case 'google-drive':
-      return 'Google Drive';
-    case 'onedrive':
-      return 'OneDrive';
-    case 'dropbox':
-      return 'Dropbox';
-    case 'mega':
-      return 'MEGA';
-    default:
-      return null;
   }
 }
 

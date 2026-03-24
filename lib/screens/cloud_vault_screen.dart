@@ -35,7 +35,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
   static const _cacheTtl = Duration(minutes: 2);
 
   List<VaultItem> _vaultItems = const [];
-  List<RecentFileItem> _recentFiles = const [];
+  List<RecentFileItem> _favoriteFiles = const [];
   bool _isLoading = true;
   bool _lastLoadSucceeded = true;
   double _totalUsedBytes = 0;
@@ -63,7 +63,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
       if (cached != null) {
         setState(() {
           _vaultItems = cached.vaultItems;
-          _recentFiles = cached.recentFiles;
+          _favoriteFiles = cached.favoriteFiles;
           _totalUsedBytes = cached.totalUsedBytes;
           _totalBytes = cached.totalBytes;
           _isLoading = false;
@@ -79,7 +79,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
       final usageReportFuture = _loadUsageReportSafe();
       final results = await Future.wait([
         appApiRepository.connections(),
-        appApiRepository.favoritesFiles(pageSize: 20),
+        appApiRepository.favoriteFiles(pageSize: 20),
         usageReportFuture,
       ]);
 
@@ -94,7 +94,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
       final mappedVaultItems = enrichedConnections
           .map(mapConnectionToVaultItem)
           .toList();
-      final mappedRecentFiles = files.map(mapApiFileToRecentFileItem).toList();
+      final mappedFavoriteFiles = files.map(mapApiFileToRecentFileItem).toList();
       final totalUsedBytes =
           usageReport?.usedBytes ??
           enrichedConnections.fold<double>(
@@ -112,7 +112,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
         _cacheKey,
         _DashboardBundle(
           vaultItems: mappedVaultItems,
-          recentFiles: mappedRecentFiles,
+          favoriteFiles: mappedFavoriteFiles,
           totalUsedBytes: totalUsedBytes,
           totalBytes: totalBytes,
         ),
@@ -122,7 +122,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
       if (!mounted) return;
       setState(() {
         _vaultItems = mappedVaultItems;
-        _recentFiles = mappedRecentFiles;
+        _favoriteFiles = mappedFavoriteFiles;
         _totalUsedBytes = totalUsedBytes;
         _totalBytes = totalBytes;
       });
@@ -253,7 +253,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
                         const DashboardLoadingSkeleton()
                       else
                         DashboardRecentFilesSection(
-                          items: _recentFiles,
+                          items: _favoriteFiles,
                           title: l10n.favorites,
                           onMoreTap: (file) => showFileActionsModal(
                             context,
@@ -332,13 +332,13 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
 class _DashboardBundle {
   const _DashboardBundle({
     required this.vaultItems,
-    required this.recentFiles,
+    required this.favoriteFiles,
     required this.totalUsedBytes,
     required this.totalBytes,
   });
 
   final List<VaultItem> vaultItems;
-  final List<RecentFileItem> recentFiles;
+  final List<RecentFileItem> favoriteFiles;
   final double totalUsedBytes;
   final double totalBytes;
 }
