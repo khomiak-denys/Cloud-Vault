@@ -101,7 +101,7 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
         _currentPath = _megaDisplayPath;
       });
     } else {
-      final providerId = widget.storage.providerId.trim().toLowerCase();
+      final providerId = _normalizeProviderId(widget.storage.providerId);
       final isIdBasedProvider =
           providerId == 'google-drive' ||
           providerId == 'onedrive' ||
@@ -114,6 +114,14 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
       );
     }
     await _load();
+  }
+
+  String _normalizeProviderId(String providerId) {
+    final normalized = providerId.trim().toLowerCase();
+    if (normalized == 'google') {
+      return 'google-drive';
+    }
+    return normalized;
   }
 
   Future<void> _goToPath(String path) async {
