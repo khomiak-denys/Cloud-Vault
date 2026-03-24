@@ -101,8 +101,16 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
         _currentPath = _megaDisplayPath;
       });
     } else {
+      final providerId = widget.storage.providerId.trim().toLowerCase();
+      final isIdBasedProvider =
+          providerId == 'google-drive' ||
+          providerId == 'onedrive' ||
+          providerId == 'dropbox';
       setState(
-        () => _currentPath = _normalizePath(folder.apiPath ?? folder.pathLabel),
+        () => _currentPath = _normalizePath(
+          folder.apiPath ??
+              (isIdBasedProvider ? folder.id : folder.pathLabel),
+        ),
       );
     }
     await _load();

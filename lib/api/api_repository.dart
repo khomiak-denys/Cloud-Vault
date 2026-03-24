@@ -250,7 +250,7 @@ class ApiRepository {
     final root = _extractObject(json) ?? json;
     final recentRaw = root['recentFiles'];
     if (recentRaw is! List) return const [];
-    final bounded = recentRaw.take(pageSize.clamp(1, 100)).toList();
+    final bounded = recentRaw.take(pageSize.clamp(1, 100).toInt()).toList();
     final merged = <String, dynamic>{...root, 'items': bounded};
     return _parseFileItems(merged);
   }
