@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'api_client.dart';
 import 'api_exception.dart';
 
@@ -39,6 +41,7 @@ class ApiFileItem {
     required this.path,
     required this.sizeBytes,
     required this.modifiedAt,
+    required this.providerId,
     required this.providerName,
     required this.isFavorite,
     required this.kind,
@@ -51,6 +54,7 @@ class ApiFileItem {
   final String path;
   final double sizeBytes;
   final DateTime modifiedAt;
+  final String providerId;
   final String providerName;
   final bool isFavorite;
   final String kind;
@@ -76,6 +80,18 @@ class ApiStorageUsageReport {
   final double? usedBytes;
   final double? totalBytes;
   final double? usagePercent;
+}
+
+class ApiPreviewUrl {
+  const ApiPreviewUrl({
+    required this.url,
+    required this.method,
+    required this.headers,
+  });
+
+  final String url;
+  final String method;
+  final Map<String, String> headers;
 }
 
 class ApiMegaConnectResult {
@@ -324,6 +340,44 @@ class ApiRepository {
     return _str(obj['url']);
   }
 
+  Future<ApiPreviewUrl?> previewUrl({
+    required String connectionId,
+    required String fileId,
+  }) async {
+    final json = await _client.postJson(
+      '/files/preview-url',
+      body: <String, dynamic>{'connectionId': connectionId, 'fileId': fileId},
+    );
+    final obj = _extractObject(json) ?? json;
+    final url = _str(obj['url']);
+    if (url == null || url.isEmpty) return null;
+    final method = (_str(obj['method']) ?? 'GET').trim().toUpperCase();
+    final headers = _stringMap(obj['headers']);
+    return ApiPreviewUrl(url: url, method: method, headers: headers);
+  }
+
+  Future<Uint8List> previewStreamBytes({
+    required String connectionId,
+    required String fileId,
+    String? fileName,
+    String? mimeType,
+    required int maxBytes,
+    Duration timeout = const Duration(seconds: 20),
+  }) {
+    final payload = <String, dynamic>{
+      'connectionId': connectionId,
+      'fileId': fileId,
+      if (fileName != null && fileName.isNotEmpty) 'fileName': fileName,
+      if (mimeType != null && mimeType.isNotEmpty) 'mimeType': mimeType,
+    };
+    return _client.postBytesCapped(
+      '/files/preview-stream',
+      body: payload,
+      maxBytes: maxBytes,
+      timeout: timeout,
+    );
+  }
+
   Future<String?> shareLink({
     required String connectionId,
     required String fileId,
@@ -468,6 +522,9 @@ class ApiRepository {
         path: filePath,
         sizeBytes: _num(item['sizeBytes']) ?? _num(item['size']) ?? 0,
         modifiedAt: DateTime.tryParse(modifiedRaw ?? '') ?? DateTime.now(),
+        providerId: _normalizeProviderId(
+          _str(item['providerId']) ?? _str(item['provider']),
+        ),
         providerName:
             _str(item['providerName']) ?? _str(item['provider']) ?? 'Storage',
         isFavorite: item['isFavorite'] == true || item['favorite'] == true,
@@ -541,6 +598,18 @@ double? _num(dynamic value) {
   if (value is num) return value.toDouble();
   if (value is String) return double.tryParse(value);
   return null;
+}
+
+Map<String, String> _stringMap(dynamic value) {
+  if (value is! Map) return const <String, String>{};
+  final result = <String, String>{};
+  for (final entry in value.entries) {
+    final key = _str(entry.key);
+    final mapValue = _str(entry.value);
+    if (key == null || key.isEmpty || mapValue == null) continue;
+    result[key] = mapValue;
+  }
+  return result;
 }
 
 Map<String, dynamic>? _extractObject(Map<String, dynamic> json) {

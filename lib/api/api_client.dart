@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:typed_data';
+import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart' show debugPrint;
 import 'package:http/http.dart' as http;
 
 import 'api_config.dart';
@@ -39,22 +41,50 @@ class ApiClient {
     return _sendJson('DELETE', path, query: query);
   }
 
+  Future<bool> refreshBearerToken() {
+    return _refreshBearerToken();
+  }
+
+  Future<Uint8List> postBytes(
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? query,
+  }) {
+    return _sendBytes('POST', path, body: body, query: query);
+  }
+
+  Future<Uint8List> postBytesCapped(
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? query,
+    required int maxBytes,
+    Duration timeout = const Duration(seconds: 20),
+  }) {
+    return _sendBytesStreamedCapped(
+      'POST',
+      path,
+      body: body,
+      query: query,
+      maxBytes: maxBytes,
+      timeout: timeout,
+    );
+  }
+
   Future<Map<String, dynamic>> _sendJson(
     String method,
     String path, {
     Map<String, dynamic>? body,
     Map<String, String>? query,
   }) async {
-    final base = ApiConfig.baseUrl.endsWith('/')
-        ? ApiConfig.baseUrl
-        : '${ApiConfig.baseUrl}/';
-    final normalizedPath = path.startsWith('/') ? path.substring(1) : path;
-    final uri = Uri.parse(base)
-        .resolve(normalizedPath)
-        .replace(queryParameters: query);
+    final uri = ApiConfig.resolveApiUri(path, queryParameters: query);
     final requestBody = body ?? <String, dynamic>{};
 
-    var response = await _sendRequest(method, uri, requestBody);
+    var response = await _sendRequest(
+      method,
+      uri,
+      requestBody,
+      logResponseBody: false,
+    );
 
     if (response.statusCode == 401) {
       final refreshed = await _refreshBearerToken();
@@ -66,7 +96,12 @@ class ApiClient {
           statusCode: 401,
           body: 'Token expired. Retrying once with refreshed token.',
         );
-        response = await _sendRequest(method, uri, requestBody);
+        response = await _sendRequest(
+          method,
+          uri,
+          requestBody,
+          logResponseBody: false,
+        );
       }
     }
 
@@ -108,21 +143,154 @@ class ApiClient {
     return <String, dynamic>{'data': decoded};
   }
 
+  Future<Uint8List> _sendBytes(
+    String method,
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? query,
+  }) async {
+    final uri = ApiConfig.resolveApiUri(path, queryParameters: query);
+    final requestBody = body ?? <String, dynamic>{};
+
+    var response = await _sendRequest(
+      method,
+      uri,
+      requestBody,
+      logResponseBody: false,
+    );
+    if (response.statusCode == 401) {
+      final refreshed = await _refreshBearerToken();
+      if (refreshed) {
+        _logApiError(
+          phase: 'auth',
+          method: method,
+          uri: uri,
+          statusCode: 401,
+          body: 'Token expired. Retrying once with refreshed token.',
+        );
+        response = await _sendRequest(
+          method,
+          uri,
+          requestBody,
+          logResponseBody: false,
+        );
+      }
+    }
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      final responseBody = utf8.decode(response.bodyBytes, allowMalformed: true);
+      _logApiError(
+        phase: 'http',
+        method: method,
+        uri: uri,
+        statusCode: response.statusCode,
+        body: responseBody,
+      );
+      throw ApiException(
+        'Request failed',
+        statusCode: response.statusCode,
+        body: responseBody,
+      );
+    }
+
+    return response.bodyBytes;
+  }
+
+  Future<Uint8List> _sendBytesStreamedCapped(
+    String method,
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? query,
+    required int maxBytes,
+    required Duration timeout,
+  }) async {
+    final uri = ApiConfig.resolveApiUri(path, queryParameters: query);
+    final requestBody = body ?? <String, dynamic>{};
+    final requestJson = jsonEncode(requestBody);
+
+    Future<http.StreamedResponse> sendOnce() async {
+      final request = http.Request(method, uri);
+      request.headers.addAll(_buildHeaders());
+      request.body = requestJson;
+      _logApiRequest(method: method, uri: uri, body: requestBody);
+      return _httpClient.send(request).timeout(timeout);
+    }
+
+    try {
+      http.StreamedResponse response = await sendOnce();
+      if (response.statusCode == 401) {
+        final refreshed = await _refreshBearerToken();
+        if (refreshed) {
+          _logApiError(
+            phase: 'auth',
+            method: method,
+            uri: uri,
+            statusCode: 401,
+            body: 'Token expired. Retrying once with refreshed token.',
+          );
+          response = await sendOnce();
+        }
+      }
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        final errorText = await _readErrorText(response, timeout: timeout);
+        _logApiError(
+          phase: 'http',
+          method: method,
+          uri: uri,
+          statusCode: response.statusCode,
+          body: errorText,
+        );
+        throw ApiException(
+          'Request failed',
+          statusCode: response.statusCode,
+          body: errorText,
+        );
+      }
+
+      _logApiResponseMeta(
+        method: method,
+        uri: uri,
+        statusCode: response.statusCode,
+        contentLength: response.contentLength,
+      );
+
+      final bytes = BytesBuilder(copy: false);
+      var total = 0;
+      await for (final chunk in response.stream.timeout(timeout)) {
+        total += chunk.length;
+        if (total > maxBytes) {
+          throw ApiException(
+            'Response exceeded max preview size',
+            statusCode: 413,
+            errorCode: 'max_preview_size_exceeded',
+          );
+        }
+        bytes.add(chunk);
+      }
+      return bytes.takeBytes();
+    } on ApiException {
+      rethrow;
+    } on TimeoutException {
+      throw ApiException('Request timeout', errorCode: 'request_timeout');
+    } catch (e) {
+      _logApiError(
+        phase: 'network',
+        method: method,
+        uri: uri,
+        error: e.toString(),
+      );
+      throw ApiException('Network request failed', body: e.toString());
+    }
+  }
+
   Future<http.Response> _sendRequest(
     String method,
     Uri uri,
     Map<String, dynamic> requestBody,
+    {required bool logResponseBody}
   ) async {
-    final headers = <String, String>{'Content-Type': 'application/json'};
-    final bearer = AuthSession.instance.bearerToken;
-    final appCheck = AuthSession.instance.appCheckToken;
-
-    if (bearer != null && bearer.isNotEmpty) {
-      headers['Authorization'] = 'Bearer $bearer';
-    }
-    if (appCheck != null && appCheck.isNotEmpty) {
-      headers['X-Firebase-AppCheck'] = appCheck;
-    }
+    final headers = _buildHeaders();
 
     try {
       _logApiRequest(
@@ -142,12 +310,21 @@ class ApiClient {
         _ => throw ApiException('Unsupported HTTP method: $method'),
       };
 
-      _logApiResponse(
-        method: method,
-        uri: uri,
-        statusCode: response.statusCode,
-        body: response.body,
-      );
+      if (logResponseBody) {
+        _logApiResponse(
+          method: method,
+          uri: uri,
+          statusCode: response.statusCode,
+          body: response.body,
+        );
+      } else {
+        _logApiResponseMeta(
+          method: method,
+          uri: uri,
+          statusCode: response.statusCode,
+          contentLength: response.contentLength,
+        );
+      }
       return response;
     } catch (e) {
       _logApiError(
@@ -233,6 +410,16 @@ class ApiClient {
     debugPrint('[API][response] $method $uri status=$statusCode$responseBody');
   }
 
+  void _logApiResponseMeta({
+    required String method,
+    required Uri uri,
+    required int statusCode,
+    int? contentLength,
+  }) {
+    final size = contentLength == null ? '' : ' bytes=$contentLength';
+    debugPrint('[API][response] $method $uri status=$statusCode$size');
+  }
+
   void _logApiError({
     required String phase,
     required String method,
@@ -245,5 +432,42 @@ class ApiClient {
     final err = error == null ? '' : '\nerror=$error';
     final responseBody = body == null || body.isEmpty ? '' : '\nbody=$body';
     debugPrint('[API][$phase] $method $uri$status$err$responseBody');
+  }
+
+  Map<String, String> _buildHeaders() {
+    final headers = <String, String>{'Content-Type': 'application/json'};
+    final bearer = AuthSession.instance.bearerToken;
+    final appCheck = AuthSession.instance.appCheckToken;
+
+    if (bearer != null && bearer.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $bearer';
+    }
+    if (appCheck != null && appCheck.isNotEmpty) {
+      headers['X-Firebase-AppCheck'] = appCheck;
+    }
+    return headers;
+  }
+
+  Future<String> _readErrorText(
+    http.StreamedResponse response, {
+    required Duration timeout,
+  }) async {
+    const maxErrorBytes = 8192;
+    final bytes = BytesBuilder(copy: false);
+    try {
+      await for (final chunk in response.stream.timeout(timeout)) {
+        final remaining = maxErrorBytes - bytes.length;
+        if (remaining <= 0) break;
+        if (chunk.length <= remaining) {
+          bytes.add(chunk);
+        } else {
+          bytes.add(chunk.sublist(0, remaining));
+          break;
+        }
+      }
+    } catch (_) {
+      // Best effort only for diagnostics.
+    }
+    return utf8.decode(bytes.takeBytes(), allowMalformed: true);
   }
 }

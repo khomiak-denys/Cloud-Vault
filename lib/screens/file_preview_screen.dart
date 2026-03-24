@@ -27,11 +27,15 @@ class FilePreviewScreen extends StatefulWidget {
 
 class _FilePreviewScreenState extends State<FilePreviewScreen> {
   static const _maxPdfPreviewBytes = 25 * 1024 * 1024; // 25 MB
+  static const _maxImagePreviewBytes = 20 * 1024 * 1024; // 20 MB
   static const _downloadTimeout = Duration(seconds: 20);
 
   bool _isLoading = true;
   String? _previewUrl;
+  String _previewMethod = 'GET';
+  Map<String, String> _previewHeaders = const {};
   String? _errorMessage;
+  Uint8List? _imageBytes;
   Uint8List? _pdfBytes;
   VideoPlayerController? _videoController;
 
@@ -62,76 +66,21 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
     }
 
     try {
-      final url = await appApiRepository.downloadUrl(
-        connectionId: widget.file.connectionId,
-        fileId: widget.file.id,
-      );
-
-      if (!mounted) return;
-
-      if (url == null || url.isEmpty) {
-        setState(() {
-          _errorMessage = l10n.filePreviewUnavailable;
-          _isLoading = false;
-        });
-        return;
-      }
-      final uri = Uri.tryParse(url);
-      if (uri == null || !_isAllowedRemoteUri(uri)) {
-        setState(() {
-          _errorMessage = l10n.filePreviewBlockedUrlScheme;
-          _isLoading = false;
-        });
-        return;
-      }
-
+      _errorMessage = null;
       final kind = _resolveKind(widget.file);
-
-      if (kind == _PreviewKind.pdf) {
-        final fileSize = widget.file.sizeBytes;
-        final exceedsMaxSize =
-            fileSize > 0 && fileSize > _maxPdfPreviewBytes.toDouble();
-        if (exceedsMaxSize) {
-          _errorMessage = l10n.filePreviewPdfTooLarge;
-        } else {
-          final bytes = await _downloadPdfWithLimit(uri, l10n);
-          if (bytes == null) {
-            _errorMessage ??= l10n.filePreviewPdfLoadFailed;
-          } else {
-            _pdfBytes = bytes;
-          }
-        }
-      }
-
-      if (kind == _PreviewKind.video) {
-        if (!mounted) return;
-        final previousController = _videoController;
-        final controller = VideoPlayerController.networkUrl(uri);
-        _videoController = controller;
-        await previousController?.dispose();
-
-        try {
-          await controller.initialize();
-          if (!mounted) {
-            if (identical(_videoController, controller)) {
-              _videoController = null;
-            }
-            await controller.dispose();
-            return;
-          }
-          await controller.setLooping(true);
-        } catch (_) {
-          if (identical(_videoController, controller)) {
-            _videoController = null;
-          }
-          await controller.dispose();
-          _errorMessage = l10n.filePreviewVideoInitFailed;
-        }
+      final loadedFromDirect = _supportsDirectPreviewUrl(widget.file)
+          ? await _tryLoadFromPreviewUrl(kind, l10n)
+          : false;
+      if (!loadedFromDirect) {
+        _errorMessage = null;
+        await _tryLoadFromPreviewStream(kind, l10n);
       }
 
       if (!mounted) return;
       setState(() {
-        _previewUrl = url;
+        if (_errorMessage == null && !_hasRenderableContent(kind)) {
+          _errorMessage = l10n.filePreviewUnavailable;
+        }
         _isLoading = false;
       });
     } on ApiException catch (e) {
@@ -147,6 +96,245 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
         _errorMessage = l10n.filePreviewLoadFailed;
         _isLoading = false;
       });
+    }
+  }
+
+  Future<bool> _tryLoadFromPreviewUrl(
+    _PreviewKind kind,
+    AppLocalizations l10n,
+  ) async {
+    try {
+      final preview = await appApiRepository.previewUrl(
+        connectionId: widget.file.connectionId,
+        fileId: widget.file.id,
+      );
+      if (preview == null || preview.url.isEmpty) {
+        return false;
+      }
+
+      final uri = Uri.tryParse(preview.url);
+      if (uri == null || !_isAllowedRemoteUri(uri)) {
+        _errorMessage = l10n.filePreviewBlockedUrlScheme;
+        return true;
+      }
+
+      _previewUrl = preview.url;
+      _previewMethod = preview.method;
+      _previewHeaders = preview.headers;
+
+      if (kind == _PreviewKind.unsupported) {
+        return false;
+      }
+
+      if (kind == _PreviewKind.pdf) {
+        final fileSize = widget.file.sizeBytes;
+        final exceedsMaxSize =
+            fileSize > 0 && fileSize > _maxPdfPreviewBytes.toDouble();
+        if (exceedsMaxSize) {
+          _errorMessage = l10n.filePreviewPdfTooLarge;
+          return true;
+        }
+
+        final bytes = await _downloadBytesWithLimit(
+          uri,
+          l10n: l10n,
+          method: preview.method,
+          headers: preview.headers,
+          maxBytes: _maxPdfPreviewBytes,
+          maxBytesExceededMessage: l10n.filePreviewPdfTooLarge,
+          timeoutMessage: l10n.filePreviewDownloadTimeout,
+        );
+        if (bytes == null) {
+          _errorMessage ??= l10n.filePreviewPdfLoadFailed;
+          return false;
+        }
+        _pdfBytes = bytes;
+      }
+
+      if (kind == _PreviewKind.image && preview.method != 'GET') {
+        return false;
+      }
+
+      if (kind == _PreviewKind.image) {
+        final fileSize = widget.file.sizeBytes;
+        final exceedsMaxSize =
+            fileSize > 0 && fileSize > _maxImagePreviewBytes.toDouble();
+        if (exceedsMaxSize) {
+          _errorMessage = l10n.filePreviewLoadFailed;
+          return true;
+        }
+        final bytes = await _downloadBytesWithLimit(
+          uri,
+          l10n: l10n,
+          method: preview.method,
+          headers: preview.headers,
+          maxBytes: _maxImagePreviewBytes,
+          maxBytesExceededMessage: l10n.filePreviewLoadFailed,
+          timeoutMessage: l10n.filePreviewDownloadTimeout,
+        );
+        if (bytes == null) {
+          _errorMessage ??= l10n.filePreviewLoadFailed;
+          return false;
+        }
+        _imageBytes = bytes;
+      }
+
+      if (kind == _PreviewKind.video) {
+        if (preview.method != 'GET') {
+          _errorMessage = l10n.filePreviewVideoInitFailed;
+          return false;
+        }
+        final initialized = await _initializeVideo(
+          uri,
+          headers: preview.headers,
+          l10n: l10n,
+        );
+        if (!initialized) return false;
+      }
+
+      return true;
+    } on ApiException catch (e) {
+      // Unsupported provider (HTTP 400) should fall back to preview-stream.
+      if (e.statusCode == 400) return false;
+      rethrow;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  Future<void> _tryLoadFromPreviewStream(
+    _PreviewKind kind,
+    AppLocalizations l10n,
+  ) async {
+    if (kind == _PreviewKind.video) {
+      final loaded = await _tryLoadVideoViaDownloadUrl(l10n);
+      if (!loaded) {
+        _errorMessage = l10n.filePreviewVideoInitFailed;
+      } else {
+        _errorMessage = null;
+      }
+      return;
+    }
+
+    if (kind == _PreviewKind.unsupported) {
+      _errorMessage = l10n.filePreviewUnsupportedType;
+      return;
+    }
+
+    final maxBytes = kind == _PreviewKind.pdf
+        ? _maxPdfPreviewBytes
+        : _maxImagePreviewBytes;
+    final fileSize = widget.file.sizeBytes;
+    final exceedsMaxSize = fileSize > 0 && fileSize > maxBytes.toDouble();
+    if (exceedsMaxSize) {
+      _errorMessage = kind == _PreviewKind.pdf
+          ? l10n.filePreviewPdfTooLarge
+          : l10n.filePreviewLoadFailed;
+      return;
+    }
+
+    Uint8List bytes;
+    try {
+      bytes = await appApiRepository.previewStreamBytes(
+        connectionId: widget.file.connectionId,
+        fileId: widget.file.id,
+        fileName: widget.file.title,
+        mimeType: widget.file.mimeType,
+        maxBytes: maxBytes,
+        timeout: _downloadTimeout,
+      );
+    } on ApiException catch (e) {
+      if (e.errorCode == 'max_preview_size_exceeded' || e.statusCode == 413) {
+        _errorMessage = kind == _PreviewKind.pdf
+            ? l10n.filePreviewPdfTooLarge
+            : l10n.filePreviewLoadFailed;
+        return;
+      }
+      if (e.statusCode == 400 &&
+          _looksLikeUnsupportedPreviewMime(e.body ?? '')) {
+        _errorMessage = l10n.filePreviewUnsupportedType;
+        return;
+      }
+      if (e.errorCode == 'request_timeout') {
+        _errorMessage = l10n.filePreviewDownloadTimeout;
+        return;
+      }
+      _errorMessage = l10n.filePreviewLoadFailed;
+      return;
+    } on TimeoutException {
+      _errorMessage = l10n.filePreviewDownloadTimeout;
+      return;
+    } catch (_) {
+      _errorMessage = l10n.filePreviewLoadFailed;
+      return;
+    }
+
+    if (kind == _PreviewKind.pdf) {
+      if (bytes.length > _maxPdfPreviewBytes) {
+        _errorMessage = l10n.filePreviewPdfTooLarge;
+        return;
+      }
+      _pdfBytes = bytes;
+      _errorMessage = null;
+      return;
+    }
+    if (bytes.length > _maxImagePreviewBytes) {
+      _errorMessage = l10n.filePreviewLoadFailed;
+      return;
+    }
+    _imageBytes = bytes;
+    _errorMessage = null;
+  }
+
+  Future<bool> _tryLoadVideoViaDownloadUrl(AppLocalizations l10n) async {
+    final url = await appApiRepository.downloadUrl(
+      connectionId: widget.file.connectionId,
+      fileId: widget.file.id,
+    );
+    if (url == null || url.isEmpty) return false;
+    final uri = Uri.tryParse(url);
+    if (uri == null || !_isAllowedRemoteUri(uri)) {
+      _errorMessage = l10n.filePreviewBlockedUrlScheme;
+      return false;
+    }
+    _previewUrl = url;
+    _previewMethod = 'GET';
+    _previewHeaders = const {};
+    return _initializeVideo(uri, headers: const {}, l10n: l10n);
+  }
+
+  Future<bool> _initializeVideo(
+    Uri uri, {
+    required Map<String, String> headers,
+    required AppLocalizations l10n,
+  }) async {
+    if (!mounted) return false;
+    final previousController = _videoController;
+    final controller = VideoPlayerController.networkUrl(
+      uri,
+      httpHeaders: headers,
+    );
+    _videoController = controller;
+    await previousController?.dispose();
+
+    try {
+      await controller.initialize();
+      if (!mounted) {
+        if (identical(_videoController, controller)) {
+          _videoController = null;
+        }
+        await controller.dispose();
+        return false;
+      }
+      await controller.setLooping(true);
+      return true;
+    } catch (_) {
+      if (identical(_videoController, controller)) {
+        _videoController = null;
+      }
+      await controller.dispose();
+      _errorMessage = l10n.filePreviewVideoInitFailed;
+      return false;
     }
   }
 
@@ -186,7 +374,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
                         ),
                       ),
                     ),
-                    if (_previewUrl != null)
+                    if (_canOpenExternal)
                       IconButton(
                         onPressed: _openExternal,
                         icon: Icon(
@@ -225,15 +413,21 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
       return _buildError(l10n, _errorMessage!);
     }
 
+    final kind = _resolveKind(widget.file);
+    if (kind == _PreviewKind.pdf && _pdfBytes != null) {
+      return _buildPdfPreview(l10n);
+    }
+    if (kind == _PreviewKind.image && _imageBytes != null) {
+      return _buildImagePreview(l10n);
+    }
+
     final url = _previewUrl;
     if (url == null || url.isEmpty) {
       return _buildError(l10n, l10n.filePreviewUnavailable);
     }
 
-    final kind = _resolveKind(widget.file);
-
     return switch (kind) {
-      _PreviewKind.image => _buildImagePreview(url),
+      _PreviewKind.image => _buildImagePreview(l10n),
       _PreviewKind.pdf => _buildPdfPreview(l10n),
       _PreviewKind.video => _buildVideoPreview(l10n),
       _PreviewKind.unsupported => _buildError(
@@ -243,21 +437,24 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
     };
   }
 
-  Widget _buildImagePreview(String url) {
-    return InteractiveViewer(
-      minScale: 0.5,
-      maxScale: 5,
-      child: Center(
-        child: Image.network(
-          url,
-          fit: BoxFit.contain,
-          errorBuilder: (context, error, stackTrace) {
-            final l10n = AppLocalizations.of(context)!;
-            return _buildError(l10n, l10n.filePreviewLoadFailed);
-          },
+  Widget _buildImagePreview(AppLocalizations l10n) {
+    final imageBytes = _imageBytes;
+    if (imageBytes != null && imageBytes.isNotEmpty) {
+      return InteractiveViewer(
+        minScale: 0.5,
+        maxScale: 5,
+        child: Center(
+          child: Image.memory(
+            imageBytes,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return _buildError(l10n, l10n.filePreviewLoadFailed);
+            },
+          ),
         ),
-      ),
-    );
+      );
+    }
+    return _buildError(l10n, l10n.filePreviewLoadFailed);
   }
 
   Widget _buildPdfPreview(AppLocalizations l10n) {
@@ -357,7 +554,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            if (_previewUrl != null) ...[
+            if (_canOpenExternal) ...[
               const SizedBox(height: 16),
               FilledButton.tonalIcon(
                 onPressed: _openExternal,
@@ -373,15 +570,37 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
 
   Future<void> _openExternal() async {
     final l10n = AppLocalizations.of(context)!;
-    final url = _previewUrl;
-    if (url == null || url.isEmpty) return;
+    try {
+      var url = _previewUrl;
+      final requiresDownloadUrl =
+          _previewHeaders.isNotEmpty ||
+          _previewMethod != 'GET' ||
+          url == null ||
+          url.isEmpty;
+      if (requiresDownloadUrl) {
+        url = await appApiRepository.downloadUrl(
+          connectionId: widget.file.connectionId,
+          fileId: widget.file.id,
+        );
+      }
+      if (url == null || url.isEmpty) {
+        _showSnack(l10n.filePreviewUnavailable);
+        return;
+      }
 
-    final uri = Uri.tryParse(url);
-    if (uri == null || !_isAllowedRemoteUri(uri)) {
-      _showSnack(l10n.filePreviewBlockedUrlScheme);
-      return;
-    }
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      final uri = Uri.tryParse(url);
+      if (uri == null || !_isAllowedRemoteUri(uri)) {
+        _showSnack(l10n.filePreviewBlockedUrlScheme);
+        return;
+      }
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        if (!mounted) return;
+        _showSnack(l10n.filePreviewOpenExternalFailed);
+      }
+    } on ApiException {
+      if (!mounted) return;
+      _showSnack(l10n.filePreviewOpenExternalFailed);
+    } catch (_) {
       if (!mounted) return;
       _showSnack(l10n.filePreviewOpenExternalFailed);
     }
@@ -392,21 +611,35 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
     return scheme == 'http' || scheme == 'https';
   }
 
-  Future<Uint8List?> _downloadPdfWithLimit(
-    Uri uri,
-    AppLocalizations l10n,
-  ) async {
+  Future<Uint8List?> _downloadBytesWithLimit(
+    Uri uri, {
+    required AppLocalizations l10n,
+    required String timeoutMessage,
+    String method = 'GET',
+    Map<String, String> headers = const <String, String>{},
+    int? maxBytes,
+    String? maxBytesExceededMessage,
+  }) async {
     final client = http.Client();
     try {
-      final request = http.Request('GET', uri);
+      final normalizedMethod = method.trim().toUpperCase();
+      if (normalizedMethod != 'GET' && normalizedMethod != 'POST') {
+        _errorMessage = l10n.filePreviewLoadFailed;
+        return null;
+      }
+
+      final request = http.Request(normalizedMethod, uri);
+      request.headers.addAll(headers);
       final response = await client.send(request).timeout(_downloadTimeout);
       if (response.statusCode < 200 || response.statusCode >= 300) {
         return null;
       }
 
       final contentLength = response.contentLength;
-      if (contentLength != null && contentLength > _maxPdfPreviewBytes) {
-        _errorMessage = l10n.filePreviewPdfTooLarge;
+      if (maxBytes != null &&
+          contentLength != null &&
+          contentLength > maxBytes) {
+        _errorMessage = maxBytesExceededMessage ?? l10n.filePreviewLoadFailed;
         return null;
       }
 
@@ -426,8 +659,9 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
           .listen(
             (chunk) {
               downloadedBytes += chunk.length;
-              if (downloadedBytes > _maxPdfPreviewBytes) {
-                _errorMessage = l10n.filePreviewPdfTooLarge;
+              if (maxBytes != null && downloadedBytes > maxBytes) {
+                _errorMessage =
+                    maxBytesExceededMessage ?? l10n.filePreviewLoadFailed;
                 subscription.cancel();
                 completeOnce(null);
                 return;
@@ -436,7 +670,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
             },
             onError: (Object error, StackTrace stackTrace) {
               if (error is TimeoutException) {
-                _errorMessage = l10n.filePreviewDownloadTimeout;
+                _errorMessage = timeoutMessage;
               }
               completeOnce(null);
             },
@@ -448,7 +682,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
       await subscription.cancel();
       return result;
     } on TimeoutException {
-      _errorMessage = l10n.filePreviewDownloadTimeout;
+      _errorMessage = timeoutMessage;
       return null;
     } catch (_) {
       return null;
@@ -456,6 +690,30 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
       client.close();
     }
   }
+
+  bool _looksLikeUnsupportedPreviewMime(String body) {
+    final normalized = body.toLowerCase();
+    return normalized.contains('preview is not supported for mimetype');
+  }
+
+  bool _hasRenderableContent(_PreviewKind kind) {
+    return switch (kind) {
+      _PreviewKind.image => _imageBytes != null && _imageBytes!.isNotEmpty,
+      _PreviewKind.pdf => _pdfBytes != null,
+      _PreviewKind.video => _videoController?.value.isInitialized == true,
+      _PreviewKind.unsupported => false,
+    };
+  }
+
+  bool _supportsDirectPreviewUrl(RecentFileItem file) {
+    final providerId = file.providerId.trim().toLowerCase();
+    if (providerId == 'dropbox' || providerId == 'mega') {
+      return false;
+    }
+    return true;
+  }
+
+  bool get _canOpenExternal => widget.file.kind.toLowerCase() != 'folder';
 
   void _showSnack(String message) {
     ScaffoldMessenger.of(context)
