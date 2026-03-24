@@ -594,63 +594,65 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
   }) async {
     final client = http.Client();
     try {
-      var effectiveHeaders = Map<String, String>.from(headers);
-
-      while (true) {
-        final request = http.Request(method, uri);
-        request.headers.addAll(effectiveHeaders);
-        final response = await client.send(request).timeout(_downloadTimeout);
-        if (response.statusCode < 200 || response.statusCode >= 300) {
-          return null;
-        }
-
-        final contentLength = response.contentLength;
-        if (maxBytes != null &&
-            contentLength != null &&
-            contentLength > maxBytes) {
-          _errorMessage = maxBytesExceededMessage ?? l10n.filePreviewLoadFailed;
-          return null;
-        }
-
-        final bytesBuilder = BytesBuilder(copy: false);
-        var downloadedBytes = 0;
-        final completer = Completer<Uint8List?>();
-        late final StreamSubscription<List<int>> subscription;
-
-        void completeOnce(Uint8List? value) {
-          if (!completer.isCompleted) {
-            completer.complete(value);
-          }
-        }
-
-        subscription = response.stream
-            .timeout(_downloadTimeout)
-            .listen(
-              (chunk) {
-                downloadedBytes += chunk.length;
-                if (maxBytes != null && downloadedBytes > maxBytes) {
-                  _errorMessage =
-                      maxBytesExceededMessage ?? l10n.filePreviewLoadFailed;
-                  subscription.cancel();
-                  completeOnce(null);
-                  return;
-                }
-                bytesBuilder.add(chunk);
-              },
-              onError: (Object error, StackTrace stackTrace) {
-                if (error is TimeoutException) {
-                  _errorMessage = timeoutMessage;
-                }
-                completeOnce(null);
-              },
-              onDone: () => completeOnce(bytesBuilder.takeBytes()),
-              cancelOnError: true,
-            );
-
-        final result = await completer.future;
-        await subscription.cancel();
-        return result;
+      final normalizedMethod = method.trim().toUpperCase();
+      if (normalizedMethod != 'GET' && normalizedMethod != 'POST') {
+        _errorMessage = l10n.filePreviewLoadFailed;
+        return null;
       }
+
+      final request = http.Request(normalizedMethod, uri);
+      request.headers.addAll(headers);
+      final response = await client.send(request).timeout(_downloadTimeout);
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        return null;
+      }
+
+      final contentLength = response.contentLength;
+      if (maxBytes != null &&
+          contentLength != null &&
+          contentLength > maxBytes) {
+        _errorMessage = maxBytesExceededMessage ?? l10n.filePreviewLoadFailed;
+        return null;
+      }
+
+      final bytesBuilder = BytesBuilder(copy: false);
+      var downloadedBytes = 0;
+      final completer = Completer<Uint8List?>();
+      late final StreamSubscription<List<int>> subscription;
+
+      void completeOnce(Uint8List? value) {
+        if (!completer.isCompleted) {
+          completer.complete(value);
+        }
+      }
+
+      subscription = response.stream
+          .timeout(_downloadTimeout)
+          .listen(
+            (chunk) {
+              downloadedBytes += chunk.length;
+              if (maxBytes != null && downloadedBytes > maxBytes) {
+                _errorMessage =
+                    maxBytesExceededMessage ?? l10n.filePreviewLoadFailed;
+                subscription.cancel();
+                completeOnce(null);
+                return;
+              }
+              bytesBuilder.add(chunk);
+            },
+            onError: (Object error, StackTrace stackTrace) {
+              if (error is TimeoutException) {
+                _errorMessage = timeoutMessage;
+              }
+              completeOnce(null);
+            },
+            onDone: () => completeOnce(bytesBuilder.takeBytes()),
+            cancelOnError: true,
+          );
+
+      final result = await completer.future;
+      await subscription.cancel();
+      return result;
     } on TimeoutException {
       _errorMessage = timeoutMessage;
       return null;
