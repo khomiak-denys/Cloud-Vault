@@ -145,7 +145,7 @@ Future<void> showFileInfoModal(
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
-                                    file.storageName,
+                                    providerLabel,
                                     style: TextStyle(
                                       fontSize: 14,
                                       color: storageColor,
