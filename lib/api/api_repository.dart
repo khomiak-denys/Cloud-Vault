@@ -351,7 +351,7 @@ class ApiRepository {
     final obj = _extractObject(json) ?? json;
     final url = _str(obj['url']);
     if (url == null || url.isEmpty) return null;
-    final method = (_str(obj['method']) ?? 'GET').toUpperCase();
+    final method = (_str(obj['method']) ?? 'GET').trim().toUpperCase();
     final headers = _stringMap(obj['headers']);
     return ApiPreviewUrl(url: url, method: method, headers: headers);
   }

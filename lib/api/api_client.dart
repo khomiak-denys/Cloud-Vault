@@ -260,7 +260,11 @@ class ApiClient {
       await for (final chunk in response.stream.timeout(timeout)) {
         total += chunk.length;
         if (total > maxBytes) {
-          throw ApiException('Response exceeded max preview size');
+          throw ApiException(
+            'Response exceeded max preview size',
+            statusCode: 413,
+            errorCode: 'max_preview_size_exceeded',
+          );
         }
         bytes.add(chunk);
       }
@@ -268,7 +272,7 @@ class ApiClient {
     } on ApiException {
       rethrow;
     } on TimeoutException {
-      throw ApiException('Request timeout');
+      throw ApiException('Request timeout', errorCode: 'request_timeout');
     } catch (e) {
       _logApiError(
         phase: 'network',

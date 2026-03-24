@@ -114,7 +114,8 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
 
       final uri = Uri.tryParse(preview.url);
       if (uri == null || !_isAllowedRemoteUri(uri)) {
-        return false;
+        _errorMessage = l10n.filePreviewBlockedUrlScheme;
+        return true;
       }
 
       _previewUrl = preview.url;
@@ -243,7 +244,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
         timeout: _downloadTimeout,
       );
     } on ApiException catch (e) {
-      if (e.message == 'Response exceeded max preview size') {
+      if (e.errorCode == 'max_preview_size_exceeded' || e.statusCode == 413) {
         _errorMessage = kind == _PreviewKind.pdf
             ? l10n.filePreviewPdfTooLarge
             : l10n.filePreviewLoadFailed;
@@ -254,7 +255,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
         _errorMessage = l10n.filePreviewUnsupportedType;
         return;
       }
-      if (e.message == 'Request timeout') {
+      if (e.errorCode == 'request_timeout') {
         _errorMessage = l10n.filePreviewDownloadTimeout;
         return;
       }
@@ -582,7 +583,10 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
           fileId: widget.file.id,
         );
       }
-      if (url == null || url.isEmpty) return;
+      if (url == null || url.isEmpty) {
+        _showSnack(l10n.filePreviewUnavailable);
+        return;
+      }
 
       final uri = Uri.tryParse(url);
       if (uri == null || !_isAllowedRemoteUri(uri)) {
