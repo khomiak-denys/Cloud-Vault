@@ -620,6 +620,12 @@ abstract class AppLocalizations {
   /// **'Modified'**
   String get modified;
 
+  /// No description provided for @provider.
+  ///
+  /// In en, this message translates to:
+  /// **'Provider'**
+  String get provider;
+
   /// No description provided for @path.
   ///
   /// In en, this message translates to:

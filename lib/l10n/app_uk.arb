@@ -108,6 +108,7 @@
   "fileInfo": "Інформація про файл",
   "size": "Розмір",
   "modified": "Змінено",
+  "provider": "Провайдер",
   "path": "Шлях",
   "close": "Закрити",
   "authLoginTitle": "Вхід",
