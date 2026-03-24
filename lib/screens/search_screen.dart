@@ -80,10 +80,8 @@ class _SearchScreenState extends State<SearchScreen> {
           normalizedFacets.map((item) => item.providerId).toSet();
       setState(() {
         _providerFacets = normalizedFacets;
-        if (validProviderIds.isNotEmpty) {
-          _selectedProviderIds =
-              _selectedProviderIds.where(validProviderIds.contains).toSet();
-        }
+        _selectedProviderIds =
+            _selectedProviderIds.where(validProviderIds.contains).toSet();
         _results = files.map(mapApiFileToRecentFileItem).toList();
       });
     } on ApiException catch (e) {
