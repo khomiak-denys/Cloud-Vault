@@ -6,6 +6,7 @@ import '../api/api_exception.dart';
 import '../data/api_mappers.dart';
 import '../data/app_services.dart';
 import '../data/file_actions_handler.dart';
+import '../data/provider_identity.dart';
 import '../models/recent_file_item.dart';
 import '../models/vault_item.dart';
 import '../modals/file_actions_modal.dart';
@@ -101,7 +102,14 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
         _currentPath = _megaDisplayPath;
       });
     } else {
-      setState(() => _currentPath = _normalizePath(folder.pathLabel));
+      setState(
+        () => _currentPath = _normalizePath(
+          folder.apiPath ??
+              (isIdBasedProviderId(widget.storage.providerId)
+                  ? folder.id
+                  : folder.pathLabel),
+        ),
+      );
     }
     await _load();
   }

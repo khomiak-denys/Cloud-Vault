@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 
 import '../api/api_exception.dart';
 import '../data/app_services.dart';
+import '../data/storage_formatters.dart';
 import '../models/recent_file_item.dart';
 import '../theme/app_theme_colors.dart';
 import '../utils/interaction_styles.dart';
@@ -19,6 +20,8 @@ Future<void> showFileInfoModal(
   final colors = AppThemeColors.of(context);
   String modifiedLabel = file.modifiedLabel;
   String providerLabel = file.storageName;
+  String pathLabel = file.pathLabel;
+  String sizeLabel = file.sizeLabel;
 
   try {
     final response = await appApiRepository.fileProperties(
@@ -30,12 +33,21 @@ Future<void> showFileInfoModal(
         : response;
 
     modifiedLabel = _formatDateOnly(
-      data['modifiedTime'] ?? data['modifiedAt'] ?? data['updatedAt'],
+      data['modifiedTime'] ??
+          data['modifiedAt'] ??
+          data['updatedAt'] ??
+          data['openedAt'],
       fallback: file.modifiedLabel,
     );
     providerLabel =
         (data['providerName'] ?? data['provider'] ?? file.storageName)
             .toString();
+    pathLabel =
+        (data['displayPath'] ?? data['path'] ?? file.pathLabel).toString();
+    final sizeBytes = _readSizeBytes(data);
+    if (sizeBytes != null) {
+      sizeLabel = formatBytes(sizeBytes);
+    }
   } on ApiException {
     // Keep existing labels when endpoint fails.
   } catch (_) {
@@ -166,9 +178,23 @@ Future<void> showFileInfoModal(
                         ),
                         const SizedBox(height: 12),
                         _InfoTile(
+                          icon: Icons.straighten_outlined,
+                          label: l10n.size,
+                          value: sizeLabel,
+                          isDark: isDark,
+                        ),
+                        const SizedBox(height: 12),
+                        _InfoTile(
                           icon: Icons.description_outlined,
                           label: l10n.provider,
                           value: providerLabel,
+                          isDark: isDark,
+                        ),
+                        const SizedBox(height: 12),
+                        _InfoTile(
+                          icon: Icons.route_outlined,
+                          label: l10n.path,
+                          value: pathLabel,
                           isDark: isDark,
                         ),
                         const SizedBox(height: 26),
@@ -213,6 +239,13 @@ String _formatDateOnly(dynamic rawValue, {required String fallback}) {
   final parsed = DateTime.tryParse(raw);
   if (parsed == null) return fallback;
   return DateFormat('yyyy-MM-dd').format(parsed);
+}
+
+double? _readSizeBytes(Map<String, dynamic> data) {
+  final value = data['sizeBytes'] ?? data['size'];
+  if (value is num) return value.toDouble();
+  if (value is String) return double.tryParse(value);
+  return null;
 }
 
 class _InfoTile extends StatelessWidget {

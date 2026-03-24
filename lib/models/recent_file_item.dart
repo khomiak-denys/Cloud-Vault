@@ -15,6 +15,7 @@ class RecentFileItem {
     required this.sizeBytes,
     required this.modifiedAt,
     required this.pathLabel,
+    this.apiPath,
     this.isFavorite = false,
     this.kind = 'file',
     this.mimeType,
@@ -35,6 +36,7 @@ class RecentFileItem {
   final double sizeBytes;
   final DateTime modifiedAt;
   final String pathLabel;
+  final String? apiPath;
   final bool isFavorite;
   final String kind;
   final String? mimeType;
