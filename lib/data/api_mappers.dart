@@ -43,6 +43,7 @@ RecentFileItem mapApiFileToRecentFileItem(ApiFileItem file) {
   return RecentFileItem(
     id: file.id,
     connectionId: file.connectionId,
+    providerId: file.providerId,
     title: file.name,
     subtitle: '${file.providerName} - $formattedDate',
     icon: _fileIcon(file.name, file.mimeType, file.kind),

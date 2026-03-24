@@ -39,6 +39,7 @@ class ApiFileItem {
     required this.path,
     required this.sizeBytes,
     required this.modifiedAt,
+    required this.providerId,
     required this.providerName,
     required this.isFavorite,
     required this.kind,
@@ -51,6 +52,7 @@ class ApiFileItem {
   final String path;
   final double sizeBytes;
   final DateTime modifiedAt;
+  final String providerId;
   final String providerName;
   final bool isFavorite;
   final String kind;
@@ -496,6 +498,9 @@ class ApiRepository {
         path: filePath,
         sizeBytes: _num(item['sizeBytes']) ?? _num(item['size']) ?? 0,
         modifiedAt: DateTime.tryParse(modifiedRaw ?? '') ?? DateTime.now(),
+        providerId: _normalizeProviderId(
+          _str(item['providerId']) ?? _str(item['provider']),
+        ),
         providerName:
             _str(item['providerName']) ?? _str(item['provider']) ?? 'Storage',
         isFavorite: item['isFavorite'] == true || item['favorite'] == true,

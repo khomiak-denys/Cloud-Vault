@@ -68,7 +68,9 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
 
     try {
       final kind = _resolveKind(widget.file);
-      final loadedFromDirect = await _tryLoadFromPreviewUrl(kind, l10n);
+      final loadedFromDirect = _supportsDirectPreviewUrl(widget.file)
+          ? await _tryLoadFromPreviewUrl(kind, l10n)
+          : false;
       if (!loadedFromDirect) {
         await _tryLoadFromPreviewStream(kind, l10n);
       }
@@ -133,6 +135,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
           method: preview.method,
           headers: preview.headers,
           maxBytes: _maxPdfPreviewBytes,
+          maxBytesExceededMessage: l10n.filePreviewPdfTooLarge,
           timeoutMessage: l10n.filePreviewDownloadTimeout,
         );
         if (bytes == null) {
@@ -174,7 +177,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
     } on ApiException catch (e) {
       // Unsupported provider (HTTP 400) should fall back to preview-stream.
       if (e.statusCode == 400) return false;
-      return false;
+      rethrow;
     } catch (_) {
       return false;
     }
@@ -200,8 +203,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
       return;
     }
 
-    final headers = _backendAuthHeaders();
-    headers['Content-Type'] = 'application/json';
+    final headers = _previewStreamHeaders();
     final payload = <String, dynamic>{
       'connectionId': widget.file.connectionId,
       'fileId': widget.file.id,
@@ -220,7 +222,10 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
       headers: headers,
       jsonBody: payload,
       maxBytes: kind == _PreviewKind.pdf ? _maxPdfPreviewBytes : null,
+      maxBytesExceededMessage: l10n.filePreviewPdfTooLarge,
       timeoutMessage: l10n.filePreviewDownloadTimeout,
+      retryOnUnauthorized: true,
+      retryHeadersBuilder: _previewStreamHeaders,
       onStatusCode: (statusCode, body) async {
         if (statusCode == 400 && _looksLikeUnsupportedPreviewMime(body)) {
           _errorMessage = l10n.filePreviewUnsupportedType;
@@ -523,15 +528,29 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
 
   Future<void> _openExternal() async {
     final l10n = AppLocalizations.of(context)!;
-    final url = _previewUrl;
-    if (url == null || url.isEmpty) return;
+    try {
+      var url = _previewUrl;
+      if (_previewHeaders.isNotEmpty) {
+        url = await appApiRepository.downloadUrl(
+          connectionId: widget.file.connectionId,
+          fileId: widget.file.id,
+        );
+      }
+      if (url == null || url.isEmpty) return;
 
-    final uri = Uri.tryParse(url);
-    if (uri == null || !_isAllowedRemoteUri(uri)) {
-      _showSnack(l10n.filePreviewBlockedUrlScheme);
-      return;
-    }
-    if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      final uri = Uri.tryParse(url);
+      if (uri == null || !_isAllowedRemoteUri(uri)) {
+        _showSnack(l10n.filePreviewBlockedUrlScheme);
+        return;
+      }
+      if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+        if (!mounted) return;
+        _showSnack(l10n.filePreviewOpenExternalFailed);
+      }
+    } on ApiException {
+      if (!mounted) return;
+      _showSnack(l10n.filePreviewOpenExternalFailed);
+    } catch (_) {
       if (!mounted) return;
       _showSnack(l10n.filePreviewOpenExternalFailed);
     }
@@ -550,69 +569,92 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
     Map<String, String> headers = const <String, String>{},
     Map<String, dynamic>? jsonBody,
     int? maxBytes,
+    String? maxBytesExceededMessage,
+    bool retryOnUnauthorized = false,
+    Map<String, String> Function()? retryHeadersBuilder,
     Future<void> Function(int statusCode, String body)? onStatusCode,
   }) async {
     final client = http.Client();
     try {
-      final request = http.Request(method, uri);
-      request.headers.addAll(headers);
-      if (jsonBody != null) {
-        request.body = jsonEncode(jsonBody);
-      }
-      final response = await client.send(request).timeout(_downloadTimeout);
-      if (response.statusCode < 200 || response.statusCode >= 300) {
-        await onStatusCode?.call(
-          response.statusCode,
-          await response.stream.bytesToString(),
-        );
-        return null;
-      }
+      var effectiveHeaders = Map<String, String>.from(headers);
+      var retriedAfterUnauthorized = false;
 
-      final contentLength = response.contentLength;
-      if (maxBytes != null &&
-          contentLength != null &&
-          contentLength > maxBytes) {
-        _errorMessage = l10n.filePreviewPdfTooLarge;
-        return null;
-      }
-
-      final bytesBuilder = BytesBuilder(copy: false);
-      var downloadedBytes = 0;
-      final completer = Completer<Uint8List?>();
-      late final StreamSubscription<List<int>> subscription;
-
-      void completeOnce(Uint8List? value) {
-        if (!completer.isCompleted) {
-          completer.complete(value);
+      while (true) {
+        final request = http.Request(method, uri);
+        request.headers.addAll(effectiveHeaders);
+        if (jsonBody != null) {
+          request.body = jsonEncode(jsonBody);
         }
-      }
 
-      subscription = response.stream
-          .timeout(_downloadTimeout)
-          .listen(
-            (chunk) {
-              downloadedBytes += chunk.length;
-              if (maxBytes != null && downloadedBytes > maxBytes) {
-                _errorMessage = l10n.filePreviewPdfTooLarge;
-                subscription.cancel();
-                completeOnce(null);
-                return;
-              }
-              bytesBuilder.add(chunk);
-            },
-            onError: (Object error, StackTrace stackTrace) {
-              if (error is TimeoutException) {
-                _errorMessage = timeoutMessage;
-              }
-              completeOnce(null);
-            },
-            onDone: () => completeOnce(bytesBuilder.takeBytes()),
-            cancelOnError: true,
+        final response = await client.send(request).timeout(_downloadTimeout);
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          final shouldRetryUnauthorized =
+              retryOnUnauthorized &&
+              response.statusCode == 401 &&
+              !retriedAfterUnauthorized;
+          if (shouldRetryUnauthorized) {
+            retriedAfterUnauthorized = true;
+            final refreshed = await appApiClient.refreshBearerToken();
+            if (refreshed) {
+              effectiveHeaders = retryHeadersBuilder?.call() ?? effectiveHeaders;
+              continue;
+            }
+          }
+
+          await onStatusCode?.call(
+            response.statusCode,
+            await response.stream.bytesToString(),
           );
+          return null;
+        }
 
-      final result = await completer.future;
-      await subscription.cancel();
-      return result;
+        final contentLength = response.contentLength;
+        if (maxBytes != null &&
+            contentLength != null &&
+            contentLength > maxBytes) {
+          _errorMessage = maxBytesExceededMessage ?? l10n.filePreviewLoadFailed;
+          return null;
+        }
+
+        final bytesBuilder = BytesBuilder(copy: false);
+        var downloadedBytes = 0;
+        final completer = Completer<Uint8List?>();
+        late final StreamSubscription<List<int>> subscription;
+
+        void completeOnce(Uint8List? value) {
+          if (!completer.isCompleted) {
+            completer.complete(value);
+          }
+        }
+
+        subscription = response.stream
+            .timeout(_downloadTimeout)
+            .listen(
+              (chunk) {
+                downloadedBytes += chunk.length;
+                if (maxBytes != null && downloadedBytes > maxBytes) {
+                  _errorMessage =
+                      maxBytesExceededMessage ?? l10n.filePreviewLoadFailed;
+                  subscription.cancel();
+                  completeOnce(null);
+                  return;
+                }
+                bytesBuilder.add(chunk);
+              },
+              onError: (Object error, StackTrace stackTrace) {
+                if (error is TimeoutException) {
+                  _errorMessage = timeoutMessage;
+                }
+                completeOnce(null);
+              },
+              onDone: () => completeOnce(bytesBuilder.takeBytes()),
+              cancelOnError: true,
+            );
+
+        final result = await completer.future;
+        await subscription.cancel();
+        return result;
+      }
     } on TimeoutException {
       _errorMessage = timeoutMessage;
       return null;
@@ -643,6 +685,12 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
     return headers;
   }
 
+  Map<String, String> _previewStreamHeaders() {
+    final headers = _backendAuthHeaders();
+    headers['Content-Type'] = 'application/json';
+    return headers;
+  }
+
   bool _looksLikeUnsupportedPreviewMime(String body) {
     final normalized = body.toLowerCase();
     return normalized.contains('preview is not supported for mimetype');
@@ -655,6 +703,14 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
       _PreviewKind.video => _videoController?.value.isInitialized == true,
       _PreviewKind.unsupported => false,
     };
+  }
+
+  bool _supportsDirectPreviewUrl(RecentFileItem file) {
+    final providerId = file.providerId.trim().toLowerCase();
+    if (providerId == 'dropbox' || providerId == 'mega') {
+      return false;
+    }
+    return true;
   }
 
   void _showSnack(String message) {

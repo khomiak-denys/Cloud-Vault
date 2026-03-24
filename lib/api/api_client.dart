@@ -39,6 +39,10 @@ class ApiClient {
     return _sendJson('DELETE', path, query: query);
   }
 
+  Future<bool> refreshBearerToken() {
+    return _refreshBearerToken();
+  }
+
   Future<Map<String, dynamic>> _sendJson(
     String method,
     String path, {

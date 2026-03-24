@@ -4,6 +4,7 @@ class RecentFileItem {
   const RecentFileItem({
     required this.id,
     required this.connectionId,
+    required this.providerId,
     required this.title,
     required this.subtitle,
     required this.icon,
@@ -23,6 +24,7 @@ class RecentFileItem {
 
   final String id;
   final String connectionId;
+  final String providerId;
   final String title;
   final String subtitle;
   final IconData icon;
