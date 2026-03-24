@@ -78,6 +78,18 @@ class ApiStorageUsageReport {
   final double? usagePercent;
 }
 
+class ApiPreviewUrl {
+  const ApiPreviewUrl({
+    required this.url,
+    required this.method,
+    required this.headers,
+  });
+
+  final String url;
+  final String method;
+  final Map<String, String> headers;
+}
+
 class ApiMegaConnectResult {
   const ApiMegaConnectResult({
     required this.connectionId,
@@ -324,6 +336,22 @@ class ApiRepository {
     return _str(obj['url']);
   }
 
+  Future<ApiPreviewUrl?> previewUrl({
+    required String connectionId,
+    required String fileId,
+  }) async {
+    final json = await _client.postJson(
+      '/files/preview-url',
+      body: <String, dynamic>{'connectionId': connectionId, 'fileId': fileId},
+    );
+    final obj = _extractObject(json) ?? json;
+    final url = _str(obj['url']);
+    if (url == null || url.isEmpty) return null;
+    final method = (_str(obj['method']) ?? 'GET').toUpperCase();
+    final headers = _stringMap(obj['headers']);
+    return ApiPreviewUrl(url: url, method: method, headers: headers);
+  }
+
   Future<String?> shareLink({
     required String connectionId,
     required String fileId,
@@ -541,6 +569,18 @@ double? _num(dynamic value) {
   if (value is num) return value.toDouble();
   if (value is String) return double.tryParse(value);
   return null;
+}
+
+Map<String, String> _stringMap(dynamic value) {
+  if (value is! Map) return const <String, String>{};
+  final result = <String, String>{};
+  for (final entry in value.entries) {
+    final key = _str(entry.key);
+    final mapValue = _str(entry.value);
+    if (key == null || key.isEmpty || mapValue == null) continue;
+    result[key] = mapValue;
+  }
+  return result;
 }
 
 Map<String, dynamic>? _extractObject(Map<String, dynamic> json) {
