@@ -246,6 +246,24 @@ class ApiRepository {
     return _parseFileItems(json);
   }
 
+  Future<List<ApiFileItem>> favoritesFiles({
+    int pageSize = 20,
+    String? cursor,
+    String? connectionId,
+    String? providerId,
+  }) async {
+    final query = <String, String>{
+      'pageSize': '${pageSize.clamp(1, 100).toInt()}',
+      if (cursor != null && cursor.isNotEmpty) 'cursor': cursor,
+      if (connectionId != null && connectionId.isNotEmpty)
+        'connectionId': connectionId,
+      if (providerId != null && providerId.isNotEmpty)
+        'providerId': normalizeProviderId(providerId),
+    };
+    final json = await _client.getJson('/files/favorites', query: query);
+    return _parseFileItems(json);
+  }
+
   Future<List<ApiFileItem>> dashboardSummaryRecentFiles({int pageSize = 20}) async {
     final json = await _client.getJson('/dashboard/summary');
     final root = _extractObject(json) ?? json;
@@ -575,7 +593,10 @@ class ApiRepository {
           _str(item['providerId']) ?? _str(item['provider']),
         ),
         providerName:
-            _str(item['providerName']) ?? _str(item['provider']) ?? 'Storage',
+            _str(item['providerName']) ??
+            _str(item['provider']) ??
+            _providerNameFromId(_str(item['providerId']) ?? _str(item['provider'])) ??
+            'Storage',
         isFavorite: item['isFavorite'] == true || item['favorite'] == true,
         kind:
             _str(item['kind']) ??
@@ -651,6 +672,22 @@ class ApiRepository {
     }
 
     return '$_storageApiRootPath/$normalized';
+  }
+}
+
+String? _providerNameFromId(String? providerId) {
+  final normalized = normalizeProviderId(providerId);
+  switch (normalized) {
+    case 'google-drive':
+      return 'Google Drive';
+    case 'onedrive':
+      return 'OneDrive';
+    case 'dropbox':
+      return 'Dropbox';
+    case 'mega':
+      return 'MEGA';
+    default:
+      return null;
   }
 }
 

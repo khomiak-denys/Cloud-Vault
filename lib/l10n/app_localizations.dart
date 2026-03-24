@@ -164,6 +164,18 @@ abstract class AppLocalizations {
   /// **'Recent files'**
   String get recentFiles;
 
+  /// No description provided for @favorites.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorites'**
+  String get favorites;
+
+  /// No description provided for @favoriteRecentFiles.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite recent files'**
+  String get favoriteRecentFiles;
+
   /// No description provided for @addStorage.
   ///
   /// In en, this message translates to:

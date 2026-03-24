@@ -42,6 +42,12 @@ class AppLocalizationsUk extends AppLocalizations {
   String get recentFiles => 'Нещодавні файли';
 
   @override
+  String get favorites => 'Обрані';
+
+  @override
+  String get favoriteRecentFiles => 'Обрані з нещодавніх';
+
+  @override
   String get addStorage => 'Додати сховище';
 
   @override

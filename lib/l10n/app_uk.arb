@@ -11,6 +11,8 @@
   "add": "Додати",
   "used": "Використано",
   "recentFiles": "Нещодавні файли",
+  "favorites": "Обрані",
+  "favoriteRecentFiles": "Обрані з нещодавніх",
   "addStorage": "Додати сховище",
   "chooseCloudStorage": "Виберіть хмарне сховище, яке ви хочете підключити",
   "connect": "Підключити",

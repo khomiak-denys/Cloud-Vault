@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:cloud_vault/l10n/app_localizations.dart';
 
 import '../api/api_exception.dart';
 import '../api/api_repository.dart';
@@ -32,7 +33,6 @@ class CloudVaultScreen extends StatefulWidget {
 class _CloudVaultScreenState extends State<CloudVaultScreen> {
   static const _cacheKey = 'dashboard_bundle_v1';
   static const _cacheTtl = Duration(minutes: 2);
-  static const _favoritesTitle = 'Favorites';
 
   List<VaultItem> _vaultItems = const [];
   List<RecentFileItem> _recentFiles = const [];
@@ -79,7 +79,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
       final usageReportFuture = _loadUsageReportSafe();
       final results = await Future.wait([
         appApiRepository.connections(),
-        appApiRepository.dashboardSummaryRecentFiles(),
+        appApiRepository.favoritesFiles(pageSize: 20),
         usageReportFuture,
       ]);
 
@@ -94,10 +94,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
       final mappedVaultItems = enrichedConnections
           .map(mapConnectionToVaultItem)
           .toList();
-      final mappedRecentFiles = files
-          .map(mapApiFileToRecentFileItem)
-          .where((file) => file.isFavorite)
-          .toList();
+      final mappedRecentFiles = files.map(mapApiFileToRecentFileItem).toList();
       final totalUsedBytes =
           usageReport?.usedBytes ??
           enrichedConnections.fold<double>(
@@ -221,6 +218,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final percentUsed = _totalBytes > 0
         ? (_totalUsedBytes / _totalBytes).clamp(0.0, 1.0)
         : 0.0;
@@ -256,7 +254,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
                       else
                         DashboardRecentFilesSection(
                           items: _recentFiles,
-                          title: _favoritesTitle,
+                          title: l10n.favorites,
                           onMoreTap: (file) => showFileActionsModal(
                             context,
                             file,
