@@ -78,7 +78,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
       final usageReportFuture = _loadUsageReportSafe();
       final results = await Future.wait([
         appApiRepository.connections(),
-        appApiRepository.recentFiles(pageSize: 20),
+        appApiRepository.dashboardSummaryRecentFiles(),
         usageReportFuture,
       ]);
 

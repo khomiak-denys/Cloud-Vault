@@ -39,6 +39,7 @@ class ApiFileItem {
     required this.connectionId,
     required this.name,
     required this.path,
+    required this.displayPath,
     required this.sizeBytes,
     required this.modifiedAt,
     required this.providerId,
@@ -51,7 +52,8 @@ class ApiFileItem {
   final String id;
   final String connectionId;
   final String name;
-  final String path;
+  final String? path;
+  final String displayPath;
   final double sizeBytes;
   final DateTime modifiedAt;
   final String providerId;
@@ -59,6 +61,28 @@ class ApiFileItem {
   final bool isFavorite;
   final String kind;
   final String? mimeType;
+}
+
+class ApiProviderFacet {
+  const ApiProviderFacet({
+    required this.providerId,
+    required this.providerName,
+    required this.count,
+  });
+
+  final String providerId;
+  final String providerName;
+  final int count;
+}
+
+class ApiSearchFilesResult {
+  const ApiSearchFilesResult({
+    required this.items,
+    required this.providerFacets,
+  });
+
+  final List<ApiFileItem> items;
+  final List<ApiProviderFacet> providerFacets;
 }
 
 class ApiStorageRecommendation {
@@ -221,6 +245,14 @@ class ApiRepository {
     return _parseFileItems(json);
   }
 
+  Future<List<ApiFileItem>> dashboardSummaryRecentFiles() async {
+    final json = await _client.getJson('/dashboard/summary');
+    final root = _extractObject(json) ?? json;
+    final recentRaw = root['recentFiles'];
+    if (recentRaw is! List) return const [];
+    return _parseFileItems(<String, dynamic>{'items': recentRaw});
+  }
+
   Future<List<ApiFileItem>> listFiles({
     required String connectionId,
     String? providerId,
@@ -273,10 +305,11 @@ class ApiRepository {
     return segments.last;
   }
 
-  Future<List<ApiFileItem>> searchFiles(
+  Future<ApiSearchFilesResult> searchFiles(
     String query, {
     int pageSize = 20,
     String? cursor,
+    List<String>? providerIds,
   }) async {
     final payload = <String, dynamic>{
       'query': query,
@@ -287,9 +320,15 @@ class ApiRepository {
     if (cursor != null && cursor.isNotEmpty) {
       payload['cursor'] = cursor;
     }
+    if (providerIds != null && providerIds.isNotEmpty) {
+      payload['providerIds'] = providerIds;
+    }
 
     final json = await _client.postJson('/files/search', body: payload);
-    return _parseFileItems(json);
+    return ApiSearchFilesResult(
+      items: _parseFileItems(json),
+      providerFacets: _extractProviderFacets(json),
+    );
   }
 
   Future<void> setFavorite({
@@ -506,9 +545,15 @@ class ApiRepository {
           _str(item['updatedAt']) ??
           _str(item['modifiedAt']) ??
           _str(item['createdAt']);
+      final openedRaw =
+          _str(item['openedAt']) ??
+          _str(item['lastOpenedAt']) ??
+          _str(item['accessedAt']);
       final fileName =
           _str(item['fileName']) ?? _str(item['name']) ?? 'Unknown';
-      final filePath = _str(item['path']) ?? _str(item['parentPath']) ?? '/';
+      final filePath = _str(item['path']);
+      final displayPath =
+          _str(item['displayPath']) ?? filePath ?? _str(item['parentPath']) ?? '/';
       final itemConnectionId = _str(item['connectionId']);
       final safeRootConnectionId = rootConnectionId == 'all'
           ? null
@@ -516,12 +561,16 @@ class ApiRepository {
 
       return ApiFileItem(
         // Prefer provider-native file identifier (fileId/path) for file actions.
-        id: _str(item['fileId']) ?? filePath,
+        id: _str(item['fileId']) ?? filePath ?? displayPath,
         connectionId: itemConnectionId ?? safeRootConnectionId ?? '',
         name: fileName,
         path: filePath,
+        displayPath: displayPath,
         sizeBytes: _num(item['sizeBytes']) ?? _num(item['size']) ?? 0,
-        modifiedAt: DateTime.tryParse(modifiedRaw ?? '') ?? DateTime.now(),
+        modifiedAt:
+            DateTime.tryParse(modifiedRaw ?? '') ??
+            DateTime.tryParse(openedRaw ?? '') ??
+            DateTime.now(),
         providerId: _normalizeProviderId(
           _str(item['providerId']) ?? _str(item['provider']),
         ),
@@ -536,6 +585,34 @@ class ApiRepository {
         mimeType: _str(item['mimeType']),
       );
     }).toList();
+  }
+
+  List<ApiProviderFacet> _extractProviderFacets(Map<String, dynamic> json) {
+    final root = _extractObject(json) ?? json;
+    final facets =
+        root['facets'] is Map
+            ? Map<String, dynamic>.from(root['facets'] as Map)
+            : (json['facets'] is Map
+                ? Map<String, dynamic>.from(json['facets'] as Map)
+                : null);
+    if (facets == null) return const [];
+    final providers = facets['providers'];
+    if (providers is! List) return const [];
+    return providers
+        .whereType<Map>()
+        .map((raw) => Map<String, dynamic>.from(raw))
+        .map((item) {
+          final providerId = _normalizeProviderId(_str(item['providerId']));
+          final providerName =
+              _str(item['providerName']) ?? _str(item['provider']) ?? providerId;
+          return ApiProviderFacet(
+            providerId: providerId,
+            providerName: providerName,
+            count: (_num(item['count']) ?? 0).toInt(),
+          );
+        })
+        .where((facet) => facet.providerId.isNotEmpty)
+        .toList();
   }
 
   String _normalizeStoragePath(String path) {

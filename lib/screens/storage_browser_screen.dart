@@ -101,7 +101,9 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
         _currentPath = _megaDisplayPath;
       });
     } else {
-      setState(() => _currentPath = _normalizePath(folder.pathLabel));
+      setState(
+        () => _currentPath = _normalizePath(folder.apiPath ?? folder.pathLabel),
+      );
     }
     await _load();
   }
