@@ -550,9 +550,10 @@ class ApiRepository {
           _str(item['accessedAt']);
       final fileName =
           _str(item['fileName']) ?? _str(item['name']) ?? 'Unknown';
-      final filePath = _str(item['path']) ?? _str(item['parentPath']) ?? '/';
-      final displayPath =
-          _str(item['displayPath']) ?? filePath;
+      final rawPath = _str(item['path']);
+      final parentPath = _str(item['parentPath']);
+      final fallbackPath = rawPath ?? parentPath ?? '/';
+      final displayPath = _str(item['displayPath']) ?? fallbackPath;
       final itemConnectionId = _str(item['connectionId']);
       final safeRootConnectionId = rootConnectionId == 'all'
           ? null
@@ -560,10 +561,10 @@ class ApiRepository {
 
       return ApiFileItem(
         // Prefer provider-native file identifier (fileId/path) for file actions.
-        id: _str(item['fileId']) ?? filePath,
+        id: _str(item['fileId']) ?? rawPath ?? parentPath ?? displayPath,
         connectionId: itemConnectionId ?? safeRootConnectionId ?? '',
         name: fileName,
-        path: filePath,
+        path: rawPath,
         displayPath: displayPath,
         sizeBytes: _num(item['sizeBytes']) ?? _num(item['size']) ?? 0,
         modifiedAt:
