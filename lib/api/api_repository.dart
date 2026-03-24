@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:async';
 
 import 'api_client.dart';
 import 'api_exception.dart';
@@ -361,6 +362,8 @@ class ApiRepository {
     required String fileId,
     String? fileName,
     String? mimeType,
+    required int maxBytes,
+    Duration timeout = const Duration(seconds: 20),
   }) {
     final payload = <String, dynamic>{
       'connectionId': connectionId,
@@ -368,7 +371,12 @@ class ApiRepository {
       if (fileName != null && fileName.isNotEmpty) 'fileName': fileName,
       if (mimeType != null && mimeType.isNotEmpty) 'mimeType': mimeType,
     };
-    return _client.postBytes('/files/preview-stream', body: payload);
+    return _client.postBytesCapped(
+      '/files/preview-stream',
+      body: payload,
+      maxBytes: maxBytes,
+      timeout: timeout,
+    );
   }
 
   Future<String?> shareLink({

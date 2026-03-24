@@ -239,14 +239,24 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
         fileId: widget.file.id,
         fileName: widget.file.title,
         mimeType: widget.file.mimeType,
-      ).timeout(_downloadTimeout);
-    } on TimeoutException {
-      _errorMessage = l10n.filePreviewDownloadTimeout;
-      return;
+        maxBytes: maxBytes,
+        timeout: _downloadTimeout,
+      );
     } on ApiException catch (e) {
+      if (e.message == 'Response exceeded max preview size') {
+        _errorMessage = kind == _PreviewKind.pdf
+            ? l10n.filePreviewPdfTooLarge
+            : l10n.filePreviewLoadFailed;
+        return;
+      }
       if (e.statusCode == 400 &&
           _looksLikeUnsupportedPreviewMime(e.body ?? '')) {
         _errorMessage = l10n.filePreviewUnsupportedType;
+        return;
+      }
+      if (e.message == 'Network request failed' &&
+          (e.body ?? '').contains('TimeoutException')) {
+        _errorMessage = l10n.filePreviewDownloadTimeout;
         return;
       }
       _errorMessage = l10n.filePreviewLoadFailed;

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
@@ -50,6 +51,23 @@ class ApiClient {
     Map<String, String>? query,
   }) {
     return _sendBytes('POST', path, body: body, query: query);
+  }
+
+  Future<Uint8List> postBytesCapped(
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? query,
+    required int maxBytes,
+    Duration timeout = const Duration(seconds: 20),
+  }) {
+    return _sendBytesStreamedCapped(
+      'POST',
+      path,
+      body: body,
+      query: query,
+      maxBytes: maxBytes,
+      timeout: timeout,
+    );
   }
 
   Future<Map<String, dynamic>> _sendJson(
@@ -178,22 +196,83 @@ class ApiClient {
     return response.bodyBytes;
   }
 
+  Future<Uint8List> _sendBytesStreamedCapped(
+    String method,
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? query,
+    required int maxBytes,
+    required Duration timeout,
+  }) async {
+    final uri = ApiConfig.resolveApiUri(path, queryParameters: query);
+    final requestBody = body ?? <String, dynamic>{};
+    final requestJson = jsonEncode(requestBody);
+
+    Future<http.StreamedResponse> sendOnce() async {
+      final request = http.Request(method, uri);
+      request.headers.addAll(_buildHeaders());
+      request.body = requestJson;
+      _logApiRequest(method: method, uri: uri, body: requestBody);
+      return _httpClient.send(request).timeout(timeout);
+    }
+
+    http.StreamedResponse response = await sendOnce();
+    if (response.statusCode == 401) {
+      final refreshed = await _refreshBearerToken();
+      if (refreshed) {
+        _logApiError(
+          phase: 'auth',
+          method: method,
+          uri: uri,
+          statusCode: 401,
+          body: 'Token expired. Retrying once with refreshed token.',
+        );
+        response = await sendOnce();
+      }
+    }
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      final errorText = await _readErrorText(response, timeout: timeout);
+      _logApiError(
+        phase: 'http',
+        method: method,
+        uri: uri,
+        statusCode: response.statusCode,
+        body: errorText,
+      );
+      throw ApiException(
+        'Request failed',
+        statusCode: response.statusCode,
+        body: errorText,
+      );
+    }
+
+    _logApiResponseMeta(
+      method: method,
+      uri: uri,
+      statusCode: response.statusCode,
+      contentLength: response.contentLength,
+    );
+
+    final bytes = BytesBuilder(copy: false);
+    var total = 0;
+    await for (final chunk in response.stream.timeout(timeout)) {
+      total += chunk.length;
+      if (total > maxBytes) {
+        throw ApiException('Response exceeded max preview size');
+      }
+      bytes.add(chunk);
+    }
+    return bytes.takeBytes();
+  }
+
   Future<http.Response> _sendRequest(
     String method,
     Uri uri,
     Map<String, dynamic> requestBody,
     {required bool logResponseBody}
   ) async {
-    final headers = <String, String>{'Content-Type': 'application/json'};
-    final bearer = AuthSession.instance.bearerToken;
-    final appCheck = AuthSession.instance.appCheckToken;
-
-    if (bearer != null && bearer.isNotEmpty) {
-      headers['Authorization'] = 'Bearer $bearer';
-    }
-    if (appCheck != null && appCheck.isNotEmpty) {
-      headers['X-Firebase-AppCheck'] = appCheck;
-    }
+    final headers = _buildHeaders();
 
     try {
       _logApiRequest(
@@ -335,5 +414,42 @@ class ApiClient {
     final err = error == null ? '' : '\nerror=$error';
     final responseBody = body == null || body.isEmpty ? '' : '\nbody=$body';
     debugPrint('[API][$phase] $method $uri$status$err$responseBody');
+  }
+
+  Map<String, String> _buildHeaders() {
+    final headers = <String, String>{'Content-Type': 'application/json'};
+    final bearer = AuthSession.instance.bearerToken;
+    final appCheck = AuthSession.instance.appCheckToken;
+
+    if (bearer != null && bearer.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $bearer';
+    }
+    if (appCheck != null && appCheck.isNotEmpty) {
+      headers['X-Firebase-AppCheck'] = appCheck;
+    }
+    return headers;
+  }
+
+  Future<String> _readErrorText(
+    http.StreamedResponse response, {
+    required Duration timeout,
+  }) async {
+    const maxErrorBytes = 8192;
+    final bytes = BytesBuilder(copy: false);
+    try {
+      await for (final chunk in response.stream.timeout(timeout)) {
+        final remaining = maxErrorBytes - bytes.length;
+        if (remaining <= 0) break;
+        if (chunk.length <= remaining) {
+          bytes.add(chunk);
+        } else {
+          bytes.add(chunk.sublist(0, remaining));
+          break;
+        }
+      }
+    } catch (_) {
+      // Best effort only for diagnostics.
+    }
+    return utf8.decode(bytes.takeBytes(), allowMalformed: true);
   }
 }
