@@ -49,13 +49,7 @@ class ApiClient {
     Map<String, dynamic>? body,
     Map<String, String>? query,
   }) async {
-    final base = ApiConfig.baseUrl.endsWith('/')
-        ? ApiConfig.baseUrl
-        : '${ApiConfig.baseUrl}/';
-    final normalizedPath = path.startsWith('/') ? path.substring(1) : path;
-    final uri = Uri.parse(base)
-        .resolve(normalizedPath)
-        .replace(queryParameters: query);
+    final uri = ApiConfig.resolveApiUri(path, queryParameters: query);
     final requestBody = body ?? <String, dynamic>{};
 
     var response = await _sendRequest(method, uri, requestBody);

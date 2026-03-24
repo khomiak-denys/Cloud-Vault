@@ -30,6 +30,7 @@ class FilePreviewScreen extends StatefulWidget {
 
 class _FilePreviewScreenState extends State<FilePreviewScreen> {
   static const _maxPdfPreviewBytes = 25 * 1024 * 1024; // 25 MB
+  static const _maxImagePreviewBytes = 20 * 1024 * 1024; // 20 MB
   static const _downloadTimeout = Duration(seconds: 20);
   static const _maxErrorBodyBytes = 16 * 1024; // 16 KB
 
@@ -116,8 +117,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
 
       final uri = Uri.tryParse(preview.url);
       if (uri == null || !_isAllowedRemoteUri(uri)) {
-        _errorMessage = l10n.filePreviewBlockedUrlScheme;
-        return true;
+        return false;
       }
 
       _previewUrl = preview.url;
@@ -148,12 +148,18 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
         _pdfBytes = bytes;
       }
 
+      if (kind == _PreviewKind.image && preview.method != 'GET') {
+        return false;
+      }
+
       if (kind == _PreviewKind.image && preview.headers.isNotEmpty) {
         final bytes = await _downloadBytesWithLimit(
           uri,
           l10n: l10n,
           method: preview.method,
           headers: preview.headers,
+          maxBytes: _maxImagePreviewBytes,
+          maxBytesExceededMessage: l10n.filePreviewLoadFailed,
           timeoutMessage: l10n.filePreviewDownloadTimeout,
         );
         if (bytes == null) {
@@ -229,8 +235,12 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
       method: 'POST',
       headers: headers,
       jsonBody: payload,
-      maxBytes: kind == _PreviewKind.pdf ? _maxPdfPreviewBytes : null,
-      maxBytesExceededMessage: l10n.filePreviewPdfTooLarge,
+      maxBytes: kind == _PreviewKind.pdf
+          ? _maxPdfPreviewBytes
+          : _maxImagePreviewBytes,
+      maxBytesExceededMessage: kind == _PreviewKind.pdf
+          ? l10n.filePreviewPdfTooLarge
+          : l10n.filePreviewLoadFailed,
       timeoutMessage: l10n.filePreviewDownloadTimeout,
       retryOnUnauthorized: true,
       retryHeadersBuilder: _previewStreamHeaders,
@@ -344,7 +354,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
                         ),
                       ),
                     ),
-                    if (_previewUrl != null)
+                    if (_canOpenExternal)
                       IconButton(
                         onPressed: _openExternal,
                         icon: Icon(
@@ -538,7 +548,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            if (_previewUrl != null) ...[
+            if (_canOpenExternal) ...[
               const SizedBox(height: 16),
               FilledButton.tonalIcon(
                 onPressed: _openExternal,
@@ -556,7 +566,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
     final l10n = AppLocalizations.of(context)!;
     try {
       var url = _previewUrl;
-      if (_previewHeaders.isNotEmpty) {
+      if (_previewHeaders.isNotEmpty || url == null || url.isEmpty) {
         url = await appApiRepository.downloadUrl(
           connectionId: widget.file.connectionId,
           fileId: widget.file.id,
@@ -603,6 +613,12 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
     final client = http.Client();
     try {
       var effectiveHeaders = Map<String, String>.from(headers);
+      if (jsonBody != null &&
+          !effectiveHeaders.keys.any(
+            (k) => k.toLowerCase() == 'content-type',
+          )) {
+        effectiveHeaders['Content-Type'] = 'application/json';
+      }
       var retriedAfterUnauthorized = false;
 
       while (true) {
@@ -690,10 +706,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
   }
 
   Uri _previewStreamUri() {
-    final base = ApiConfig.baseUrl.endsWith('/')
-        ? ApiConfig.baseUrl
-        : '${ApiConfig.baseUrl}/';
-    return Uri.parse(base).resolve('files/preview-stream');
+    return ApiConfig.resolveApiUri('files/preview-stream');
   }
 
   Map<String, String> _backendAuthHeaders() {
@@ -755,6 +768,8 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
     }
     return true;
   }
+
+  bool get _canOpenExternal => widget.file.kind.toLowerCase() != 'folder';
 
   void _showSnack(String message) {
     ScaffoldMessenger.of(context)
