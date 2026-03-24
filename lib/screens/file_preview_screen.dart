@@ -34,7 +34,6 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
 
   bool _isLoading = true;
   String? _previewUrl;
-  String? _downloadUrl;
   Map<String, String> _previewHeaders = const {};
   String? _errorMessage;
   Uint8List? _imageBytes;
@@ -125,7 +124,6 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
             fileSize > 0 && fileSize > _maxPdfPreviewBytes.toDouble();
         if (exceedsMaxSize) {
           _errorMessage = l10n.filePreviewPdfTooLarge;
-          await _loadDownloadUrl();
           return true;
         }
 
@@ -188,13 +186,11 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
   ) async {
     if (kind == _PreviewKind.video) {
       _errorMessage = l10n.filePreviewVideoInitFailed;
-      await _loadDownloadUrl();
       return;
     }
 
     if (kind == _PreviewKind.unsupported) {
       _errorMessage = l10n.filePreviewUnsupportedType;
-      await _loadDownloadUrl();
       return;
     }
 
@@ -228,7 +224,6 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
       onStatusCode: (statusCode, body) async {
         if (statusCode == 400 && _looksLikeUnsupportedPreviewMime(body)) {
           _errorMessage = l10n.filePreviewUnsupportedType;
-          await _loadDownloadUrl();
           return;
         }
         _errorMessage = l10n.filePreviewLoadFailed;
@@ -512,20 +507,12 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            if (_previewUrl != null || _downloadUrl != null) ...[
+            if (_previewUrl != null) ...[
               const SizedBox(height: 16),
               FilledButton.tonalIcon(
                 onPressed: _openExternal,
-                icon: Icon(
-                  _downloadUrl != null
-                      ? Icons.download_outlined
-                      : Icons.open_in_new_rounded,
-                ),
-                label: Text(
-                  _downloadUrl != null
-                      ? l10n.fileActionsDownload
-                      : l10n.filePreviewOpenExternal,
-                ),
+                icon: const Icon(Icons.open_in_new_rounded),
+                label: Text(l10n.filePreviewOpenExternal),
               ),
             ],
           ],
@@ -536,7 +523,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
 
   Future<void> _openExternal() async {
     final l10n = AppLocalizations.of(context)!;
-    final url = _downloadUrl ?? _previewUrl;
+    final url = _previewUrl;
     if (url == null || url.isEmpty) return;
 
     final uri = Uri.tryParse(url);
@@ -659,13 +646,6 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
   bool _looksLikeUnsupportedPreviewMime(String body) {
     final normalized = body.toLowerCase();
     return normalized.contains('preview is not supported for mimetype');
-  }
-
-  Future<void> _loadDownloadUrl() async {
-    _downloadUrl ??= await appApiRepository.downloadUrl(
-      connectionId: widget.file.connectionId,
-      fileId: widget.file.id,
-    );
   }
 
   bool _hasRenderableContent(_PreviewKind kind) {
