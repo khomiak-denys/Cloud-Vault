@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'api_client.dart';
 import 'api_exception.dart';
 
@@ -352,6 +354,21 @@ class ApiRepository {
     final method = (_str(obj['method']) ?? 'GET').toUpperCase();
     final headers = _stringMap(obj['headers']);
     return ApiPreviewUrl(url: url, method: method, headers: headers);
+  }
+
+  Future<Uint8List> previewStreamBytes({
+    required String connectionId,
+    required String fileId,
+    String? fileName,
+    String? mimeType,
+  }) {
+    final payload = <String, dynamic>{
+      'connectionId': connectionId,
+      'fileId': fileId,
+      if (fileName != null && fileName.isNotEmpty) 'fileName': fileName,
+      if (mimeType != null && mimeType.isNotEmpty) 'mimeType': mimeType,
+    };
+    return _client.postBytes('/files/preview-stream', body: payload);
   }
 
   Future<String?> shareLink({

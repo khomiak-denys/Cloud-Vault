@@ -43,6 +43,14 @@ class ApiClient {
     return _refreshBearerToken();
   }
 
+  Future<Uint8List> postBytes(
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? query,
+  }) {
+    return _sendBytes('POST', path, body: body, query: query);
+  }
+
   Future<Map<String, dynamic>> _sendJson(
     String method,
     String path, {
@@ -104,6 +112,49 @@ class ApiClient {
     }
 
     return <String, dynamic>{'data': decoded};
+  }
+
+  Future<Uint8List> _sendBytes(
+    String method,
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? query,
+  }) async {
+    final uri = ApiConfig.resolveApiUri(path, queryParameters: query);
+    final requestBody = body ?? <String, dynamic>{};
+
+    var response = await _sendRequest(method, uri, requestBody);
+    if (response.statusCode == 401) {
+      final refreshed = await _refreshBearerToken();
+      if (refreshed) {
+        _logApiError(
+          phase: 'auth',
+          method: method,
+          uri: uri,
+          statusCode: 401,
+          body: 'Token expired. Retrying once with refreshed token.',
+        );
+        response = await _sendRequest(method, uri, requestBody);
+      }
+    }
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      final responseBody = utf8.decode(response.bodyBytes, allowMalformed: true);
+      _logApiError(
+        phase: 'http',
+        method: method,
+        uri: uri,
+        statusCode: response.statusCode,
+        body: responseBody,
+      );
+      throw ApiException(
+        'Request failed',
+        statusCode: response.statusCode,
+        body: responseBody,
+      );
+    }
+
+    return response.bodyBytes;
   }
 
   Future<http.Response> _sendRequest(
