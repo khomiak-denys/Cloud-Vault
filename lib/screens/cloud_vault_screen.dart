@@ -32,6 +32,7 @@ class CloudVaultScreen extends StatefulWidget {
 class _CloudVaultScreenState extends State<CloudVaultScreen> {
   static const _cacheKey = 'dashboard_bundle_v1';
   static const _cacheTtl = Duration(minutes: 2);
+  static const _favoritesTitle = 'Favorites';
 
   List<VaultItem> _vaultItems = const [];
   List<RecentFileItem> _recentFiles = const [];
@@ -93,7 +94,10 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
       final mappedVaultItems = enrichedConnections
           .map(mapConnectionToVaultItem)
           .toList();
-      final mappedRecentFiles = files.map(mapApiFileToRecentFileItem).toList();
+      final mappedRecentFiles = files
+          .map(mapApiFileToRecentFileItem)
+          .where((file) => file.isFavorite)
+          .toList();
       final totalUsedBytes =
           usageReport?.usedBytes ??
           enrichedConnections.fold<double>(
@@ -252,6 +256,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
                       else
                         DashboardRecentFilesSection(
                           items: _recentFiles,
+                          title: _favoritesTitle,
                           onMoreTap: (file) => showFileActionsModal(
                             context,
                             file,

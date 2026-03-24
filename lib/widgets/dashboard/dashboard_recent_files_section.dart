@@ -10,10 +10,12 @@ class DashboardRecentFilesSection extends StatelessWidget {
     super.key,
     required this.items,
     required this.onMoreTap,
+    this.title,
   });
 
   final List<RecentFileItem> items;
   final ValueChanged<RecentFileItem> onMoreTap;
+  final String? title;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +29,7 @@ class DashboardRecentFilesSection extends StatelessWidget {
           child: Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              l10n.recentFiles,
+              title ?? l10n.recentFiles,
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,
