@@ -61,7 +61,12 @@ class ApiClient {
     final uri = ApiConfig.resolveApiUri(path, queryParameters: query);
     final requestBody = body ?? <String, dynamic>{};
 
-    var response = await _sendRequest(method, uri, requestBody);
+    var response = await _sendRequest(
+      method,
+      uri,
+      requestBody,
+      logResponseBody: false,
+    );
 
     if (response.statusCode == 401) {
       final refreshed = await _refreshBearerToken();
@@ -73,7 +78,12 @@ class ApiClient {
           statusCode: 401,
           body: 'Token expired. Retrying once with refreshed token.',
         );
-        response = await _sendRequest(method, uri, requestBody);
+        response = await _sendRequest(
+          method,
+          uri,
+          requestBody,
+          logResponseBody: false,
+        );
       }
     }
 
@@ -124,7 +134,12 @@ class ApiClient {
     final uri = ApiConfig.resolveApiUri(path, queryParameters: query);
     final requestBody = body ?? <String, dynamic>{};
 
-    var response = await _sendRequest(method, uri, requestBody);
+    var response = await _sendRequest(
+      method,
+      uri,
+      requestBody,
+      logResponseBody: true,
+    );
     if (response.statusCode == 401) {
       final refreshed = await _refreshBearerToken();
       if (refreshed) {
@@ -135,7 +150,12 @@ class ApiClient {
           statusCode: 401,
           body: 'Token expired. Retrying once with refreshed token.',
         );
-        response = await _sendRequest(method, uri, requestBody);
+        response = await _sendRequest(
+          method,
+          uri,
+          requestBody,
+          logResponseBody: true,
+        );
       }
     }
 
@@ -162,6 +182,7 @@ class ApiClient {
     String method,
     Uri uri,
     Map<String, dynamic> requestBody,
+    {required bool logResponseBody}
   ) async {
     final headers = <String, String>{'Content-Type': 'application/json'};
     final bearer = AuthSession.instance.bearerToken;
@@ -192,12 +213,21 @@ class ApiClient {
         _ => throw ApiException('Unsupported HTTP method: $method'),
       };
 
-      _logApiResponse(
-        method: method,
-        uri: uri,
-        statusCode: response.statusCode,
-        body: response.body,
-      );
+      if (logResponseBody) {
+        _logApiResponse(
+          method: method,
+          uri: uri,
+          statusCode: response.statusCode,
+          body: response.body,
+        );
+      } else {
+        _logApiResponseMeta(
+          method: method,
+          uri: uri,
+          statusCode: response.statusCode,
+          contentLength: response.contentLength,
+        );
+      }
       return response;
     } catch (e) {
       _logApiError(
@@ -281,6 +311,16 @@ class ApiClient {
   }) {
     final responseBody = body.isEmpty ? '' : '\nbody=$body';
     debugPrint('[API][response] $method $uri status=$statusCode$responseBody');
+  }
+
+  void _logApiResponseMeta({
+    required String method,
+    required Uri uri,
+    required int statusCode,
+    int? contentLength,
+  }) {
+    final size = contentLength == null ? '' : ' bytes=$contentLength';
+    debugPrint('[API][response] $method $uri status=$statusCode$size');
   }
 
   void _logApiError({

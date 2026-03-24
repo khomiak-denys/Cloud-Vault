@@ -670,7 +670,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
 
   bool _hasRenderableContent(_PreviewKind kind) {
     return switch (kind) {
-      _PreviewKind.image => _imageBytes != null || _previewUrl != null,
+      _PreviewKind.image => _imageBytes != null && _imageBytes!.isNotEmpty,
       _PreviewKind.pdf => _pdfBytes != null,
       _PreviewKind.video => _videoController?.value.isInitialized == true,
       _PreviewKind.unsupported => false,
