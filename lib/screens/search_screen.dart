@@ -73,11 +73,13 @@ class _SearchScreenState extends State<SearchScreen> {
             ? _deriveProviderFacets(files)
             : result.providerFacets;
       }
+      final normalizedFacets = _sortProviderFacets(facets);
 
       if (!mounted) return;
-      final validProviderIds = facets.map((item) => item.providerId).toSet();
+      final validProviderIds =
+          normalizedFacets.map((item) => item.providerId).toSet();
       setState(() {
-        _providerFacets = facets;
+        _providerFacets = normalizedFacets;
         _selectedProviderIds =
             _selectedProviderIds.where(validProviderIds.contains).toSet();
         _results = files.map(mapApiFileToRecentFileItem).toList();
@@ -306,8 +308,17 @@ class _SearchScreenState extends State<SearchScreen> {
             count: entry.value,
           ),
         )
-        .toList()
-      ..sort((a, b) => a.providerName.compareTo(b.providerName));
+        .toList();
+  }
+
+  List<ApiProviderFacet> _sortProviderFacets(List<ApiProviderFacet> facets) {
+    final sorted = List<ApiProviderFacet>.from(facets);
+    sorted.sort((a, b) {
+      final nameCompare = a.providerName.compareTo(b.providerName);
+      if (nameCompare != 0) return nameCompare;
+      return a.providerId.compareTo(b.providerId);
+    });
+    return sorted;
   }
 
   Future<void> _showProviderFilterSheet(BuildContext context) async {

@@ -245,12 +245,14 @@ class ApiRepository {
     return _parseFileItems(json);
   }
 
-  Future<List<ApiFileItem>> dashboardSummaryRecentFiles() async {
+  Future<List<ApiFileItem>> dashboardSummaryRecentFiles({int pageSize = 20}) async {
     final json = await _client.getJson('/dashboard/summary');
     final root = _extractObject(json) ?? json;
     final recentRaw = root['recentFiles'];
     if (recentRaw is! List) return const [];
-    return _parseFileItems(<String, dynamic>{'items': recentRaw});
+    final bounded = recentRaw.take(pageSize.clamp(1, 100)).toList();
+    final merged = <String, dynamic>{...root, 'items': bounded};
+    return _parseFileItems(merged);
   }
 
   Future<List<ApiFileItem>> listFiles({
