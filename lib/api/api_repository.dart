@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import '../data/provider_identity.dart';
 import 'api_client.dart';
 import 'api_exception.dart';
 
@@ -38,7 +39,7 @@ class ApiFileItem {
     required this.id,
     required this.connectionId,
     required this.name,
-    required this.path,
+    this.path,
     required this.displayPath,
     required this.sizeBytes,
     required this.modifiedAt,
@@ -160,7 +161,7 @@ class ApiRepository {
         .map((item) {
           return ApiConnection(
             id: _str(item['id']) ?? _str(item['_id']) ?? '',
-            providerId: _normalizeProviderId(
+            providerId: normalizeProviderId(
               _str(item['providerId']) ?? _str(item['provider']),
             ),
             providerName:
@@ -222,7 +223,7 @@ class ApiRepository {
 
     final obj = _extractObject(json) ?? json;
     final connectionId = _str(obj['connectionId'])?.trim() ?? '';
-    final providerId = _normalizeProviderId(_str(obj['providerId']) ?? 'mega');
+    final providerId = normalizeProviderId(_str(obj['providerId']) ?? 'mega');
     final accountEmail = _str(obj['accountEmail'])?.trim() ?? email;
     if (connectionId.isEmpty) {
       throw ApiException('Invalid MEGA connect response: missing connectionId');
@@ -273,11 +274,7 @@ class ApiRepository {
   }
 
   String _normalizeListPath(String path, {String? providerId}) {
-    final providerKey = _normalizeProviderId(providerId).toLowerCase();
-    if (providerKey == 'mega' ||
-        providerKey == 'onedrive' ||
-        providerKey == 'google-drive' ||
-        providerKey == 'dropbox') {
+    if (isIdBasedProviderId(providerId)) {
       return _normalizeIdBasedListPath(path);
     }
     return _normalizeStoragePath(path);
@@ -497,7 +494,7 @@ class ApiRepository {
         .map((item) {
           return ApiConnection(
             id: _str(item['connectionId']) ?? _str(item['id']) ?? '',
-            providerId: _normalizeProviderId(_str(item['providerId'])),
+            providerId: normalizeProviderId(_str(item['providerId'])),
             providerName:
                 _str(item['providerName']) ?? _str(item['name']) ?? 'Storage',
             usedBytes: _num(item['usedBytes']) ?? 0,
@@ -573,7 +570,7 @@ class ApiRepository {
             DateTime.tryParse(modifiedRaw ?? '') ??
             DateTime.tryParse(openedRaw ?? '') ??
             DateTime.now(),
-        providerId: _normalizeProviderId(
+        providerId: normalizeProviderId(
           _str(item['providerId']) ?? _str(item['provider']),
         ),
         providerName:
@@ -604,7 +601,7 @@ class ApiRepository {
         .whereType<Map>()
         .map((raw) => Map<String, dynamic>.from(raw))
         .map((item) {
-          final providerId = _normalizeProviderId(_str(item['providerId']));
+          final providerId = normalizeProviderId(_str(item['providerId']));
           final providerName =
               _str(item['providerName']) ?? _str(item['provider']) ?? providerId;
           return ApiProviderFacet(
@@ -660,16 +657,6 @@ String? _str(dynamic value) {
   if (value == null) return null;
   if (value is String) return value;
   return value.toString();
-}
-
-String _normalizeProviderId(String? providerId) {
-  final raw = providerId?.trim() ?? '';
-  if (raw.isEmpty) return '';
-  final normalized = raw.toLowerCase();
-  if (normalized == 'google') {
-    return 'google-drive';
-  }
-  return normalized;
 }
 
 double? _num(dynamic value) {

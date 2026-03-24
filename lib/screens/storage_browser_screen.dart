@@ -6,6 +6,7 @@ import '../api/api_exception.dart';
 import '../data/api_mappers.dart';
 import '../data/app_services.dart';
 import '../data/file_actions_handler.dart';
+import '../data/provider_identity.dart';
 import '../models/recent_file_item.dart';
 import '../models/vault_item.dart';
 import '../modals/file_actions_modal.dart';
@@ -101,27 +102,16 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
         _currentPath = _megaDisplayPath;
       });
     } else {
-      final providerId = _normalizeProviderId(widget.storage.providerId);
-      final isIdBasedProvider =
-          providerId == 'google-drive' ||
-          providerId == 'onedrive' ||
-          providerId == 'dropbox';
       setState(
         () => _currentPath = _normalizePath(
           folder.apiPath ??
-              (isIdBasedProvider ? folder.id : folder.pathLabel),
+              (isIdBasedProviderId(widget.storage.providerId)
+                  ? folder.id
+                  : folder.pathLabel),
         ),
       );
     }
     await _load();
-  }
-
-  String _normalizeProviderId(String providerId) {
-    final normalized = providerId.trim().toLowerCase();
-    if (normalized == 'google') {
-      return 'google-drive';
-    }
-    return normalized;
   }
 
   Future<void> _goToPath(String path) async {
