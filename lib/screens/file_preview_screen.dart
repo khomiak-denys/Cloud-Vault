@@ -31,6 +31,7 @@ class FilePreviewScreen extends StatefulWidget {
 class _FilePreviewScreenState extends State<FilePreviewScreen> {
   static const _maxPdfPreviewBytes = 25 * 1024 * 1024; // 25 MB
   static const _downloadTimeout = Duration(seconds: 20);
+  static const _maxErrorBodyBytes = 16 * 1024; // 16 KB
 
   bool _isLoading = true;
   String? _previewUrl;
@@ -67,11 +68,13 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
     }
 
     try {
+      _errorMessage = null;
       final kind = _resolveKind(widget.file);
       final loadedFromDirect = _supportsDirectPreviewUrl(widget.file)
           ? await _tryLoadFromPreviewUrl(kind, l10n)
           : false;
       if (!loadedFromDirect) {
+        _errorMessage = null;
         await _tryLoadFromPreviewStream(kind, l10n);
       }
 
@@ -188,7 +191,12 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
     AppLocalizations l10n,
   ) async {
     if (kind == _PreviewKind.video) {
-      _errorMessage = l10n.filePreviewVideoInitFailed;
+      final loaded = await _tryLoadVideoViaDownloadUrl(l10n);
+      if (!loaded) {
+        _errorMessage = l10n.filePreviewVideoInitFailed;
+      } else {
+        _errorMessage = null;
+      }
       return;
     }
 
@@ -242,9 +250,27 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
 
     if (kind == _PreviewKind.pdf) {
       _pdfBytes = bytes;
+      _errorMessage = null;
       return;
     }
     _imageBytes = bytes;
+    _errorMessage = null;
+  }
+
+  Future<bool> _tryLoadVideoViaDownloadUrl(AppLocalizations l10n) async {
+    final url = await appApiRepository.downloadUrl(
+      connectionId: widget.file.connectionId,
+      fileId: widget.file.id,
+    );
+    if (url == null || url.isEmpty) return false;
+    final uri = Uri.tryParse(url);
+    if (uri == null || !_isAllowedRemoteUri(uri)) {
+      _errorMessage = l10n.filePreviewBlockedUrlScheme;
+      return false;
+    }
+    _previewUrl = url;
+    _previewHeaders = const {};
+    return _initializeVideo(uri, headers: const {}, l10n: l10n);
   }
 
   Future<bool> _initializeVideo(
@@ -601,10 +627,8 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
             }
           }
 
-          await onStatusCode?.call(
-            response.statusCode,
-            await response.stream.bytesToString(),
-          );
+          final errorBody = await _readErrorBodyLimited(response.stream);
+          await onStatusCode?.call(response.statusCode, errorBody);
           return null;
         }
 
@@ -689,6 +713,25 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
     final headers = _backendAuthHeaders();
     headers['Content-Type'] = 'application/json';
     return headers;
+  }
+
+  Future<String> _readErrorBodyLimited(Stream<List<int>> stream) async {
+    final bytes = BytesBuilder(copy: false);
+    try {
+      await for (final chunk in stream.timeout(_downloadTimeout)) {
+        final remaining = _maxErrorBodyBytes - bytes.length;
+        if (remaining <= 0) break;
+        if (chunk.length <= remaining) {
+          bytes.add(chunk);
+        } else {
+          bytes.add(chunk.sublist(0, remaining));
+          break;
+        }
+      }
+    } catch (_) {
+      // Ignore timeout/stream errors for diagnostic body reads.
+    }
+    return utf8.decode(bytes.takeBytes(), allowMalformed: true);
   }
 
   bool _looksLikeUnsupportedPreviewMime(String body) {
