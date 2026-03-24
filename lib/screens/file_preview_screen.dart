@@ -32,6 +32,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
 
   bool _isLoading = true;
   String? _previewUrl;
+  String _previewMethod = 'GET';
   Map<String, String> _previewHeaders = const {};
   String? _errorMessage;
   Uint8List? _imageBytes;
@@ -117,7 +118,12 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
       }
 
       _previewUrl = preview.url;
+      _previewMethod = preview.method;
       _previewHeaders = preview.headers;
+
+      if (kind == _PreviewKind.unsupported) {
+        return false;
+      }
 
       if (kind == _PreviewKind.pdf) {
         final fileSize = widget.file.sizeBytes;
@@ -279,6 +285,7 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
       return false;
     }
     _previewUrl = url;
+    _previewMethod = 'GET';
     _previewHeaders = const {};
     return _initializeVideo(uri, headers: const {}, l10n: l10n);
   }
@@ -552,7 +559,12 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
     final l10n = AppLocalizations.of(context)!;
     try {
       var url = _previewUrl;
-      if (_previewHeaders.isNotEmpty || url == null || url.isEmpty) {
+      final requiresDownloadUrl =
+          _previewHeaders.isNotEmpty ||
+          _previewMethod != 'GET' ||
+          url == null ||
+          url.isEmpty;
+      if (requiresDownloadUrl) {
         url = await appApiRepository.downloadUrl(
           connectionId: widget.file.connectionId,
           fileId: widget.file.id,

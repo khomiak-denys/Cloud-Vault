@@ -138,7 +138,7 @@ class ApiClient {
       method,
       uri,
       requestBody,
-      logResponseBody: true,
+      logResponseBody: false,
     );
     if (response.statusCode == 401) {
       final refreshed = await _refreshBearerToken();
@@ -154,7 +154,7 @@ class ApiClient {
           method,
           uri,
           requestBody,
-          logResponseBody: true,
+          logResponseBody: false,
         );
       }
     }
