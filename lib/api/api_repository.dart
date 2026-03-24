@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'dart:async';
 
 import 'api_client.dart';
 import 'api_exception.dart';

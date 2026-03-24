@@ -254,12 +254,14 @@ class _FilePreviewScreenState extends State<FilePreviewScreen> {
         _errorMessage = l10n.filePreviewUnsupportedType;
         return;
       }
-      if (e.message == 'Network request failed' &&
-          (e.body ?? '').contains('TimeoutException')) {
+      if (e.message == 'Request timeout') {
         _errorMessage = l10n.filePreviewDownloadTimeout;
         return;
       }
       _errorMessage = l10n.filePreviewLoadFailed;
+      return;
+    } on TimeoutException {
+      _errorMessage = l10n.filePreviewDownloadTimeout;
       return;
     } catch (_) {
       _errorMessage = l10n.filePreviewLoadFailed;

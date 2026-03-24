@@ -216,54 +216,68 @@ class ApiClient {
       return _httpClient.send(request).timeout(timeout);
     }
 
-    http.StreamedResponse response = await sendOnce();
-    if (response.statusCode == 401) {
-      final refreshed = await _refreshBearerToken();
-      if (refreshed) {
+    try {
+      http.StreamedResponse response = await sendOnce();
+      if (response.statusCode == 401) {
+        final refreshed = await _refreshBearerToken();
+        if (refreshed) {
+          _logApiError(
+            phase: 'auth',
+            method: method,
+            uri: uri,
+            statusCode: 401,
+            body: 'Token expired. Retrying once with refreshed token.',
+          );
+          response = await sendOnce();
+        }
+      }
+
+      if (response.statusCode < 200 || response.statusCode >= 300) {
+        final errorText = await _readErrorText(response, timeout: timeout);
         _logApiError(
-          phase: 'auth',
+          phase: 'http',
           method: method,
           uri: uri,
-          statusCode: 401,
-          body: 'Token expired. Retrying once with refreshed token.',
+          statusCode: response.statusCode,
+          body: errorText,
         );
-        response = await sendOnce();
+        throw ApiException(
+          'Request failed',
+          statusCode: response.statusCode,
+          body: errorText,
+        );
       }
-    }
 
-    if (response.statusCode < 200 || response.statusCode >= 300) {
-      final errorText = await _readErrorText(response, timeout: timeout);
-      _logApiError(
-        phase: 'http',
+      _logApiResponseMeta(
         method: method,
         uri: uri,
         statusCode: response.statusCode,
-        body: errorText,
+        contentLength: response.contentLength,
       );
-      throw ApiException(
-        'Request failed',
-        statusCode: response.statusCode,
-        body: errorText,
-      );
-    }
 
-    _logApiResponseMeta(
-      method: method,
-      uri: uri,
-      statusCode: response.statusCode,
-      contentLength: response.contentLength,
-    );
-
-    final bytes = BytesBuilder(copy: false);
-    var total = 0;
-    await for (final chunk in response.stream.timeout(timeout)) {
-      total += chunk.length;
-      if (total > maxBytes) {
-        throw ApiException('Response exceeded max preview size');
+      final bytes = BytesBuilder(copy: false);
+      var total = 0;
+      await for (final chunk in response.stream.timeout(timeout)) {
+        total += chunk.length;
+        if (total > maxBytes) {
+          throw ApiException('Response exceeded max preview size');
+        }
+        bytes.add(chunk);
       }
-      bytes.add(chunk);
+      return bytes.takeBytes();
+    } on ApiException {
+      rethrow;
+    } on TimeoutException {
+      throw ApiException('Request timeout');
+    } catch (e) {
+      _logApiError(
+        phase: 'network',
+        method: method,
+        uri: uri,
+        error: e.toString(),
+      );
+      throw ApiException('Network request failed', body: e.toString());
     }
-    return bytes.takeBytes();
   }
 
   Future<http.Response> _sendRequest(
