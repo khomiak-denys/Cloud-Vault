@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:cloud_vault/l10n/app_localizations.dart';
 
 import '../api/api_exception.dart';
 import '../api/api_repository.dart';
@@ -16,7 +17,7 @@ import '../models/vault_item.dart';
 import '../screens/storage_browser_screen.dart';
 import '../utils/tab_navigation.dart';
 import '../widgets/bottom_nav_bar.dart';
-import '../widgets/dashboard/dashboard_recent_files_section.dart';
+import '../widgets/dashboard/dashboard_files_section.dart';
 import '../widgets/dashboard/dashboard_storages_section.dart';
 import '../widgets/loading_skeletons.dart';
 import '../widgets/mobile_screen_shell.dart';
@@ -34,7 +35,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
   static const _cacheTtl = Duration(minutes: 2);
 
   List<VaultItem> _vaultItems = const [];
-  List<RecentFileItem> _recentFiles = const [];
+  List<RecentFileItem> _favoriteFiles = const [];
   bool _isLoading = true;
   bool _lastLoadSucceeded = true;
   double _totalUsedBytes = 0;
@@ -62,7 +63,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
       if (cached != null) {
         setState(() {
           _vaultItems = cached.vaultItems;
-          _recentFiles = cached.recentFiles;
+          _favoriteFiles = cached.favoriteFiles;
           _totalUsedBytes = cached.totalUsedBytes;
           _totalBytes = cached.totalBytes;
           _isLoading = false;
@@ -78,7 +79,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
       final usageReportFuture = _loadUsageReportSafe();
       final results = await Future.wait([
         appApiRepository.connections(),
-        appApiRepository.dashboardSummaryRecentFiles(),
+        appApiRepository.favoriteFiles(),
         usageReportFuture,
       ]);
 
@@ -93,7 +94,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
       final mappedVaultItems = enrichedConnections
           .map(mapConnectionToVaultItem)
           .toList();
-      final mappedRecentFiles = files.map(mapApiFileToRecentFileItem).toList();
+      final mappedFavoriteFiles = files.map(mapApiFileToRecentFileItem).toList();
       final totalUsedBytes =
           usageReport?.usedBytes ??
           enrichedConnections.fold<double>(
@@ -111,7 +112,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
         _cacheKey,
         _DashboardBundle(
           vaultItems: mappedVaultItems,
-          recentFiles: mappedRecentFiles,
+          favoriteFiles: mappedFavoriteFiles,
           totalUsedBytes: totalUsedBytes,
           totalBytes: totalBytes,
         ),
@@ -121,7 +122,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
       if (!mounted) return;
       setState(() {
         _vaultItems = mappedVaultItems;
-        _recentFiles = mappedRecentFiles;
+        _favoriteFiles = mappedFavoriteFiles;
         _totalUsedBytes = totalUsedBytes;
         _totalBytes = totalBytes;
       });
@@ -217,6 +218,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final percentUsed = _totalBytes > 0
         ? (_totalUsedBytes / _totalBytes).clamp(0.0, 1.0)
         : 0.0;
@@ -250,8 +252,9 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
                       if (_isLoading)
                         const DashboardLoadingSkeleton()
                       else
-                        DashboardRecentFilesSection(
-                          items: _recentFiles,
+                        DashboardFilesSection(
+                          items: _favoriteFiles,
+                          title: l10n.favorites,
                           onMoreTap: (file) => showFileActionsModal(
                             context,
                             file,
@@ -329,13 +332,13 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
 class _DashboardBundle {
   const _DashboardBundle({
     required this.vaultItems,
-    required this.recentFiles,
+    required this.favoriteFiles,
     required this.totalUsedBytes,
     required this.totalBytes,
   });
 
   final List<VaultItem> vaultItems;
-  final List<RecentFileItem> recentFiles;
+  final List<RecentFileItem> favoriteFiles;
   final double totalUsedBytes;
   final double totalBytes;
 }

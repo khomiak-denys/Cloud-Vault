@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
 import '../data/provider_identity.dart';
+import '../data/provider_labels.dart';
 import 'api_client.dart';
 import 'api_exception.dart';
 
@@ -243,6 +244,24 @@ class ApiRepository {
   Future<List<ApiFileItem>> recentFiles({int pageSize = 20}) async {
     final query = <String, String>{'pageSize': '$pageSize'};
     final json = await _client.getJson('/files/recent', query: query);
+    return _parseFileItems(json);
+  }
+
+  Future<List<ApiFileItem>> favoriteFiles({
+    int? pageSize,
+    String? cursor,
+    String? connectionId,
+    String? providerId,
+  }) async {
+    final query = <String, String>{
+      if (pageSize != null) 'pageSize': '${pageSize.clamp(1, 100).toInt()}',
+      if (cursor != null && cursor.isNotEmpty) 'cursor': cursor,
+      if (connectionId != null && connectionId.isNotEmpty)
+        'connectionId': connectionId,
+      if (providerId != null && providerId.isNotEmpty)
+        'providerId': normalizeProviderId(providerId),
+    };
+    final json = await _client.getJson('/files/favorites', query: query);
     return _parseFileItems(json);
   }
 
@@ -558,6 +577,9 @@ class ApiRepository {
       final safeRootConnectionId = rootConnectionId == 'all'
           ? null
           : rootConnectionId;
+      final normalizedProviderId = normalizeProviderId(
+        _str(item['providerId']) ?? _str(item['provider']),
+      );
 
       return ApiFileItem(
         // Prefer provider-native file identifier (fileId/path) for file actions.
@@ -571,11 +593,11 @@ class ApiRepository {
             DateTime.tryParse(modifiedRaw ?? '') ??
             DateTime.tryParse(openedRaw ?? '') ??
             DateTime.now(),
-        providerId: normalizeProviderId(
-          _str(item['providerId']) ?? _str(item['provider']),
-        ),
+        providerId: normalizedProviderId,
         providerName:
-            _str(item['providerName']) ?? _str(item['provider']) ?? 'Storage',
+            _str(item['providerName']) ??
+            _str(item['provider']) ??
+            providerDisplayName(normalizedProviderId),
         isFavorite: item['isFavorite'] == true || item['favorite'] == true,
         kind:
             _str(item['kind']) ??

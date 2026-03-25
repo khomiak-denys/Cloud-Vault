@@ -42,6 +42,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get recentFiles => 'Recent files';
 
   @override
+  String get favorites => 'Favorites';
+
+  @override
   String get addStorage => 'Add storage';
 
   @override
