@@ -2,6 +2,7 @@ import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../api/api_repository.dart';
 import '../api/api_exception.dart';
@@ -238,6 +239,9 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
     } on ApiException catch (e) {
       if (!mounted) return;
       _showSnack(_apiErrorMessage(e));
+    } on MissingPluginException {
+      if (!mounted) return;
+      _showSnack(l10n.storageBrowserUploadNotConfigured);
     } catch (_) {
       if (!mounted) return;
       _showSnack(l10n.storageBrowserUploadFailed);
