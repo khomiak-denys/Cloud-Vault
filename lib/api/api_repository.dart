@@ -507,7 +507,7 @@ class ApiRepository {
     String? filePath,
     required String parentId,
     String? providerId,
-    String? connectionId,
+    required String connectionId,
     String? fileName,
     String? mimeType,
     bool? allowFallback,
@@ -518,8 +518,7 @@ class ApiRepository {
     );
     final fields = <String, String>{
       'parentId': normalizedParentId,
-      if (connectionId != null && connectionId.isNotEmpty)
-        'connectionId': connectionId,
+      'connectionId': connectionId,
       if (fileName != null && fileName.isNotEmpty) 'fileName': fileName,
       if (mimeType != null && mimeType.isNotEmpty) 'mimeType': mimeType,
       if (allowFallback != null) 'allowFallback': allowFallback ? 'true' : 'false',

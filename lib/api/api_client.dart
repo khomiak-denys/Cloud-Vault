@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:async';
-import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
@@ -169,7 +168,7 @@ class ApiClient {
       responseBodyBytes = bytesBuilder.takeBytes();
     } on TimeoutException {
       throw ApiException('Request timeout', errorCode: 'request_timeout');
-    } on HttpException catch (e) {
+    } on Exception catch (e) {
       _logApiError(
         phase: 'network',
         method: 'POST',
