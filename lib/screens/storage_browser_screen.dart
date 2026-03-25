@@ -1,5 +1,6 @@
 import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 
 import '../api/api_repository.dart';
@@ -207,23 +208,26 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
 
   Future<void> _onUpload() async {
     final l10n = AppLocalizations.of(context)!;
-    final pickResult = await FilePicker.platform.pickFiles(
-      withData: true,
-      allowMultiple: false,
-    );
-    if (!mounted || pickResult == null || pickResult.files.isEmpty) return;
-
-    final picked = pickResult.files.single;
-    final bytes = picked.bytes;
-    if (bytes == null || bytes.isEmpty) {
-      _showSnack(l10n.storageBrowserUploadFailed);
-      return;
-    }
-
     try {
+      final pickResult = await FilePicker.platform.pickFiles(
+        withData: kIsWeb,
+        allowMultiple: false,
+      );
+      if (!mounted || pickResult == null || pickResult.files.isEmpty) return;
+
+      final picked = pickResult.files.single;
+      final path = picked.path;
+      final bytes = picked.bytes;
+      if ((path == null || path.isEmpty) && (bytes == null || bytes.isEmpty)) {
+        _showSnack(l10n.storageBrowserUploadFailed);
+        return;
+      }
+
       await appApiRepository.uploadFile(
+        filePath: (path == null || path.isEmpty) ? null : path,
         fileBytes: bytes,
         parentId: _isMegaProvider ? _currentMegaFolderId : _currentPath,
+        providerId: widget.storage.providerId,
         connectionId: widget.storage.id,
         fileName: picked.name,
       );

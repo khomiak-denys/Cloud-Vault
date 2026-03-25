@@ -503,15 +503,21 @@ class ApiRepository {
   }
 
   Future<Map<String, dynamic>> uploadFile({
-    required Uint8List fileBytes,
+    Uint8List? fileBytes,
+    String? filePath,
     required String parentId,
+    String? providerId,
     String? connectionId,
     String? fileName,
     String? mimeType,
     bool? allowFallback,
   }) async {
+    final normalizedParentId = _normalizeListPath(
+      parentId,
+      providerId: providerId,
+    );
     final fields = <String, String>{
-      'parentId': parentId,
+      'parentId': normalizedParentId,
       if (connectionId != null && connectionId.isNotEmpty)
         'connectionId': connectionId,
       if (fileName != null && fileName.isNotEmpty) 'fileName': fileName,
@@ -522,6 +528,7 @@ class ApiRepository {
       '/files/upload',
       fields: fields,
       fileField: 'file',
+      filePath: filePath,
       fileBytes: fileBytes,
       fileName: fileName?.trim().isNotEmpty == true ? fileName!.trim() : 'upload.bin',
     );

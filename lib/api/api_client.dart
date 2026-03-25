@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:async';
+import 'dart:io';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart' show debugPrint;
@@ -74,33 +75,55 @@ class ApiClient {
     String path, {
     required Map<String, String> fields,
     required String fileField,
-    required Uint8List fileBytes,
+    Uint8List? fileBytes,
+    String? filePath,
     required String fileName,
+    Duration timeout = const Duration(seconds: 30),
   }) async {
     final uri = ApiConfig.resolveApiUri(path);
+    if ((fileBytes == null || fileBytes.isEmpty) &&
+        (filePath == null || filePath.trim().isEmpty)) {
+      throw ApiException('Multipart file payload is missing');
+    }
 
     Future<http.StreamedResponse> sendOnce() async {
       final request = http.MultipartRequest('POST', uri);
       request.headers.addAll(_buildHeaders(includeJsonContentType: false));
       request.fields.addAll(fields);
-      request.files.add(
-        http.MultipartFile.fromBytes(
-          fileField,
-          fileBytes,
-          filename: fileName,
-        ),
-      );
+      if (filePath != null && filePath.trim().isNotEmpty) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            fileField,
+            filePath,
+            filename: fileName,
+          ),
+        );
+      } else {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            fileField,
+            fileBytes!,
+            filename: fileName,
+          ),
+        );
+      }
       _logApiRequest(
         method: 'POST',
         uri: uri,
-        body: <String, dynamic>{...fields, fileField: '<binary>'},
+        body: <String, dynamic>{
+          ...fields,
+          fileField: filePath != null ? '<binary:path>' : '<binary:bytes>',
+          'fileName': fileName,
+        },
       );
-      return _httpClient.send(request);
+      return _httpClient.send(request).timeout(timeout);
     }
 
     http.StreamedResponse response;
     try {
       response = await sendOnce();
+    } on TimeoutException {
+      throw ApiException('Request timeout', errorCode: 'request_timeout');
     } catch (e) {
       _logApiError(
         phase: 'network',
@@ -123,6 +146,8 @@ class ApiClient {
         );
         try {
           response = await sendOnce();
+        } on TimeoutException {
+          throw ApiException('Request timeout', errorCode: 'request_timeout');
         } catch (e) {
           _logApiError(
             phase: 'network',
@@ -135,7 +160,24 @@ class ApiClient {
       }
     }
 
-    final responseBodyBytes = await response.stream.toBytes();
+    late final List<int> responseBodyBytes;
+    try {
+      final bytesBuilder = BytesBuilder(copy: false);
+      await for (final chunk in response.stream.timeout(timeout)) {
+        bytesBuilder.add(chunk);
+      }
+      responseBodyBytes = bytesBuilder.takeBytes();
+    } on TimeoutException {
+      throw ApiException('Request timeout', errorCode: 'request_timeout');
+    } on HttpException catch (e) {
+      _logApiError(
+        phase: 'network',
+        method: 'POST',
+        uri: uri,
+        error: e.toString(),
+      );
+      throw ApiException('Network request failed', body: e.toString());
+    }
     final responseBody = utf8.decode(responseBodyBytes, allowMalformed: true);
 
     if (response.statusCode < 200 || response.statusCode >= 300) {
@@ -162,7 +204,20 @@ class ApiClient {
 
     if (responseBody.isEmpty) return <String, dynamic>{};
 
-    final decoded = jsonDecode(responseBody);
+    late dynamic decoded;
+    try {
+      decoded = jsonDecode(responseBody);
+    } catch (e) {
+      _logApiError(
+        phase: 'decode',
+        method: 'POST',
+        uri: uri,
+        statusCode: response.statusCode,
+        body: responseBody,
+        error: e.toString(),
+      );
+      rethrow;
+    }
     if (decoded is Map<String, dynamic>) return decoded;
     return <String, dynamic>{'data': decoded};
   }
