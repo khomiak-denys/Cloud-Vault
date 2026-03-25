@@ -137,6 +137,7 @@ class ApiClient {
     if (response.statusCode == 401) {
       final refreshed = await _refreshBearerToken();
       if (refreshed) {
+        await _drainStreamedResponse(response);
         _logApiError(
           phase: 'auth',
           method: 'POST',
@@ -373,6 +374,7 @@ class ApiClient {
       if (response.statusCode == 401) {
         final refreshed = await _refreshBearerToken();
         if (refreshed) {
+          await _drainStreamedResponse(response, timeout: timeout);
           _logApiError(
             phase: 'auth',
             method: method,
@@ -624,5 +626,16 @@ class ApiClient {
       // Best effort only for diagnostics.
     }
     return utf8.decode(bytes.takeBytes(), allowMalformed: true);
+  }
+
+  Future<void> _drainStreamedResponse(
+    http.StreamedResponse response, {
+    Duration timeout = const Duration(seconds: 2),
+  }) async {
+    try {
+      await response.stream.timeout(timeout).drain<void>();
+    } catch (_) {
+      // Best effort only.
+    }
   }
 }
