@@ -76,13 +76,18 @@ class ApiClient {
     required String fileField,
     Uint8List? fileBytes,
     String? filePath,
+    Stream<List<int>>? fileStream,
+    int? fileLength,
     required String fileName,
     Duration timeout = const Duration(seconds: 30),
   }) async {
     final uri = ApiConfig.resolveApiUri(path);
     final hasFilePath = filePath != null && filePath.trim().isNotEmpty;
+    final streamLength = fileLength ?? 0;
+    final hasFileStream = fileStream != null && streamLength > 0;
     if ((fileBytes == null || fileBytes.isEmpty) &&
-        !hasFilePath) {
+        !hasFilePath &&
+        !hasFileStream) {
       throw ApiException('Multipart file payload is missing');
     }
 
@@ -95,6 +100,15 @@ class ApiClient {
           await http.MultipartFile.fromPath(
             fileField,
             filePath,
+            filename: fileName,
+          ),
+        );
+      } else if (hasFileStream) {
+        request.files.add(
+          http.MultipartFile(
+            fileField,
+            fileStream,
+            streamLength,
             filename: fileName,
           ),
         );
@@ -112,7 +126,9 @@ class ApiClient {
         uri: uri,
         body: <String, dynamic>{
           ...fields,
-          fileField: hasFilePath ? '<binary:path>' : '<binary:bytes>',
+          fileField: hasFilePath
+              ? '<binary:path>'
+              : (hasFileStream ? '<binary:stream>' : '<binary:bytes>'),
           'fileName': fileName,
         },
       );
@@ -136,7 +152,8 @@ class ApiClient {
 
     if (response.statusCode == 401) {
       final refreshed = await _refreshBearerToken();
-      if (refreshed) {
+      // Stream payloads are one-shot and cannot be replayed safely here.
+      if (refreshed && !hasFileStream) {
         await _drainStreamedResponse(response);
         _logApiError(
           phase: 'auth',

@@ -211,7 +211,8 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
     final l10n = AppLocalizations.of(context)!;
     try {
       final pickResult = await FilePicker.platform.pickFiles(
-        withData: kIsWeb,
+        withData: false,
+        withReadStream: kIsWeb,
         allowMultiple: false,
       );
       if (!mounted || pickResult == null || pickResult.files.isEmpty) return;
@@ -219,7 +220,11 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
       final picked = pickResult.files.single;
       final path = picked.path;
       final bytes = picked.bytes;
-      if ((path == null || path.isEmpty) && (bytes == null || bytes.isEmpty)) {
+      final stream = picked.readStream;
+      final hasStream = stream != null && picked.size > 0;
+      if ((path == null || path.isEmpty) &&
+          (bytes == null || bytes.isEmpty) &&
+          !hasStream) {
         _showSnack(l10n.storageBrowserUploadFailed);
         return;
       }
@@ -227,6 +232,8 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
       await appApiRepository.uploadFile(
         filePath: (path == null || path.isEmpty) ? null : path,
         fileBytes: bytes,
+        fileStream: hasStream ? stream : null,
+        fileLength: hasStream ? picked.size : null,
         parentId: _isMegaProvider ? _currentMegaFolderId : _currentPath,
         providerId: widget.storage.providerId,
         connectionId: widget.storage.id,
