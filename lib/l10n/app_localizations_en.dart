@@ -378,6 +378,12 @@ class AppLocalizationsEn extends AppLocalizations {
       'Upload is not configured yet';
 
   @override
+  String get storageBrowserUploadSuccess => 'File uploaded';
+
+  @override
+  String get storageBrowserUploadFailed => 'Failed to upload file';
+
+  @override
   String get storageBrowserLoadFailed => 'Failed to load folder';
 
   @override

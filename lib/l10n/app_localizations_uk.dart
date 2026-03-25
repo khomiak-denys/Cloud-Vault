@@ -379,6 +379,12 @@ class AppLocalizationsUk extends AppLocalizations {
       'Завантаження ще не налаштовано';
 
   @override
+  String get storageBrowserUploadSuccess => 'Файл завантажено';
+
+  @override
+  String get storageBrowserUploadFailed => 'Не вдалося завантажити файл';
+
+  @override
   String get storageBrowserLoadFailed => 'Не вдалося завантажити папку';
 
   @override

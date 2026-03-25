@@ -70,6 +70,103 @@ class ApiClient {
     );
   }
 
+  Future<Map<String, dynamic>> postMultipart(
+    String path, {
+    required Map<String, String> fields,
+    required String fileField,
+    required Uint8List fileBytes,
+    required String fileName,
+  }) async {
+    final uri = ApiConfig.resolveApiUri(path);
+
+    Future<http.StreamedResponse> sendOnce() async {
+      final request = http.MultipartRequest('POST', uri);
+      request.headers.addAll(_buildHeaders(includeJsonContentType: false));
+      request.fields.addAll(fields);
+      request.files.add(
+        http.MultipartFile.fromBytes(
+          fileField,
+          fileBytes,
+          filename: fileName,
+        ),
+      );
+      _logApiRequest(
+        method: 'POST',
+        uri: uri,
+        body: <String, dynamic>{...fields, fileField: '<binary>'},
+      );
+      return _httpClient.send(request);
+    }
+
+    http.StreamedResponse response;
+    try {
+      response = await sendOnce();
+    } catch (e) {
+      _logApiError(
+        phase: 'network',
+        method: 'POST',
+        uri: uri,
+        error: e.toString(),
+      );
+      throw ApiException('Network request failed', body: e.toString());
+    }
+
+    if (response.statusCode == 401) {
+      final refreshed = await _refreshBearerToken();
+      if (refreshed) {
+        _logApiError(
+          phase: 'auth',
+          method: 'POST',
+          uri: uri,
+          statusCode: 401,
+          body: 'Token expired. Retrying once with refreshed token.',
+        );
+        try {
+          response = await sendOnce();
+        } catch (e) {
+          _logApiError(
+            phase: 'network',
+            method: 'POST',
+            uri: uri,
+            error: e.toString(),
+          );
+          throw ApiException('Network request failed', body: e.toString());
+        }
+      }
+    }
+
+    final responseBodyBytes = await response.stream.toBytes();
+    final responseBody = utf8.decode(responseBodyBytes, allowMalformed: true);
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      _logApiError(
+        phase: 'http',
+        method: 'POST',
+        uri: uri,
+        statusCode: response.statusCode,
+        body: responseBody,
+      );
+      throw ApiException(
+        'Request failed',
+        statusCode: response.statusCode,
+        body: responseBody,
+      );
+    }
+
+    _logApiResponse(
+      method: 'POST',
+      uri: uri,
+      statusCode: response.statusCode,
+      body: responseBody,
+    );
+
+    if (responseBody.isEmpty) return <String, dynamic>{};
+
+    final decoded = jsonDecode(responseBody);
+    if (decoded is Map<String, dynamic>) return decoded;
+    return <String, dynamic>{'data': decoded};
+  }
+
   Future<Map<String, dynamic>> _sendJson(
     String method,
     String path, {
@@ -434,8 +531,11 @@ class ApiClient {
     debugPrint('[API][$phase] $method $uri$status$err$responseBody');
   }
 
-  Map<String, String> _buildHeaders() {
-    final headers = <String, String>{'Content-Type': 'application/json'};
+  Map<String, String> _buildHeaders({bool includeJsonContentType = true}) {
+    final headers = <String, String>{};
+    if (includeJsonContentType) {
+      headers['Content-Type'] = 'application/json';
+    }
     final bearer = AuthSession.instance.bearerToken;
     final appCheck = AuthSession.instance.appCheckToken;
 

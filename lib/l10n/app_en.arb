@@ -141,6 +141,8 @@
   "storageBrowserCreateFolderAction": "Create",
   "storageBrowserFolderCreated": "Folder created",
   "storageBrowserUploadNotConfigured": "Upload is not configured yet",
+  "storageBrowserUploadSuccess": "File uploaded",
+  "storageBrowserUploadFailed": "Failed to upload file",
   "storageBrowserLoadFailed": "Failed to load folder",
   "storageBrowserCreateFolderFailed": "Failed to create folder",
   "storageBrowserApiError": "API error: {status} {message}",

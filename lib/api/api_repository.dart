@@ -502,6 +502,31 @@ class ApiRepository {
     );
   }
 
+  Future<Map<String, dynamic>> uploadFile({
+    required Uint8List fileBytes,
+    required String parentId,
+    String? connectionId,
+    String? fileName,
+    String? mimeType,
+    bool? allowFallback,
+  }) async {
+    final fields = <String, String>{
+      'parentId': parentId,
+      if (connectionId != null && connectionId.isNotEmpty)
+        'connectionId': connectionId,
+      if (fileName != null && fileName.isNotEmpty) 'fileName': fileName,
+      if (mimeType != null && mimeType.isNotEmpty) 'mimeType': mimeType,
+      if (allowFallback != null) 'allowFallback': allowFallback ? 'true' : 'false',
+    };
+    return _client.postMultipart(
+      '/files/upload',
+      fields: fields,
+      fileField: 'file',
+      fileBytes: fileBytes,
+      fileName: fileName?.trim().isNotEmpty == true ? fileName!.trim() : 'upload.bin',
+    );
+  }
+
   Future<ApiStorageUsageReport> storageUsageReport() async {
     final json = await _client.getJson('/analytics/storage-usage');
     final totals = json['totals'] is Map
