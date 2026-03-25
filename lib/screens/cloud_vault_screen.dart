@@ -17,7 +17,7 @@ import '../models/vault_item.dart';
 import '../screens/storage_browser_screen.dart';
 import '../utils/tab_navigation.dart';
 import '../widgets/bottom_nav_bar.dart';
-import '../widgets/dashboard/dashboard_recent_files_section.dart';
+import '../widgets/dashboard/dashboard_files_section.dart';
 import '../widgets/dashboard/dashboard_storages_section.dart';
 import '../widgets/loading_skeletons.dart';
 import '../widgets/mobile_screen_shell.dart';
@@ -79,7 +79,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
       final usageReportFuture = _loadUsageReportSafe();
       final results = await Future.wait([
         appApiRepository.connections(),
-        appApiRepository.favoriteFiles(pageSize: 20),
+        appApiRepository.favoriteFiles(),
         usageReportFuture,
       ]);
 
@@ -252,7 +252,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
                       if (_isLoading)
                         const DashboardLoadingSkeleton()
                       else
-                        DashboardRecentFilesSection(
+                        DashboardFilesSection(
                           items: _favoriteFiles,
                           title: l10n.favorites,
                           onMoreTap: (file) => showFileActionsModal(

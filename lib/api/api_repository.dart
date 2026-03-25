@@ -248,13 +248,13 @@ class ApiRepository {
   }
 
   Future<List<ApiFileItem>> favoriteFiles({
-    int pageSize = 20,
+    int? pageSize,
     String? cursor,
     String? connectionId,
     String? providerId,
   }) async {
     final query = <String, String>{
-      'pageSize': '${pageSize.clamp(1, 100).toInt()}',
+      if (pageSize != null) 'pageSize': '${pageSize.clamp(1, 100).toInt()}',
       if (cursor != null && cursor.isNotEmpty) 'cursor': cursor,
       if (connectionId != null && connectionId.isNotEmpty)
         'connectionId': connectionId,
@@ -577,6 +577,9 @@ class ApiRepository {
       final safeRootConnectionId = rootConnectionId == 'all'
           ? null
           : rootConnectionId;
+      final normalizedProviderId = normalizeProviderId(
+        _str(item['providerId']) ?? _str(item['provider']),
+      );
 
       return ApiFileItem(
         // Prefer provider-native file identifier (fileId/path) for file actions.
@@ -590,15 +593,11 @@ class ApiRepository {
             DateTime.tryParse(modifiedRaw ?? '') ??
             DateTime.tryParse(openedRaw ?? '') ??
             DateTime.now(),
-        providerId: normalizeProviderId(
-          _str(item['providerId']) ?? _str(item['provider']),
-        ),
+        providerId: normalizedProviderId,
         providerName:
             _str(item['providerName']) ??
             _str(item['provider']) ??
-            providerDisplayName(
-              normalizeProviderId(_str(item['providerId']) ?? _str(item['provider'])),
-            ),
+            providerDisplayName(normalizedProviderId),
         isFavorite: item['isFavorite'] == true || item['favorite'] == true,
         kind:
             _str(item['kind']) ??

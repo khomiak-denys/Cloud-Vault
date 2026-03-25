@@ -5,8 +5,8 @@ import '../../models/recent_file_item.dart';
 import '../../theme/app_theme_colors.dart';
 import '../recent_file_card.dart';
 
-class DashboardRecentFilesSection extends StatelessWidget {
-  const DashboardRecentFilesSection({
+class DashboardFilesSection extends StatelessWidget {
+  const DashboardFilesSection({
     super.key,
     required this.items,
     required this.onMoreTap,
