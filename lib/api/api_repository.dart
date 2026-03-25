@@ -511,16 +511,21 @@ class ApiRepository {
     String? fileName,
     String? mimeType,
     bool? allowFallback,
+    Duration timeout = const Duration(seconds: 60),
   }) async {
     final normalizedParentId = _normalizeListPath(
       parentId,
       providerId: providerId,
     );
+    final normalizedFileName = fileName?.trim();
+    final normalizedMimeType = mimeType?.trim();
     final fields = <String, String>{
       'parentId': normalizedParentId,
       'connectionId': connectionId,
-      if (fileName != null && fileName.isNotEmpty) 'fileName': fileName,
-      if (mimeType != null && mimeType.isNotEmpty) 'mimeType': mimeType,
+      if (normalizedFileName != null && normalizedFileName.isNotEmpty)
+        'fileName': normalizedFileName,
+      if (normalizedMimeType != null && normalizedMimeType.isNotEmpty)
+        'mimeType': normalizedMimeType,
       if (allowFallback != null) 'allowFallback': allowFallback ? 'true' : 'false',
     };
     return _client.postMultipart(
@@ -529,7 +534,10 @@ class ApiRepository {
       fileField: 'file',
       filePath: filePath,
       fileBytes: fileBytes,
-      fileName: fileName?.trim().isNotEmpty == true ? fileName!.trim() : 'upload.bin',
+      fileName: normalizedFileName != null && normalizedFileName.isNotEmpty
+          ? normalizedFileName
+          : 'upload.bin',
+      timeout: timeout,
     );
   }
 

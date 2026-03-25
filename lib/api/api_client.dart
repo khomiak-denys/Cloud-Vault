@@ -80,8 +80,9 @@ class ApiClient {
     Duration timeout = const Duration(seconds: 30),
   }) async {
     final uri = ApiConfig.resolveApiUri(path);
+    final hasFilePath = filePath != null && filePath.trim().isNotEmpty;
     if ((fileBytes == null || fileBytes.isEmpty) &&
-        (filePath == null || filePath.trim().isEmpty)) {
+        !hasFilePath) {
       throw ApiException('Multipart file payload is missing');
     }
 
@@ -89,7 +90,7 @@ class ApiClient {
       final request = http.MultipartRequest('POST', uri);
       request.headers.addAll(_buildHeaders(includeJsonContentType: false));
       request.fields.addAll(fields);
-      if (filePath != null && filePath.trim().isNotEmpty) {
+      if (hasFilePath) {
         request.files.add(
           await http.MultipartFile.fromPath(
             fileField,
@@ -111,7 +112,7 @@ class ApiClient {
         uri: uri,
         body: <String, dynamic>{
           ...fields,
-          fileField: filePath != null ? '<binary:path>' : '<binary:bytes>',
+          fileField: hasFilePath ? '<binary:path>' : '<binary:bytes>',
           'fileName': fileName,
         },
       );
