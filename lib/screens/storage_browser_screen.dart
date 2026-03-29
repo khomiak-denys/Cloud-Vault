@@ -1,5 +1,8 @@
 import 'package:cloud_vault/l10n/app_localizations.dart';
+import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../api/api_repository.dart';
 import '../api/api_exception.dart';
@@ -204,9 +207,52 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
     }
   }
 
-  void _onUpload() {
+  Future<void> _onUpload() async {
     final l10n = AppLocalizations.of(context)!;
-    _showSnack(l10n.storageBrowserUploadNotConfigured);
+    try {
+      final pickResult = await FilePicker.platform.pickFiles(
+        withData: false,
+        withReadStream: kIsWeb,
+        allowMultiple: false,
+      );
+      if (!mounted || pickResult == null || pickResult.files.isEmpty) return;
+
+      final picked = pickResult.files.single;
+      final path = picked.path;
+      final bytes = picked.bytes;
+      final stream = picked.readStream;
+      final hasStream = stream != null;
+      if ((path == null || path.isEmpty) &&
+          bytes == null &&
+          !hasStream) {
+        _showSnack(l10n.storageBrowserUploadFailed);
+        return;
+      }
+
+      await appApiRepository.uploadFile(
+        filePath: (path == null || path.isEmpty) ? null : path,
+        fileBytes: bytes,
+        fileStream: hasStream ? stream : null,
+        fileLength: hasStream ? picked.size : null,
+        parentId: _isMegaProvider ? _currentMegaFolderId : _currentPath,
+        providerId: widget.storage.providerId,
+        connectionId: widget.storage.id,
+        fileName: picked.name,
+      );
+      if (!mounted) return;
+
+      _showSnack(l10n.storageBrowserUploadSuccess);
+      await _load();
+    } on ApiException catch (e) {
+      if (!mounted) return;
+      _showSnack(_apiErrorMessage(e));
+    } on MissingPluginException {
+      if (!mounted) return;
+      _showSnack(l10n.storageBrowserUploadNotConfigured);
+    } catch (_) {
+      if (!mounted) return;
+      _showSnack(l10n.storageBrowserUploadFailed);
+    }
   }
 
   Future<void> _onFileAction(String actionId, RecentFileItem file) async {

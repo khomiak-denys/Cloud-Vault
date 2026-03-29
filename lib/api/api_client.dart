@@ -70,6 +70,187 @@ class ApiClient {
     );
   }
 
+  Future<Map<String, dynamic>> postMultipart(
+    String path, {
+    required Map<String, String> fields,
+    required String fileField,
+    Uint8List? fileBytes,
+    String? filePath,
+    Stream<List<int>>? fileStream,
+    int? fileLength,
+    required String fileName,
+    Duration timeout = const Duration(seconds: 30),
+  }) async {
+    final uri = ApiConfig.resolveApiUri(path);
+    final effectivePath = filePath?.trim();
+    final hasFilePath = effectivePath != null && effectivePath.isNotEmpty;
+    final effectiveStream = fileStream;
+    if (effectiveStream != null && fileLength == null) {
+      throw ApiException(
+        'Multipart stream payload requires a non-null fileLength',
+      );
+    }
+    if (fileLength != null && fileLength < 0) {
+      throw ApiException('Multipart stream payload has invalid fileLength');
+    }
+
+    final hasFileBytes = fileBytes != null;
+    final hasFileStream = effectiveStream != null && fileLength != null;
+    final streamLength = fileLength ?? 0;
+
+    if (!hasFilePath && !hasFileBytes && !hasFileStream) {
+      throw ApiException('Multipart file payload is missing');
+    }
+
+    Future<http.StreamedResponse> sendOnce() async {
+      final request = http.MultipartRequest('POST', uri);
+      request.headers.addAll(_buildHeaders(includeJsonContentType: false));
+      request.fields.addAll(fields);
+      if (hasFilePath) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            fileField,
+            effectivePath,
+            filename: fileName,
+          ),
+        );
+      } else if (hasFileStream) {
+        request.files.add(
+          http.MultipartFile(
+            fileField,
+            effectiveStream,
+            streamLength,
+            filename: fileName,
+          ),
+        );
+      } else {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            fileField,
+            fileBytes!,
+            filename: fileName,
+          ),
+        );
+      }
+      _logApiRequest(
+        method: 'POST',
+        uri: uri,
+        body: <String, dynamic>{
+          ...fields,
+          fileField: hasFilePath
+              ? '<binary:path>'
+              : (hasFileStream ? '<binary:stream>' : '<binary:bytes>'),
+          'fileName': fileName,
+        },
+      );
+      return _httpClient.send(request).timeout(timeout);
+    }
+
+    http.StreamedResponse response;
+    try {
+      response = await sendOnce();
+    } on TimeoutException {
+      throw ApiException('Request timeout', errorCode: 'request_timeout');
+    } catch (e) {
+      _logApiError(
+        phase: 'network',
+        method: 'POST',
+        uri: uri,
+        error: e.toString(),
+      );
+      throw ApiException('Network request failed', body: e.toString());
+    }
+
+    if (response.statusCode == 401) {
+      final refreshed = await _refreshBearerToken();
+      // Stream payloads are one-shot and cannot be replayed safely here.
+      if (refreshed && !hasFileStream) {
+        await _drainStreamedResponse(response);
+        _logApiError(
+          phase: 'auth',
+          method: 'POST',
+          uri: uri,
+          statusCode: 401,
+          body: 'Token expired. Retrying once with refreshed token.',
+        );
+        try {
+          response = await sendOnce();
+        } on TimeoutException {
+          throw ApiException('Request timeout', errorCode: 'request_timeout');
+        } catch (e) {
+          _logApiError(
+            phase: 'network',
+            method: 'POST',
+            uri: uri,
+            error: e.toString(),
+          );
+          throw ApiException('Network request failed', body: e.toString());
+        }
+      }
+    }
+
+    late final List<int> responseBodyBytes;
+    try {
+      final bytesBuilder = BytesBuilder(copy: false);
+      await for (final chunk in response.stream.timeout(timeout)) {
+        bytesBuilder.add(chunk);
+      }
+      responseBodyBytes = bytesBuilder.takeBytes();
+    } on TimeoutException {
+      throw ApiException('Request timeout', errorCode: 'request_timeout');
+    } on Exception catch (e) {
+      _logApiError(
+        phase: 'network',
+        method: 'POST',
+        uri: uri,
+        error: e.toString(),
+      );
+      throw ApiException('Network request failed', body: e.toString());
+    }
+    final responseBody = utf8.decode(responseBodyBytes, allowMalformed: true);
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      _logApiError(
+        phase: 'http',
+        method: 'POST',
+        uri: uri,
+        statusCode: response.statusCode,
+        body: responseBody,
+      );
+      throw ApiException(
+        'Request failed',
+        statusCode: response.statusCode,
+        body: responseBody,
+      );
+    }
+
+    _logApiResponse(
+      method: 'POST',
+      uri: uri,
+      statusCode: response.statusCode,
+      body: responseBody,
+    );
+
+    if (responseBody.isEmpty) return <String, dynamic>{};
+
+    late dynamic decoded;
+    try {
+      decoded = jsonDecode(responseBody);
+    } catch (e) {
+      _logApiError(
+        phase: 'decode',
+        method: 'POST',
+        uri: uri,
+        statusCode: response.statusCode,
+        body: responseBody,
+        error: e.toString(),
+      );
+      rethrow;
+    }
+    if (decoded is Map<String, dynamic>) return decoded;
+    return <String, dynamic>{'data': decoded};
+  }
+
   Future<Map<String, dynamic>> _sendJson(
     String method,
     String path, {
@@ -221,6 +402,7 @@ class ApiClient {
       if (response.statusCode == 401) {
         final refreshed = await _refreshBearerToken();
         if (refreshed) {
+          await _drainStreamedResponse(response, timeout: timeout);
           _logApiError(
             phase: 'auth',
             method: method,
@@ -434,8 +616,11 @@ class ApiClient {
     debugPrint('[API][$phase] $method $uri$status$err$responseBody');
   }
 
-  Map<String, String> _buildHeaders() {
-    final headers = <String, String>{'Content-Type': 'application/json'};
+  Map<String, String> _buildHeaders({bool includeJsonContentType = true}) {
+    final headers = <String, String>{};
+    if (includeJsonContentType) {
+      headers['Content-Type'] = 'application/json';
+    }
     final bearer = AuthSession.instance.bearerToken;
     final appCheck = AuthSession.instance.appCheckToken;
 
@@ -469,5 +654,16 @@ class ApiClient {
       // Best effort only for diagnostics.
     }
     return utf8.decode(bytes.takeBytes(), allowMalformed: true);
+  }
+
+  Future<void> _drainStreamedResponse(
+    http.StreamedResponse response, {
+    Duration timeout = const Duration(seconds: 2),
+  }) async {
+    try {
+      await response.stream.timeout(timeout).drain<void>();
+    } catch (_) {
+      // Best effort only.
+    }
   }
 }

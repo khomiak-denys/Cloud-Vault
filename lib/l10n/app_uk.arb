@@ -141,6 +141,8 @@
   "storageBrowserCreateFolderAction": "Створити",
   "storageBrowserFolderCreated": "Папку створено",
   "storageBrowserUploadNotConfigured": "Завантаження ще не налаштовано",
+  "storageBrowserUploadSuccess": "Файл завантажено",
+  "storageBrowserUploadFailed": "Не вдалося завантажити файл",
   "storageBrowserLoadFailed": "Не вдалося завантажити папку",
   "storageBrowserCreateFolderFailed": "Не вдалося створити папку",
   "storageBrowserApiError": "Помилка API: {status} {message}",

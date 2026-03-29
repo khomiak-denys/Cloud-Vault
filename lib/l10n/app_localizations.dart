@@ -818,6 +818,18 @@ abstract class AppLocalizations {
   /// **'Upload is not configured yet'**
   String get storageBrowserUploadNotConfigured;
 
+  /// No description provided for @storageBrowserUploadSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'File uploaded'**
+  String get storageBrowserUploadSuccess;
+
+  /// No description provided for @storageBrowserUploadFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to upload file'**
+  String get storageBrowserUploadFailed;
+
   /// No description provided for @storageBrowserLoadFailed.
   ///
   /// In en, this message translates to:

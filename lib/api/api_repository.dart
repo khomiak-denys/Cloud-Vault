@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import '../data/provider_identity.dart';
@@ -502,6 +503,52 @@ class ApiRepository {
     );
   }
 
+  Future<Map<String, dynamic>> uploadFile({
+    Uint8List? fileBytes,
+    String? filePath,
+    Stream<List<int>>? fileStream,
+    int? fileLength,
+    required String parentId,
+    String? providerId,
+    required String connectionId,
+    String? fileName,
+    String? mimeType,
+    bool? allowFallback,
+    Duration timeout = const Duration(seconds: 60),
+  }) async {
+    final normalizedParentId = _normalizeListPath(
+      parentId,
+      providerId: providerId,
+    );
+    final normalizedFileName = fileName?.trim();
+    final normalizedMimeType = mimeType?.trim();
+    final pathDerivedFileName = _fileNameFromPath(filePath);
+    final effectiveFileName =
+        normalizedFileName != null && normalizedFileName.isNotEmpty
+        ? normalizedFileName
+        : (pathDerivedFileName ?? 'upload.bin');
+    final fields = <String, String>{
+      'parentId': normalizedParentId,
+      'connectionId': connectionId,
+      if (normalizedFileName != null && normalizedFileName.isNotEmpty)
+        'fileName': normalizedFileName,
+      if (normalizedMimeType != null && normalizedMimeType.isNotEmpty)
+        'mimeType': normalizedMimeType,
+      if (allowFallback != null) 'allowFallback': allowFallback ? 'true' : 'false',
+    };
+    return _client.postMultipart(
+      '/files/upload',
+      fields: fields,
+      fileField: 'file',
+      filePath: filePath,
+      fileStream: fileStream,
+      fileLength: fileLength,
+      fileBytes: fileBytes,
+      fileName: effectiveFileName,
+      timeout: timeout,
+    );
+  }
+
   Future<ApiStorageUsageReport> storageUsageReport() async {
     final json = await _client.getJson('/analytics/storage-usage');
     final totals = json['totals'] is Map
@@ -674,6 +721,17 @@ class ApiRepository {
 
     return '$_storageApiRootPath/$normalized';
   }
+}
+
+String? _fileNameFromPath(String? filePath) {
+  if (filePath == null) return null;
+  final trimmed = filePath.trim();
+  if (trimmed.isEmpty) return null;
+  final normalized = trimmed.replaceAll('\\', '/');
+  final parts = normalized.split('/');
+  if (parts.isEmpty) return null;
+  final fileName = parts.last.trim();
+  return fileName.isEmpty ? null : fileName;
 }
 
 String? _str(dynamic value) {
