@@ -1,4 +1,4 @@
-﻿{
+{
   "@@locale": "uk",
   "appTitle": "CloudVault",
   "navHome": "Головна",
@@ -146,7 +146,7 @@
   "storageBrowserUploadFailed": "Не вдалося завантажити файл",
   "storageBrowserLoadFailed": "Не вдалося завантажити папку",
   "storageBrowserCreateFolderFailed": "Не вдалося створити папку",
-  "storageBrowserApiError": "РџРѕРјРёР»РєР° API: {status} {message}",
+  "storageBrowserApiError": "Помилка API: {status} {message}",
   "@@storageBrowserApiError": {
     "placeholders": {
       "status": {
@@ -171,7 +171,7 @@
   "filePreviewVideoInitFailed": "Не вдалося ініціалізувати перегляд відео",
   "filePreviewPlay": "Відтворити",
   "filePreviewPause": "Пауза",
-  "filePreviewApiError": "РџРѕРјРёР»РєР° API: {status} {message}",
+  "filePreviewApiError": "Помилка API: {status} {message}",
   "@@filePreviewApiError": {
     "placeholders": {
       "status": {

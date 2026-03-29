@@ -395,7 +395,7 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String storageBrowserApiError(Object message, Object status) {
-    return 'РџРѕРјРёР»РєР° API: $status $message';
+    return 'Помилка API: $status $message';
   }
 
   @override
@@ -462,6 +462,6 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String filePreviewApiError(Object message, Object status) {
-    return 'РџРѕРјРёР»РєР° API: $status $message';
+    return 'Помилка API: $status $message';
   }
 }

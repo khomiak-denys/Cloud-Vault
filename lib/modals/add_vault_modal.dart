@@ -40,309 +40,314 @@ Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
     barrierLabel: 'Add vault',
     barrierDismissible: true,
     barrierColor: Colors.black.withValues(alpha: 0.45),
-    pageBuilder: (context, animation, secondaryAnimation) {
-      int? selectedIndex;
-      bool isLoadingProviders = true;
-      bool hasRequestedProviders = false;
-      List<AddVaultOption> availableOptions = addVaultOptions;
-
-      return StatefulBuilder(
-        builder: (context, setModalState) {
-          if (!hasRequestedProviders) {
-            hasRequestedProviders = true;
-            Future<void>(() async {
-              try {
-                final connections = await appApiRepository.connections();
-                final connectedProviderIds = connections
-                    .map((connection) => connection.providerId.trim().toLowerCase())
-                    .where((providerId) => providerId.isNotEmpty)
-                    .toSet();
-                if (!context.mounted) return;
-                setModalState(() {
-                  availableOptions = addVaultOptions.where((option) {
-                    return !connectedProviderIds.contains(option.providerId);
-                  }).toList();
-                  if (selectedIndex != null &&
-                      selectedIndex! >= availableOptions.length) {
-                    selectedIndex = null;
-                  }
-                  isLoadingProviders = false;
-                });
-              } catch (_) {
-                if (!context.mounted) return;
-                setModalState(() {
-                  availableOptions = addVaultOptions;
-                  isLoadingProviders = false;
-                });
-              }
-            });
-          }
-
-          return Material(
-            type: MaterialType.transparency,
-            child: Stack(
-              children: [
-                Positioned.fill(
-                  child: ClipRect(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                      child: Container(
-                        color: Colors.black.withValues(alpha: 0.2),
-                      ),
-                    ),
-                  ),
-                ),
-                Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        maxWidth: 390,
-                        maxHeight: MediaQuery.sizeOf(context).height * 0.68,
-                      ),
-                      child: Container(
-                        padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
-                        decoration: BoxDecoration(
-                          color: colors.modalBackground,
-                          borderRadius: BorderRadius.circular(34),
-                          border: Border.all(color: colors.modalBorder),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    l10n.addStorage,
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w700,
-                                      color: colors.primaryText,
-                                    ),
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () => Navigator.of(context).pop(),
-                                  style: ButtonStyle(
-                                    overlayColor: pressOnlyOverlay(
-                                      const Color(0x3397A5BD),
-                                    ),
-                                  ),
-                                  icon: Icon(
-                                    Icons.close,
-                                    color: colors.modalCloseIcon,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            Divider(color: colors.modalDivider, height: 24),
-                            Text(
-                              l10n.chooseCloudStorage,
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: colors.modalMutedText,
-                                height: 1.35,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Expanded(
-                              child: ScrollConfiguration(
-                                behavior: const MaterialScrollBehavior().copyWith(
-                                  scrollbars: false,
-                                ),
-                                child: isLoadingProviders
-                                    ? const Center(
-                                        child: CircularProgressIndicator(),
-                                      )
-                                    : availableOptions.isEmpty
-                                    ? Center(
-                                        child: Text(
-                                          l10n.allProvidersConnected,
-                                          style: TextStyle(
-                                            color: colors.modalMutedText,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      )
-                                    : SingleChildScrollView(
-                                        child: GridView.builder(
-                                          shrinkWrap: true,
-                                          physics: const NeverScrollableScrollPhysics(),
-                                          itemCount: availableOptions.length,
-                                          gridDelegate:
-                                              const SliverGridDelegateWithFixedCrossAxisCount(
-                                                crossAxisCount: 2,
-                                                crossAxisSpacing: 12,
-                                                mainAxisSpacing: 12,
-                                                mainAxisExtent: 106,
-                                              ),
-                                          itemBuilder: (context, index) {
-                                            final option = availableOptions[index];
-                                            final isSelected = selectedIndex == index;
-                                            return AddVaultOptionTile(
-                                              option: option,
-                                              isSelected: isSelected,
-                                              onTap: () => setModalState(
-                                                () => selectedIndex = index,
-                                              ),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: isLoadingProviders ||
-                                        selectedIndex == null ||
-                                        availableOptions.isEmpty
-                                    ? null
-                                    : () async {
-                                            final option =
-                                                availableOptions[selectedIndex!];
-                                            final providerId =
-                                                option.providerId;
-
-                                            try {
-                                              if (providerId == 'mega') {
-                                                final connected =
-                                                    await _showMegaConnectModal(
-                                                      context,
-                                                      l10n,
-                                                    );
-                                                if (!connected) {
-                                                  return;
-                                                }
-
-                                                if (context.mounted) {
-                                                  Navigator.of(context).pop(
-                                                    const AddVaultFlowResult(
-                                                      didStartConnect: true,
-                                                      expectsAppCallback: false,
-                                                    ),
-                                                  );
-                                                }
-                                                return;
-                                              }
-
-                                              final redirectUri =
-                                                  _connectRedirectUriForProvider(
-                                                    providerId,
-                                                  );
-                                              final authorizeUrl =
-                                                  await appApiRepository
-                                                      .startProviderConnect(
-                                                        providerId,
-                                                        redirectUri:
-                                                            redirectUri,
-                                                      );
-
-                                              if (authorizeUrl == null ||
-                                                  authorizeUrl.isEmpty) {
-                                                if (!context.mounted) return;
-                                                _showSnack(
-                                                  context,
-                                                  'Connect URL not returned',
-                                                );
-                                                return;
-                                              }
-
-                                              final uri = Uri.tryParse(
-                                                authorizeUrl,
-                                              );
-
-                                              if (uri == null ||
-                                                  !await launchUrl(
-                                                    uri,
-                                                    mode: LaunchMode
-                                                        .externalApplication,
-                                                  )) {
-                                                if (!context.mounted) return;
-                                                _showSnack(
-                                                  context,
-                                                  'Cannot open connect URL',
-                                                );
-                                                return;
-                                              }
-
-                                              if (context.mounted) {
-                                                Navigator.of(context).pop(
-                                                  AddVaultFlowResult(
-                                                    didStartConnect: true,
-                                                    expectsAppCallback:
-                                                        _expectsAppCallback(
-                                                          redirectUri,
-                                                        ),
-                                                  ),
-                                                );
-                                              }
-                                            } on ApiException catch (e) {
-                                              if (!context.mounted) return;
-                                              _showSnack(
-                                                context,
-                                                'API error: ${e.statusCode ?? ''} ${e.message}'
-                                                    .trim(),
-                                              );
-                                            } catch (_) {
-                                              if (!context.mounted) return;
-                                              _showSnack(
-                                                context,
-                                                'Failed to start provider connect',
-                                              );
-                                            }
-                                          },
-                                style: ButtonStyle(
-                                  backgroundColor:
-                                      const WidgetStatePropertyAll(
-                                        primaryBtnBg,
-                                      ),
-                                  foregroundColor:
-                                      const WidgetStatePropertyAll(
-                                        primaryBtnFg,
-                                      ),
-                                  overlayColor: pressOnlyOverlay(
-                                    const Color(0x33FFFFFF),
-                                  ),
-                                  shape: WidgetStatePropertyAll(
-                                    RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                  ),
-                                  padding: const WidgetStatePropertyAll(
-                                    EdgeInsets.symmetric(vertical: 14),
-                                  ),
-                                ),
-                                child: Text(
-                                  l10n.connect,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        },
-      );
-    },
+    pageBuilder: (_, _, _) => _AddVaultModalSheet(
+      l10n: l10n,
+      colors: colors,
+      primaryBtnBg: primaryBtnBg,
+      primaryBtnFg: primaryBtnFg,
+    ),
   );
 
   return result ?? _noConnectResult;
+}
+
+class _AddVaultModalSheet extends StatefulWidget {
+  const _AddVaultModalSheet({
+    required this.l10n,
+    required this.colors,
+    required this.primaryBtnBg,
+    required this.primaryBtnFg,
+  });
+
+  final AppLocalizations l10n;
+  final AppThemeColors colors;
+  final Color primaryBtnBg;
+  final Color primaryBtnFg;
+
+  @override
+  State<_AddVaultModalSheet> createState() => _AddVaultModalSheetState();
+}
+
+class _AddVaultModalSheetState extends State<_AddVaultModalSheet> {
+  int? _selectedIndex;
+  bool _isLoadingProviders = true;
+  List<AddVaultOption> _availableOptions = addVaultOptions;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadAvailableOptions();
+  }
+
+  Future<void> _loadAvailableOptions() async {
+    try {
+      final connections = await appApiRepository.connections();
+      final connectedProviderIds = connections
+          .map((connection) => connection.providerId.trim().toLowerCase())
+          .where((providerId) => providerId.isNotEmpty)
+          .toSet();
+      if (!mounted) return;
+      setState(() {
+        _availableOptions = addVaultOptions.where((option) {
+          return !connectedProviderIds.contains(option.providerId);
+        }).toList();
+        if (_selectedIndex != null &&
+            _selectedIndex! >= _availableOptions.length) {
+          _selectedIndex = null;
+        }
+        _isLoadingProviders = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        _availableOptions = addVaultOptions;
+        _isLoadingProviders = false;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = widget.l10n;
+    final colors = widget.colors;
+    return Material(
+      type: MaterialType.transparency,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                child: Container(
+                  color: Colors.black.withValues(alpha: 0.2),
+                ),
+              ),
+            ),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxWidth: 390,
+                  maxHeight: MediaQuery.sizeOf(context).height * 0.68,
+                ),
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
+                  decoration: BoxDecoration(
+                    color: colors.modalBackground,
+                    borderRadius: BorderRadius.circular(34),
+                    border: Border.all(color: colors.modalBorder),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(
+                            child: Text(
+                              l10n.addStorage,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: colors.primaryText,
+                              ),
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            style: ButtonStyle(
+                              overlayColor: pressOnlyOverlay(
+                                const Color(0x3397A5BD),
+                              ),
+                            ),
+                            icon: Icon(
+                              Icons.close,
+                              color: colors.modalCloseIcon,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Divider(color: colors.modalDivider, height: 24),
+                      Text(
+                        l10n.chooseCloudStorage,
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: colors.modalMutedText,
+                          height: 1.35,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Expanded(
+                        child: ScrollConfiguration(
+                          behavior: const MaterialScrollBehavior().copyWith(
+                            scrollbars: false,
+                          ),
+                          child: _isLoadingProviders
+                              ? const Center(child: CircularProgressIndicator())
+                              : _availableOptions.isEmpty
+                              ? Center(
+                                  child: Text(
+                                    l10n.allProvidersConnected,
+                                    style: TextStyle(
+                                      color: colors.modalMutedText,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                )
+                              : SingleChildScrollView(
+                                  child: GridView.builder(
+                                    shrinkWrap: true,
+                                    physics: const NeverScrollableScrollPhysics(),
+                                    itemCount: _availableOptions.length,
+                                    gridDelegate:
+                                        const SliverGridDelegateWithFixedCrossAxisCount(
+                                          crossAxisCount: 2,
+                                          crossAxisSpacing: 12,
+                                          mainAxisSpacing: 12,
+                                          mainAxisExtent: 106,
+                                        ),
+                                    itemBuilder: (context, index) {
+                                      final option = _availableOptions[index];
+                                      final isSelected = _selectedIndex == index;
+                                      return AddVaultOptionTile(
+                                        option: option,
+                                        isSelected: isSelected,
+                                        onTap: () => setState(
+                                          () => _selectedIndex = index,
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: _isLoadingProviders ||
+                                  _selectedIndex == null ||
+                                  _availableOptions.isEmpty
+                              ? null
+                              : () async {
+                                  final option =
+                                      _availableOptions[_selectedIndex!];
+                                  final providerId = option.providerId;
+
+                                  try {
+                                    if (providerId == 'mega') {
+                                      final connected =
+                                          await _showMegaConnectModal(
+                                            context,
+                                            l10n,
+                                          );
+                                      if (!connected) {
+                                        return;
+                                      }
+
+                                      if (context.mounted) {
+                                        Navigator.of(context).pop(
+                                          const AddVaultFlowResult(
+                                            didStartConnect: true,
+                                            expectsAppCallback: false,
+                                          ),
+                                        );
+                                      }
+                                      return;
+                                    }
+
+                                    final redirectUri =
+                                        _connectRedirectUriForProvider(providerId);
+                                    final authorizeUrl = await appApiRepository
+                                        .startProviderConnect(
+                                          providerId,
+                                          redirectUri: redirectUri,
+                                        );
+
+                                    if (authorizeUrl == null ||
+                                        authorizeUrl.isEmpty) {
+                                      if (!context.mounted) return;
+                                      _showSnack(context, 'Connect URL not returned');
+                                      return;
+                                    }
+
+                                    final uri = Uri.tryParse(authorizeUrl);
+
+                                    if (uri == null ||
+                                        !await launchUrl(
+                                          uri,
+                                          mode: LaunchMode.externalApplication,
+                                        )) {
+                                      if (!context.mounted) return;
+                                      _showSnack(context, 'Cannot open connect URL');
+                                      return;
+                                    }
+
+                                    if (context.mounted) {
+                                      Navigator.of(context).pop(
+                                        AddVaultFlowResult(
+                                          didStartConnect: true,
+                                          expectsAppCallback: _expectsAppCallback(
+                                            redirectUri,
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                  } on ApiException catch (e) {
+                                    if (!context.mounted) return;
+                                    _showSnack(
+                                      context,
+                                      'API error: ${e.statusCode ?? ''} ${e.message}'.trim(),
+                                    );
+                                  } catch (_) {
+                                    if (!context.mounted) return;
+                                    _showSnack(
+                                      context,
+                                      'Failed to start provider connect',
+                                    );
+                                  }
+                                },
+                          style: ButtonStyle(
+                            backgroundColor:
+                                WidgetStatePropertyAll(widget.primaryBtnBg),
+                            foregroundColor:
+                                WidgetStatePropertyAll(widget.primaryBtnFg),
+                            overlayColor: pressOnlyOverlay(
+                              const Color(0x33FFFFFF),
+                            ),
+                            shape: WidgetStatePropertyAll(
+                              RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            padding: const WidgetStatePropertyAll(
+                              EdgeInsets.symmetric(vertical: 14),
+                            ),
+                          ),
+                          child: Text(
+                            l10n.connect,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 String? _connectRedirectUriForProvider(String providerId) {
