@@ -9,6 +9,7 @@ import '../api/api_config.dart';
 import '../api/api_exception.dart';
 import '../data/app_services.dart';
 import '../data/provider_options_data.dart';
+import '../models/add_vault_option.dart';
 import '../theme/app_theme_colors.dart';
 import '../utils/interaction_styles.dart';
 import '../widgets/add_vault_option_tile.dart';
@@ -31,22 +32,6 @@ const AddVaultFlowResult _noConnectResult = AddVaultFlowResult(
 Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
   const primaryBtnBg = Color(0xFF2662E7);
   const primaryBtnFg = Color(0xFFEAF2FF);
-  Set<String> connectedProviderIds = const <String>{};
-  try {
-    final connections = await appApiRepository.connections();
-    connectedProviderIds = connections
-        .map((connection) => connection.providerId.trim().toLowerCase())
-        .where((providerId) => providerId.isNotEmpty)
-        .toSet();
-  } catch (_) {
-    connectedProviderIds = const <String>{};
-  }
-  final availableOptions = addVaultOptions.where((option) {
-    return !connectedProviderIds.contains(option.providerId);
-  }).toList();
-  if (!context.mounted) {
-    return _noConnectResult;
-  }
   final l10n = AppLocalizations.of(context)!;
   final colors = AppThemeColors.of(context);
 
@@ -57,9 +42,42 @@ Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
     barrierColor: Colors.black.withValues(alpha: 0.45),
     pageBuilder: (context, animation, secondaryAnimation) {
       int? selectedIndex;
+      bool isLoadingProviders = true;
+      bool hasRequestedProviders = false;
+      List<AddVaultOption> availableOptions = addVaultOptions;
 
       return StatefulBuilder(
         builder: (context, setModalState) {
+          if (!hasRequestedProviders) {
+            hasRequestedProviders = true;
+            Future<void>(() async {
+              try {
+                final connections = await appApiRepository.connections();
+                final connectedProviderIds = connections
+                    .map((connection) => connection.providerId.trim().toLowerCase())
+                    .where((providerId) => providerId.isNotEmpty)
+                    .toSet();
+                if (!context.mounted) return;
+                setModalState(() {
+                  availableOptions = addVaultOptions.where((option) {
+                    return !connectedProviderIds.contains(option.providerId);
+                  }).toList();
+                  if (selectedIndex != null &&
+                      selectedIndex! >= availableOptions.length) {
+                    selectedIndex = null;
+                  }
+                  isLoadingProviders = false;
+                });
+              } catch (_) {
+                if (!context.mounted) return;
+                setModalState(() {
+                  availableOptions = addVaultOptions;
+                  isLoadingProviders = false;
+                });
+              }
+            });
+          }
+
           return Material(
             type: MaterialType.transparency,
             child: Stack(
@@ -136,7 +154,11 @@ Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
                                 behavior: const MaterialScrollBehavior().copyWith(
                                   scrollbars: false,
                                 ),
-                                child: availableOptions.isEmpty
+                                child: isLoadingProviders
+                                    ? const Center(
+                                        child: CircularProgressIndicator(),
+                                      )
+                                    : availableOptions.isEmpty
                                     ? Center(
                                         child: Text(
                                           l10n.allProvidersConnected,
@@ -178,7 +200,8 @@ Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
                             SizedBox(
                               width: double.infinity,
                               child: ElevatedButton(
-                                onPressed: selectedIndex == null ||
+                                onPressed: isLoadingProviders ||
+                                        selectedIndex == null ||
                                         availableOptions.isEmpty
                                     ? null
                                     : () async {

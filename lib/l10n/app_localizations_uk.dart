@@ -12,40 +12,40 @@ class AppLocalizationsUk extends AppLocalizations {
   String get appTitle => 'CloudVault';
 
   @override
-  String get navHome => 'Р“РѕР»РѕРІРЅР°';
+  String get navHome => 'Головна';
 
   @override
-  String get navSearch => 'РџРѕС€СѓРє';
+  String get navSearch => 'Пошук';
 
   @override
-  String get navAnalytics => 'РђРЅР°Р»С–С‚РёРєР°';
+  String get navAnalytics => 'Аналітика';
 
   @override
-  String get navSettings => 'РќР°Р»Р°С€С‚СѓРІР°РЅРЅСЏ';
+  String get navSettings => 'Налаштування';
 
   @override
-  String get manageClouds => 'РљРµСЂСѓР№С‚Рµ РІСЃС–РјР° С…РјР°СЂР°РјРё';
+  String get manageClouds => 'Керуйте всіма хмарами';
 
   @override
-  String get totalUsed => 'Р’СЃСЊРѕРіРѕ РІРёРєРѕСЂРёСЃС‚Р°РЅРѕ';
+  String get totalUsed => 'Всього використано';
 
   @override
-  String get myStorages => 'РњРѕС— СЃС…РѕРІРёС‰Р°';
+  String get myStorages => 'Мої сховища';
 
   @override
-  String get add => 'Р”РѕРґР°С‚Рё';
+  String get add => 'Додати';
 
   @override
-  String get used => 'Р’РёРєРѕСЂРёСЃС‚Р°РЅРѕ';
+  String get used => 'Використано';
 
   @override
-  String get recentFiles => 'РќРµС‰РѕРґР°РІРЅС– С„Р°Р№Р»Рё';
+  String get recentFiles => 'Нещодавні файли';
 
   @override
-  String get favorites => 'РћР±СЂР°РЅС–';
+  String get favorites => 'Обрані';
 
   @override
-  String get addStorage => 'Р”РѕРґР°С‚Рё СЃС…РѕРІРёС‰Рµ';
+  String get addStorage => 'Додати сховище';
 
   @override
   String get chooseCloudStorage =>
@@ -55,182 +55,178 @@ class AppLocalizationsUk extends AppLocalizations {
   String get allProvidersConnected => 'Усі провайдери вже підключені';
 
   @override
-  String get connect => 'РџС–РґРєР»СЋС‡РёС‚Рё';
+  String get connect => 'Підключити';
 
   @override
-  String get cancel => 'РЎРєР°СЃСѓРІР°С‚Рё';
+  String get cancel => 'Скасувати';
 
   @override
-  String get search => 'РџРѕС€СѓРє';
+  String get search => 'Пошук';
 
   @override
-  String get searchHint => 'РџРѕС€СѓРє С„Р°Р№Р»С–РІ';
+  String get searchHint => 'Пошук файлів';
 
   @override
-  String get all => 'Р’СЃС–';
+  String get all => 'Всі';
 
   @override
-  String get documents => 'Р”РѕРєСѓРјРµРЅС‚Рё';
+  String get documents => 'Документи';
 
   @override
-  String get images => 'Р—РѕР±СЂР°Р¶РµРЅРЅСЏ';
+  String get images => 'Зображення';
 
   @override
-  String get videos => 'Р’С–РґРµРѕ';
+  String get videos => 'Відео';
 
   @override
-  String get sortByType => 'РўРёРї (A-Z)';
+  String get sortByType => 'Тип (A-Z)';
 
   @override
   String foundFiles(Object count) {
-    return 'Р—РЅР°Р№РґРµРЅРѕ $count С„Р°Р№Р»С–РІ';
+    return 'Знайдено $count файлів';
   }
 
   @override
-  String get analytics => 'РђРЅР°Р»С–С‚РёРєР°';
+  String get analytics => 'Аналітика';
 
   @override
-  String get analyticsSubtitle =>
-      'РЎС‚Р°С‚РёСЃС‚РёРєР° РІРёРєРѕСЂРёСЃС‚Р°РЅРЅСЏ СЃС…РѕРІРёС‰';
+  String get analyticsSubtitle => 'Статистика використання сховищ';
 
   @override
-  String get totalSpace => 'Р’СЃСЊРѕРіРѕ РїСЂРѕСЃС‚РѕСЂСѓ';
+  String get totalSpace => 'Всього простору';
 
   @override
-  String get usedSpace => 'Р’РёРєРѕСЂРёСЃС‚Р°РЅРѕ';
+  String get usedSpace => 'Використано';
 
   @override
-  String get freeSpace => 'Р’С–Р»СЊРЅРѕ';
+  String get freeSpace => 'Вільно';
 
   @override
-  String get warning => 'РЈРІР°РіР°!';
+  String get warning => 'Увага!';
 
   @override
   String warningBody(Object storages) {
-    return '$storages РјР°Р№Р¶Рµ Р·Р°РїРѕРІРЅРµРЅС–. Р РѕР·РіР»СЏРЅСЊС‚Рµ РјРѕР¶Р»РёРІС–СЃС‚СЊ РѕС‡РёСЃС‚РєРё Р°Р±Рѕ СЂРѕР·С€РёСЂРµРЅРЅСЏ.';
+    return '$storages майже заповнені. Розгляньте можливість очистки або розширення.';
   }
 
   @override
-  String get distributionByStorage => 'Р РѕР·РїРѕРґС–Р» РїРѕ СЃС…РѕРІРёС‰Р°С…';
+  String get distributionByStorage => 'Розподіл по сховищах';
 
   @override
-  String get usageVsFree =>
-      'Р’РёРєРѕСЂРёСЃС‚Р°РЅРЅСЏ vs Р’С–Р»СЊРЅРёР№ РїСЂРѕСЃС‚С–СЂ';
+  String get usageVsFree => 'Використання vs Вільний простір';
 
   @override
-  String get recommendations => 'Р РµРєРѕРјРµРЅРґР°С†С–С—';
+  String get recommendations => 'Рекомендації';
 
   @override
-  String get exportPdf => 'Р•РєСЃРїРѕСЂС‚ PDF';
+  String get exportPdf => 'Експорт PDF';
 
   @override
-  String get pdfReportTitle =>
-      'Р—РІС–С‚ РїСЂРѕ РІРёРєРѕСЂРёСЃС‚Р°РЅРЅСЏ СЃС…РѕРІРёС‰';
+  String get pdfReportTitle => 'Звіт про використання сховищ';
 
   @override
-  String get generatedAt => 'Р—РіРµРЅРµСЂРѕРІР°РЅРѕ';
+  String get generatedAt => 'Згенеровано';
 
   @override
-  String get pdfExportFailed =>
-      'РќРµ РІРґР°Р»РѕСЃСЏ РµРєСЃРїРѕСЂС‚СѓРІР°С‚Рё PDF';
+  String get pdfExportFailed => 'Не вдалося експортувати PDF';
 
   @override
-  String get tipOptimizeDropboxTitle => 'РћРїС‚РёРјС–Р·СѓР№С‚Рµ Dropbox';
+  String get tipOptimizeDropboxTitle => 'Оптимізуйте Dropbox';
 
   @override
   String get tipOptimizeDropboxBody =>
-      'Р’Р°С€ Dropbox Р·Р°РїРѕРІРЅРµРЅРёР№ РЅР° 90%. Р’РёРґР°Р»С–С‚СЊ СЃС‚Р°СЂС– С„Р°Р№Р»Рё Р°Р±Рѕ РѕРЅРѕРІС–С‚СЊ С‚Р°СЂРёС„.';
+      'Ваш Dropbox заповнений на 90%. Видаліть старі файли або оновіть тариф.';
 
   @override
-  String get tipUseIcloudTitle => 'Р’РёРєРѕСЂРёСЃС‚РѕРІСѓР№С‚Рµ iCloud';
+  String get tipUseIcloudTitle => 'Використовуйте iCloud';
 
   @override
   String get tipUseIcloudBody =>
-      'РЈ РІР°СЃ С” 4.2 Р“Р‘ РІС–Р»СЊРЅРѕРіРѕ РјС–СЃС†СЏ РІ iCloud. РџРµСЂРµРјС–СЃС‚С–С‚СЊ С‚СѓРґРё РІРµР»РёРєС– С„Р°Р№Р»Рё.';
+      'У вас є 4.2 ГБ вільного місця в iCloud. Перемістіть туди великі файли.';
 
   @override
-  String get settings => 'РќР°Р»Р°С€С‚СѓРІР°РЅРЅСЏ';
+  String get settings => 'Налаштування';
 
   @override
-  String get connectedStorages => 'РџС–РґРєР»СЋС‡РµРЅС– СЃС…РѕРІРёС‰Р°';
+  String get connectedStorages => 'Підключені сховища';
 
   @override
-  String get connected => 'РџС–РґРєР»СЋС‡РµРЅРѕ';
+  String get connected => 'Підключено';
 
   @override
-  String get account => 'РђРљРђРЈРќРў';
+  String get account => 'АКАУНТ';
 
   @override
-  String get preferences => 'РќРђР›РђРЁРўРЈР’РђРќРќРЇ';
+  String get preferences => 'НАЛАШТУВАННЯ';
 
   @override
-  String get other => 'Р†РќРЁР•';
+  String get other => 'ІНШЕ';
 
   @override
-  String get profile => 'РџСЂРѕС„С–Р»СЊ';
+  String get profile => 'Профіль';
 
   @override
-  String get profileEdit => 'Р РµРґР°РіСѓРІР°С‚Рё';
+  String get profileEdit => 'Редагувати';
 
   @override
-  String get profileSave => 'Р—Р±РµСЂРµРіС‚Рё';
+  String get profileSave => 'Зберегти';
 
   @override
-  String get profileSaved => 'РџСЂРѕС„С–Р»СЊ РѕРЅРѕРІР»РµРЅРѕ';
+  String get profileSaved => 'Профіль оновлено';
 
   @override
-  String get profilePersonalInfo => 'РћСЃРѕР±РёСЃС‚Р° С–РЅС„РѕСЂРјР°С†С–СЏ';
+  String get profilePersonalInfo => 'Особиста інформація';
 
   @override
-  String get profileFilesStat => 'Р¤Р°Р№Р»С–РІ';
+  String get profileFilesStat => 'Файлів';
 
   @override
-  String get profileStoragesStat => 'РЎС…РѕРІРёС‰';
+  String get profileStoragesStat => 'Сховищ';
 
   @override
-  String get language => 'РњРѕРІР°';
+  String get language => 'Мова';
 
   @override
-  String get chooseLanguage => 'РћР±РµСЂС–С‚СЊ РјРѕРІСѓ Р·Р°СЃС‚РѕСЃСѓРЅРєСѓ';
+  String get chooseLanguage => 'Оберіть мову застосунку';
 
   @override
-  String get languageUkrainian => 'РЈРєСЂР°С—РЅСЃСЊРєР°';
+  String get languageUkrainian => 'Українська';
 
   @override
-  String get languageEnglish => 'РђРЅРіР»С–Р№СЃСЊРєР°';
+  String get languageEnglish => 'Англійська';
 
   @override
-  String get notifications => 'РЎРїРѕРІС–С‰РµРЅРЅСЏ';
+  String get notifications => 'Сповіщення';
 
   @override
-  String get darkTheme => 'РўРµРјРЅР° С‚РµРјР°';
+  String get darkTheme => 'Темна тема';
 
   @override
-  String get privacy => 'РљРѕРЅС„С–РґРµРЅС†С–Р№РЅС–СЃС‚СЊ';
+  String get privacy => 'Конфіденційність';
 
   @override
-  String get helpSupport => 'Р”РѕРІС–РґРєР° С‚Р° РїС–РґС‚СЂРёРјРєР°';
+  String get helpSupport => 'Довідка та підтримка';
 
   @override
-  String get logout => 'Р’РёР№С‚Рё';
+  String get logout => 'Вийти';
 
   @override
-  String get enabled => 'РЈРІС–РјРєРЅРµРЅРѕ';
+  String get enabled => 'Увімкнено';
 
   @override
-  String get disabled => 'Р’РёРјРєРЅРµРЅРѕ';
+  String get disabled => 'Вимкнено';
 
   @override
-  String get premiumPlan => 'РџСЂРµРјС–СѓРј РїР»Р°РЅ';
+  String get premiumPlan => 'Преміум план';
 
   @override
-  String get premiumValidUntil => 'Р”С–Р№СЃРЅРёР№ РґРѕ 23 Р»СЋС‚РѕРіРѕ 2027';
+  String get premiumValidUntil => 'Дійсний до 23 лютого 2027';
 
   @override
   String get pro => 'PRO';
 
   @override
-  String get profileName => 'Р†РІР°РЅ РџРµС‚СЂРµРЅРєРѕ';
+  String get profileName => 'Іван Петренко';
 
   @override
   String get profileEmail => 'ivan.petrenko@email.com';
@@ -239,173 +235,163 @@ class AppLocalizationsUk extends AppLocalizations {
   String get appVersion => 'CloudVault v1.0.0';
 
   @override
-  String get themeEnabledToast => 'РўРµРјРЅСѓ С‚РµРјСѓ СѓРІС–РјРєРЅРµРЅРѕ';
+  String get themeEnabledToast => 'Темну тему увімкнено';
 
   @override
-  String get themeDisabledToast => 'РЎРІС–С‚Р»Сѓ С‚РµРјСѓ СѓРІС–РјРєРЅРµРЅРѕ';
+  String get themeDisabledToast => 'Світлу тему увімкнено';
 
   @override
-  String get notificationsEnabledToast =>
-      'РЎРїРѕРІС–С‰РµРЅРЅСЏ СѓРІС–РјРєРЅРµРЅРѕ';
+  String get notificationsEnabledToast => 'Сповіщення увімкнено';
 
   @override
-  String get notificationsDisabledToast =>
-      'РЎРїРѕРІС–С‰РµРЅРЅСЏ РІРёРјРєРЅРµРЅРѕ';
+  String get notificationsDisabledToast => 'Сповіщення вимкнено';
 
   @override
   String disconnectedToast(Object storage) {
-    return '$storage РІС–РґРєР»СЋС‡РµРЅРѕ';
+    return '$storage відключено';
   }
 
   @override
-  String get fileActionsRemoveStar => 'РџСЂРёР±СЂР°С‚Рё Р·С–СЂРѕС‡РєСѓ';
+  String get fileActionsRemoveStar => 'Прибрати зірочку';
 
   @override
-  String get fileActionsAddStar => 'Р”РѕРґР°С‚Рё Р·С–СЂРѕС‡РєСѓ';
+  String get fileActionsAddStar => 'Додати зірочку';
 
   @override
-  String get fileActionsDownload => 'Р—Р°РІР°РЅС‚Р°Р¶РёС‚Рё';
+  String get fileActionsDownload => 'Завантажити';
 
   @override
-  String get fileActionsShare => 'РџРѕРґС–Р»РёС‚РёСЃСЏ';
+  String get fileActionsShare => 'Поділитися';
 
   @override
-  String get fileActionsCopyTo => 'РљРѕРїС–СЋРІР°С‚Рё РІ...';
+  String get fileActionsCopyTo => 'Копіювати в...';
 
   @override
-  String get fileActionsRename => 'РџРµСЂРµР№РјРµРЅСѓРІР°С‚Рё';
+  String get fileActionsRename => 'Перейменувати';
 
   @override
-  String get fileActionsInfo => 'Р†РЅС„РѕСЂРјР°С†С–СЏ';
+  String get fileActionsInfo => 'Інформація';
 
   @override
-  String get fileActionsDelete => 'Р’РёРґР°Р»РёС‚Рё';
+  String get fileActionsDelete => 'Видалити';
 
   @override
-  String get fileInfo => 'Р†РЅС„РѕСЂРјР°С†С–СЏ РїСЂРѕ С„Р°Р№Р»';
+  String get fileInfo => 'Інформація про файл';
 
   @override
-  String get size => 'Р РѕР·РјС–СЂ';
+  String get size => 'Розмір';
 
   @override
-  String get modified => 'Р—РјС–РЅРµРЅРѕ';
+  String get modified => 'Змінено';
 
   @override
-  String get provider => 'РџСЂРѕРІР°Р№РґРµСЂ';
+  String get provider => 'Провайдер';
 
   @override
-  String get path => 'РЁР»СЏС…';
+  String get path => 'Шлях';
 
   @override
-  String get close => 'Р—Р°РєСЂРёС‚Рё';
+  String get close => 'Закрити';
 
   @override
-  String get authLoginTitle => 'Р’С…С–Рґ';
+  String get authLoginTitle => 'Вхід';
 
   @override
-  String get authLoginSubtitle =>
-      'РЈРІС–Р№РґС–С‚СЊ Сѓ РІР°С€ CloudVault Р°РєР°СѓРЅС‚';
+  String get authLoginSubtitle => 'Увійдіть у ваш CloudVault акаунт';
 
   @override
-  String get authRegisterTitle => 'Р РµС”СЃС‚СЂР°С†С–СЏ';
+  String get authRegisterTitle => 'Реєстрація';
 
   @override
-  String get authRegisterSubtitle =>
-      'РџРѕС‡РЅС–С‚СЊ РєРµСЂСѓРІР°С‚Рё РІСЃС–РјР° СЃРІРѕС—РјРё С…РјР°СЂР°РјРё';
+  String get authRegisterSubtitle => 'Почніть керувати всіма своїми хмарами';
 
   @override
-  String get authName => 'Р†Рј\'СЏ';
+  String get authName => 'Ім\'я';
 
   @override
   String get authEmail => 'Email';
 
   @override
-  String get authPassword => 'РџР°СЂРѕР»СЊ';
+  String get authPassword => 'Пароль';
 
   @override
-  String get authConfirmPassword => 'РџС–РґС‚РІРµСЂРґС–С‚СЊ РїР°СЂРѕР»СЊ';
+  String get authConfirmPassword => 'Підтвердіть пароль';
 
   @override
-  String get authSignIn => 'РЈРІС–Р№С‚Рё';
+  String get authSignIn => 'Увійти';
 
   @override
-  String get authSignUp => 'Р—Р°СЂРµС”СЃС‚СЂСѓРІР°С‚РёСЃСЏ';
+  String get authSignUp => 'Зареєструватися';
 
   @override
-  String get authGoRegister =>
-      'Р©Рµ РЅРµРјР°С” Р°РєР°СѓРЅС‚Р°? Р—Р°СЂРµС”СЃС‚СЂСѓРІР°С‚РёСЃСЏ';
+  String get authGoRegister => 'Ще немає акаунта? Зареєструватися';
 
   @override
-  String get authGoLogin => 'Р’Р¶Рµ РјР°С”С‚Рµ Р°РєР°СѓРЅС‚? РЈРІС–Р№С‚Рё';
+  String get authGoLogin => 'Вже маєте акаунт? Увійти';
 
   @override
-  String get authAllCloudsOnePlace =>
-      'Р’СЃС– С…РјР°СЂРё РІ РѕРґРЅРѕРјСѓ РјС–СЃС†С–';
+  String get authAllCloudsOnePlace => 'Всі хмари в одному місці';
 
   @override
-  String get authRememberMe => 'Р—Р°РїР°Рј\'СЏС‚Р°С‚Рё РјРµРЅРµ';
+  String get authRememberMe => 'Запам\'ятати мене';
 
   @override
-  String get authForgotPassword => 'Р—Р°Р±СѓР»Рё РїР°СЂРѕР»СЊ?';
+  String get authForgotPassword => 'Забули пароль?';
 
   @override
-  String get authAgreeWith => 'РЇ РїРѕРіРѕРґР¶СѓСЋСЃСЊ Р·';
+  String get authAgreeWith => 'Я погоджуюсь з';
 
   @override
-  String get authTerms => 'СѓРјРѕРІР°РјРё РІРёРєРѕСЂРёСЃС‚Р°РЅРЅСЏ';
+  String get authTerms => 'умовами використання';
 
   @override
-  String get authAnd => 'С‚Р°';
+  String get authAnd => 'та';
 
   @override
-  String get authPrivacyPolicy =>
-      'РїРѕР»С–С‚РёРєРѕСЋ РєРѕРЅС„С–РґРµРЅС†С–Р№РЅРѕСЃС‚С–';
+  String get authPrivacyPolicy => 'політикою конфіденційності';
 
   @override
-  String get storageBrowserRoot => 'РљРѕСЂС–РЅСЊ';
+  String get storageBrowserRoot => 'Корінь';
 
   @override
-  String get storageBrowserUp => 'Р’РіРѕСЂСѓ';
+  String get storageBrowserUp => 'Вгору';
 
   @override
-  String get storageBrowserNewFolder => 'РќРѕРІР° РїР°РїРєР°';
+  String get storageBrowserNewFolder => 'Нова папка';
 
   @override
-  String get storageBrowserUpload => 'Р—Р°РІР°РЅС‚Р°Р¶РёС‚Рё';
+  String get storageBrowserUpload => 'Завантажити';
 
   @override
-  String get storageBrowserEmptyFolder => 'РџР°РїРєР° РїРѕСЂРѕР¶РЅСЏ';
+  String get storageBrowserEmptyFolder => 'Папка порожня';
 
   @override
-  String get storageBrowserCreateFolderTitle => 'РЎС‚РІРѕСЂРёС‚Рё РїР°РїРєСѓ';
+  String get storageBrowserCreateFolderTitle => 'Створити папку';
 
   @override
-  String get storageBrowserCreateFolderHint => 'РќР°Р·РІР° РїР°РїРєРё';
+  String get storageBrowserCreateFolderHint => 'Назва папки';
 
   @override
-  String get storageBrowserCreateFolderAction => 'РЎС‚РІРѕСЂРёС‚Рё';
+  String get storageBrowserCreateFolderAction => 'Створити';
 
   @override
-  String get storageBrowserFolderCreated => 'РџР°РїРєСѓ СЃС‚РІРѕСЂРµРЅРѕ';
+  String get storageBrowserFolderCreated => 'Папку створено';
 
   @override
   String get storageBrowserUploadNotConfigured =>
-      'Р—Р°РІР°РЅС‚Р°Р¶РµРЅРЅСЏ С‰Рµ РЅРµ РЅР°Р»Р°С€С‚РѕРІР°РЅРѕ';
+      'Завантаження ще не налаштовано';
 
   @override
-  String get storageBrowserUploadSuccess => 'Р¤Р°Р№Р» Р·Р°РІР°РЅС‚Р°Р¶РµРЅРѕ';
+  String get storageBrowserUploadSuccess => 'Файл завантажено';
 
   @override
-  String get storageBrowserUploadFailed =>
-      'РќРµ РІРґР°Р»РѕСЃСЏ Р·Р°РІР°РЅС‚Р°Р¶РёС‚Рё С„Р°Р№Р»';
+  String get storageBrowserUploadFailed => 'Не вдалося завантажити файл';
 
   @override
-  String get storageBrowserLoadFailed =>
-      'РќРµ РІРґР°Р»РѕСЃСЏ Р·Р°РІР°РЅС‚Р°Р¶РёС‚Рё РїР°РїРєСѓ';
+  String get storageBrowserLoadFailed => 'Не вдалося завантажити папку';
 
   @override
-  String get storageBrowserCreateFolderFailed =>
-      'РќРµ РІРґР°Р»РѕСЃСЏ СЃС‚РІРѕСЂРёС‚Рё РїР°РїРєСѓ';
+  String get storageBrowserCreateFolderFailed => 'Не вдалося створити папку';
 
   @override
   String storageBrowserApiError(Object message, Object status) {
@@ -413,72 +399,66 @@ class AppLocalizationsUk extends AppLocalizations {
   }
 
   @override
-  String get filePreviewLoading =>
-      'Р—Р°РІР°РЅС‚Р°Р¶РµРЅРЅСЏ РїРµСЂРµРіР»СЏРґСѓ...';
+  String get filePreviewLoading => 'Завантаження перегляду...';
 
   @override
   String get filePreviewFolderUnsupported =>
-      'РџРѕРїРµСЂРµРґРЅС–Р№ РїРµСЂРµРіР»СЏРґ РїР°РїРєРё РЅРµРґРѕСЃС‚СѓРїРЅРёР№';
+      'Попередній перегляд папки недоступний';
 
   @override
-  String get filePreviewUnavailable =>
-      'РџРѕРїРµСЂРµРґРЅС–Р№ РїРµСЂРµРіР»СЏРґ РЅРµРґРѕСЃС‚СѓРїРЅРёР№';
+  String get filePreviewUnavailable => 'Попередній перегляд недоступний';
 
   @override
-  String get filePreviewOpenExternal => 'Р’С–РґРєСЂРёС‚Рё Р·РѕРІРЅС–';
+  String get filePreviewOpenExternal => 'Відкрити зовні';
 
   @override
-  String get filePreviewOpenExternalFailed =>
-      'РќРµ РІРґР°Р»РѕСЃСЏ РІС–РґРєСЂРёС‚Рё Р·РѕРІРЅС–';
+  String get filePreviewOpenExternalFailed => 'Не вдалося відкрити зовні';
 
   @override
   String get filePreviewLoadFailed =>
-      'РќРµ РІРґР°Р»РѕСЃСЏ Р·Р°РІР°РЅС‚Р°Р¶РёС‚Рё РїРѕРїРµСЂРµРґРЅС–Р№ РїРµСЂРµРіР»СЏРґ';
+      'Не вдалося завантажити попередній перегляд';
 
   @override
   String get filePreviewUnsupportedType =>
-      'Р¦РµР№ С‚РёРї С„Р°Р№Р»Сѓ РЅРµ РїС–РґС‚СЂРёРјСѓС”С‚СЊСЃСЏ РґР»СЏ РІР±СѓРґРѕРІР°РЅРѕРіРѕ РїРµСЂРµРіР»СЏРґСѓ';
+      'Цей тип файлу не підтримується для вбудованого перегляду';
 
   @override
   String get filePreviewPdfLoadFailed =>
-      'РќРµ РІРґР°Р»РѕСЃСЏ Р·Р°РІР°РЅС‚Р°Р¶РёС‚Рё PDF РґР»СЏ РїРµСЂРµРіР»СЏРґСѓ';
+      'Не вдалося завантажити PDF для перегляду';
 
   @override
   String get filePreviewPdfTooLarge =>
-      'PDF Р·Р°РІРµР»РёРєРёР№ РґР»СЏ РІР±СѓРґРѕРІР°РЅРѕРіРѕ РїРµСЂРµРіР»СЏРґСѓ. Р’С–РґРєСЂРёР№С‚Рµ Р·РѕРІРЅС–.';
+      'PDF завеликий для вбудованого перегляду. Відкрийте зовні.';
 
   @override
   String get filePreviewDownloadTimeout =>
-      'РўР°Р№Рј-Р°СѓС‚ Р·Р°РІР°РЅС‚Р°Р¶РµРЅРЅСЏ РїРѕРїРµСЂРµРґРЅСЊРѕРіРѕ РїРµСЂРµРіР»СЏРґСѓ. РЎРїСЂРѕР±СѓР№С‚Рµ РІС–РґРєСЂРёС‚Рё Р·РѕРІРЅС–.';
+      'Тайм-аут завантаження попереднього перегляду. Спробуйте відкрити зовні.';
 
   @override
   String get filePreviewBlockedUrlScheme =>
-      'РЎС…РµРјСѓ URL Р·Р°Р±Р»РѕРєРѕРІР°РЅРѕ Р· РјС–СЂРєСѓРІР°РЅСЊ Р±РµР·РїРµРєРё.';
+      'Схему URL заблоковано з міркувань безпеки.';
 
   @override
   String get filePreviewVideoInitFailed =>
-      'РќРµ РІРґР°Р»РѕСЃСЏ С–РЅС–С†С–Р°Р»С–Р·СѓРІР°С‚Рё РїРµСЂРµРіР»СЏРґ РІС–РґРµРѕ';
+      'Не вдалося ініціалізувати перегляд відео';
 
   @override
-  String get filePreviewPlay => 'Р’С–РґС‚РІРѕСЂРёС‚Рё';
+  String get filePreviewPlay => 'Відтворити';
 
   @override
-  String get filePreviewPause => 'РџР°СѓР·Р°';
+  String get filePreviewPause => 'Пауза';
 
   @override
-  String get megaConnectTitle => 'РџС–РґРєР»СЋС‡РёС‚Рё MEGA';
+  String get megaConnectTitle => 'Підключити MEGA';
 
   @override
-  String get megaSecondFactorCodeOptional =>
-      'РљРѕРґ 2FA (РЅРµРѕР±РѕРІ\'СЏР·РєРѕРІРѕ)';
+  String get megaSecondFactorCodeOptional => 'Код 2FA (необов\'язково)';
 
   @override
-  String get megaCredentialsRequired =>
-      'Email С– РїР°СЂРѕР»СЊ РѕР±РѕРІ\'СЏР·РєРѕРІС–';
+  String get megaCredentialsRequired => 'Email і пароль обов\'язкові';
 
   @override
-  String get megaConnectFailed =>
-      'РќРµ РІРґР°Р»РѕСЃСЏ РїС–РґРєР»СЋС‡РёС‚Рё MEGA';
+  String get megaConnectFailed => 'Не вдалося підключити MEGA';
 
   @override
   String filePreviewApiError(Object message, Object status) {
