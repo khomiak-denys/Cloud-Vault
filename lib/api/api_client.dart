@@ -83,11 +83,20 @@ class ApiClient {
   }) async {
     final uri = ApiConfig.resolveApiUri(path);
     final hasFilePath = filePath != null && filePath.trim().isNotEmpty;
+    if (fileStream != null && fileLength == null) {
+      throw ApiException(
+        'Multipart stream payload requires a non-null fileLength',
+      );
+    }
+    if (fileLength != null && fileLength < 0) {
+      throw ApiException('Multipart stream payload has invalid fileLength');
+    }
+
+    final hasFileBytes = fileBytes != null;
+    final hasFileStream = fileStream != null && fileLength != null;
     final streamLength = fileLength ?? 0;
-    final hasFileStream = fileStream != null && streamLength > 0;
-    if ((fileBytes == null || fileBytes.isEmpty) &&
-        !hasFilePath &&
-        !hasFileStream) {
+
+    if (!hasFilePath && !hasFileBytes && !hasFileStream) {
       throw ApiException('Multipart file payload is missing');
     }
 

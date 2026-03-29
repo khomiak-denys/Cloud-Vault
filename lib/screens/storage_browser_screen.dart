@@ -221,9 +221,9 @@ class _StorageBrowserScreenState extends State<StorageBrowserScreen> {
       final path = picked.path;
       final bytes = picked.bytes;
       final stream = picked.readStream;
-      final hasStream = stream != null && picked.size > 0;
+      final hasStream = stream != null;
       if ((path == null || path.isEmpty) &&
-          (bytes == null || bytes.isEmpty) &&
+          bytes == null &&
           !hasStream) {
         _showSnack(l10n.storageBrowserUploadFailed);
         return;
