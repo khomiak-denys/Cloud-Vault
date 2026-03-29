@@ -82,8 +82,10 @@ class ApiClient {
     Duration timeout = const Duration(seconds: 30),
   }) async {
     final uri = ApiConfig.resolveApiUri(path);
-    final hasFilePath = filePath != null && filePath.trim().isNotEmpty;
-    if (fileStream != null && fileLength == null) {
+    final effectivePath = filePath?.trim();
+    final hasFilePath = effectivePath != null && effectivePath.isNotEmpty;
+    final effectiveStream = fileStream;
+    if (effectiveStream != null && fileLength == null) {
       throw ApiException(
         'Multipart stream payload requires a non-null fileLength',
       );
@@ -93,7 +95,7 @@ class ApiClient {
     }
 
     final hasFileBytes = fileBytes != null;
-    final hasFileStream = fileStream != null && fileLength != null;
+    final hasFileStream = effectiveStream != null && fileLength != null;
     final streamLength = fileLength ?? 0;
 
     if (!hasFilePath && !hasFileBytes && !hasFileStream) {
@@ -108,7 +110,7 @@ class ApiClient {
         request.files.add(
           await http.MultipartFile.fromPath(
             fileField,
-            filePath,
+            effectivePath,
             filename: fileName,
           ),
         );
@@ -116,7 +118,7 @@ class ApiClient {
         request.files.add(
           http.MultipartFile(
             fileField,
-            fileStream,
+            effectiveStream,
             streamLength,
             filename: fileName,
           ),
