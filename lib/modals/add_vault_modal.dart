@@ -42,9 +42,7 @@ Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
     connectedProviderIds = const <String>{};
   }
   final availableOptions = addVaultOptions.where((option) {
-    final providerId = _providerIdForTitle(option.title);
-    if (providerId == null) return true;
-    return !connectedProviderIds.contains(providerId);
+    return !connectedProviderIds.contains(option.providerId);
   }).toList();
   if (!context.mounted) {
     return _noConnectResult;
@@ -141,7 +139,7 @@ Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
                                 child: availableOptions.isEmpty
                                     ? Center(
                                         child: Text(
-                                          'All providers are already connected',
+                                          l10n.allProvidersConnected,
                                           style: TextStyle(
                                             color: colors.modalMutedText,
                                             fontWeight: FontWeight.w600,
@@ -187,17 +185,7 @@ Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
                                             final option =
                                                 availableOptions[selectedIndex!];
                                             final providerId =
-                                                _providerIdForTitle(
-                                                  option.title,
-                                                );
-
-                                            if (providerId == null) {
-                                              _showSnack(
-                                                context,
-                                                'Provider is not supported by backend yet',
-                                              );
-                                              return;
-                                            }
+                                                option.providerId;
 
                                             try {
                                               if (providerId == 'mega') {
@@ -332,21 +320,6 @@ Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
   );
 
   return result ?? _noConnectResult;
-}
-
-String? _providerIdForTitle(String title) {
-  switch (title.toLowerCase()) {
-    case 'google drive':
-      return 'google-drive';
-    case 'dropbox':
-      return 'dropbox';
-    case 'onedrive':
-      return 'onedrive';
-    case 'mega':
-      return 'mega';
-    default:
-      return null;
-  }
 }
 
 String? _connectRedirectUriForProvider(String providerId) {

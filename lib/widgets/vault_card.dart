@@ -27,6 +27,7 @@ class VaultCard extends StatelessWidget {
     final titleSize = compact ? 16.0 : 17.0;
     final verticalPaddingTop = compact ? 16.0 : 22.0;
     final verticalPaddingBottom = compact ? 14.0 : 20.0;
+    final horizontalPadding = compact ? 18.0 : 22.0;
     final rowGap = compact ? 12.0 : 16.0;
     final trackGap = compact ? 10.0 : 12.0;
 
@@ -45,9 +46,9 @@ class VaultCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(borderRadius),
           child: Padding(
             padding: EdgeInsets.fromLTRB(
-              18,
+              horizontalPadding,
               verticalPaddingTop,
-              18,
+              horizontalPadding,
               verticalPaddingBottom,
             ),
             child: Column(
