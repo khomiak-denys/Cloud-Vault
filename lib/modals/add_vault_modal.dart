@@ -29,10 +29,28 @@ const AddVaultFlowResult _noConnectResult = AddVaultFlowResult(
 );
 
 Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
-  final l10n = AppLocalizations.of(context)!;
-  final colors = AppThemeColors.of(context);
   const primaryBtnBg = Color(0xFF2662E7);
   const primaryBtnFg = Color(0xFFEAF2FF);
+  Set<String> connectedProviderIds = const <String>{};
+  try {
+    final connections = await appApiRepository.connections();
+    connectedProviderIds = connections
+        .map((connection) => connection.providerId.trim().toLowerCase())
+        .where((providerId) => providerId.isNotEmpty)
+        .toSet();
+  } catch (_) {
+    connectedProviderIds = const <String>{};
+  }
+  final availableOptions = addVaultOptions.where((option) {
+    final providerId = _providerIdForTitle(option.title);
+    if (providerId == null) return true;
+    return !connectedProviderIds.contains(providerId);
+  }).toList();
+  if (!context.mounted) {
+    return _noConnectResult;
+  }
+  final l10n = AppLocalizations.of(context)!;
+  final colors = AppThemeColors.of(context);
 
   final result = await showGeneralDialog<AddVaultFlowResult>(
     context: context,
@@ -65,7 +83,7 @@ Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
                     child: ConstrainedBox(
                       constraints: BoxConstraints(
                         maxWidth: 390,
-                        maxHeight: MediaQuery.sizeOf(context).height * 0.70,
+                        maxHeight: MediaQuery.sizeOf(context).height * 0.68,
                       ),
                       child: Container(
                         padding: const EdgeInsets.fromLTRB(20, 18, 20, 16),
@@ -74,87 +92,100 @@ Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
                           borderRadius: BorderRadius.circular(34),
                           border: Border.all(color: colors.modalBorder),
                         ),
-                        child: SingleChildScrollView(
-                          child: ScrollConfiguration(
-                            behavior: const MaterialScrollBehavior().copyWith(
-                              scrollbars: false,
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Expanded(
-                                      child: Text(
-                                        l10n.addStorage,
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.w700,
-                                          color: colors.primaryText,
-                                        ),
-                                      ),
+                                Expanded(
+                                  child: Text(
+                                    l10n.addStorage,
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                      color: colors.primaryText,
                                     ),
-                                    IconButton(
-                                      onPressed: () =>
-                                          Navigator.of(context).pop(),
-                                      style: ButtonStyle(
-                                        overlayColor: pressOnlyOverlay(
-                                          const Color(0x3397A5BD),
-                                        ),
-                                      ),
-                                      icon: Icon(
-                                        Icons.close,
-                                        color: colors.modalCloseIcon,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Divider(color: colors.modalDivider, height: 24),
-                                Text(
-                                  l10n.chooseCloudStorage,
-                                  style: TextStyle(
-                                    fontSize: 13,
-                                    color: colors.modalMutedText,
-                                    height: 1.35,
-                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                const SizedBox(height: 14),
-                                GridView.builder(
-                                  shrinkWrap: true,
-                                  physics: const NeverScrollableScrollPhysics(),
-                                  itemCount: addVaultOptions.length,
-                                  gridDelegate:
-                                      const SliverGridDelegateWithFixedCrossAxisCount(
-                                        crossAxisCount: 2,
-                                        crossAxisSpacing: 12,
-                                        mainAxisSpacing: 12,
-                                        mainAxisExtent: 116,
-                                      ),
-                                  itemBuilder: (context, index) {
-                                    final option = addVaultOptions[index];
-                                    final isSelected = selectedIndex == index;
-                                    return AddVaultOptionTile(
-                                      option: option,
-                                      isSelected: isSelected,
-                                      onTap: () => setModalState(
-                                        () => selectedIndex = index,
-                                      ),
-                                    );
-                                  },
+                                IconButton(
+                                  onPressed: () => Navigator.of(context).pop(),
+                                  style: ButtonStyle(
+                                    overlayColor: pressOnlyOverlay(
+                                      const Color(0x3397A5BD),
+                                    ),
+                                  ),
+                                  icon: Icon(
+                                    Icons.close,
+                                    color: colors.modalCloseIcon,
+                                  ),
                                 ),
-                                const SizedBox(height: 14),
-                                SizedBox(
-                                  width: double.infinity,
-                                  child: ElevatedButton(
-                                    onPressed: selectedIndex == null
-                                        ? null
-                                        : () async {
+                              ],
+                            ),
+                            Divider(color: colors.modalDivider, height: 24),
+                            Text(
+                              l10n.chooseCloudStorage,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: colors.modalMutedText,
+                                height: 1.35,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Expanded(
+                              child: ScrollConfiguration(
+                                behavior: const MaterialScrollBehavior().copyWith(
+                                  scrollbars: false,
+                                ),
+                                child: availableOptions.isEmpty
+                                    ? Center(
+                                        child: Text(
+                                          'All providers are already connected',
+                                          style: TextStyle(
+                                            color: colors.modalMutedText,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      )
+                                    : SingleChildScrollView(
+                                        child: GridView.builder(
+                                          shrinkWrap: true,
+                                          physics: const NeverScrollableScrollPhysics(),
+                                          itemCount: availableOptions.length,
+                                          gridDelegate:
+                                              const SliverGridDelegateWithFixedCrossAxisCount(
+                                                crossAxisCount: 2,
+                                                crossAxisSpacing: 12,
+                                                mainAxisSpacing: 12,
+                                                mainAxisExtent: 106,
+                                              ),
+                                          itemBuilder: (context, index) {
+                                            final option = availableOptions[index];
+                                            final isSelected = selectedIndex == index;
+                                            return AddVaultOptionTile(
+                                              option: option,
+                                              isSelected: isSelected,
+                                              onTap: () => setModalState(
+                                                () => selectedIndex = index,
+                                              ),
+                                            );
+                                          },
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            SizedBox(
+                              width: double.infinity,
+                              child: ElevatedButton(
+                                onPressed: selectedIndex == null ||
+                                        availableOptions.isEmpty
+                                    ? null
+                                    : () async {
                                             final option =
-                                                addVaultOptions[selectedIndex!];
+                                                availableOptions[selectedIndex!];
                                             final providerId =
                                                 _providerIdForTitle(
                                                   option.title,
@@ -256,41 +287,37 @@ Future<AddVaultFlowResult> showAddVaultModal(BuildContext context) async {
                                               );
                                             }
                                           },
-                                    style: ButtonStyle(
-                                      backgroundColor:
-                                          const WidgetStatePropertyAll(
-                                            primaryBtnBg,
-                                          ),
-                                      foregroundColor:
-                                          const WidgetStatePropertyAll(
-                                            primaryBtnFg,
-                                          ),
-                                      overlayColor: pressOnlyOverlay(
-                                        const Color(0x33FFFFFF),
+                                style: ButtonStyle(
+                                  backgroundColor:
+                                      const WidgetStatePropertyAll(
+                                        primaryBtnBg,
                                       ),
-                                      shape: WidgetStatePropertyAll(
-                                        RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            16,
-                                          ),
-                                        ),
+                                  foregroundColor:
+                                      const WidgetStatePropertyAll(
+                                        primaryBtnFg,
                                       ),
-                                      padding: const WidgetStatePropertyAll(
-                                        EdgeInsets.symmetric(vertical: 14),
-                                      ),
-                                    ),
-                                    child: Text(
-                                      l10n.connect,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                      ),
+                                  overlayColor: pressOnlyOverlay(
+                                    const Color(0x33FFFFFF),
+                                  ),
+                                  shape: WidgetStatePropertyAll(
+                                    RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
                                     ),
                                   ),
+                                  padding: const WidgetStatePropertyAll(
+                                    EdgeInsets.symmetric(vertical: 14),
+                                  ),
                                 ),
-                              ],
+                                child: Text(
+                                  l10n.connect,
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
                     ),

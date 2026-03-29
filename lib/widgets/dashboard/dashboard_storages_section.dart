@@ -72,6 +72,7 @@ class DashboardStoragesSection extends StatelessWidget {
                     padding: const EdgeInsets.only(bottom: 2),
                     child: VaultCard(
                       item: item,
+                      compact: true,
                       onTap: () => onStorageTap(item),
                     ),
                   ),
