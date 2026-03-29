@@ -14,6 +14,7 @@
   "favorites": "Обрані",
   "addStorage": "Додати сховище",
   "chooseCloudStorage": "Виберіть хмарне сховище, яке ви хочете підключити",
+  "allProvidersConnected": "Усі провайдери вже підключені",
   "connect": "Підключити",
   "cancel": "Скасувати",
   "search": "Пошук",
@@ -186,3 +187,4 @@
   "megaCredentialsRequired": "Email і пароль обов'язкові",
   "megaConnectFailed": "Не вдалося підключити MEGA"
 }
+

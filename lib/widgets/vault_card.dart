@@ -10,54 +10,70 @@ class VaultCard extends StatelessWidget {
     super.key,
     required this.item,
     this.onTap,
+    this.compact = false,
   });
 
   final VaultItem item;
   final VoidCallback? onTap;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final colors = AppThemeColors.of(context);
+    final borderRadius = compact ? 18.0 : 22.0;
+    final iconSize = compact ? 56.0 : 68.0;
+    final iconGlyphSize = compact ? 30.0 : 36.0;
+    final titleSize = compact ? 16.0 : 17.0;
+    final verticalPaddingTop = compact ? 16.0 : 22.0;
+    final verticalPaddingBottom = compact ? 14.0 : 20.0;
+    final horizontalPadding = compact ? 18.0 : 22.0;
+    final rowGap = compact ? 12.0 : 16.0;
+    final trackGap = compact ? 10.0 : 12.0;
 
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(borderRadius),
       clipBehavior: Clip.antiAlias,
       child: Ink(
         decoration: BoxDecoration(
           color: colors.cardBackground,
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(borderRadius),
           border: Border.all(color: colors.cardBorder),
         ),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(borderRadius),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(22, 22, 22, 20),
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
+              verticalPaddingTop,
+              horizontalPadding,
+              verticalPaddingBottom,
+            ),
             child: Column(
               children: [
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Container(
-                  width: 68,
-                  height: 68,
+                  width: iconSize,
+                  height: iconSize,
                   decoration: BoxDecoration(
                     color: colors.iconTileBackground,
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(compact ? 14 : 18),
                   ),
-                  child: Icon(item.icon, color: Colors.white, size: 36),
+                  child: Icon(item.icon, color: Colors.white, size: iconGlyphSize),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: compact ? 12 : 16),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         item.title,
-                        style: const TextStyle(
-                          fontSize: 17,
+                        style: TextStyle(
+                          fontSize: titleSize,
                           fontWeight: FontWeight.w700,
                           letterSpacing: -0.4,
                         ),
@@ -82,7 +98,7 @@ class VaultCard extends StatelessWidget {
                   ),
               ],
             ),
-            const SizedBox(height: 16),
+            SizedBox(height: rowGap),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -103,7 +119,7 @@ class VaultCard extends StatelessWidget {
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: trackGap),
             ProgressTrack(value: item.progress, color: item.progressColor),
               ],
             ),

@@ -52,6 +52,9 @@ class AppLocalizationsUk extends AppLocalizations {
       'Виберіть хмарне сховище, яке ви хочете підключити';
 
   @override
+  String get allProvidersConnected => 'Усі провайдери вже підключені';
+
+  @override
   String get connect => 'Підключити';
 
   @override

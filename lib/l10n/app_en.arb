@@ -14,6 +14,7 @@
   "favorites": "Favorites",
   "addStorage": "Add storage",
   "chooseCloudStorage": "Choose cloud storage you want to connect",
+  "allProvidersConnected": "All providers are already connected",
   "connect": "Connect",
   "cancel": "Cancel",
   "search": "Search",

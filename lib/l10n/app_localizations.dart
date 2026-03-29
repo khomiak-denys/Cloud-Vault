@@ -182,6 +182,12 @@ abstract class AppLocalizations {
   /// **'Choose cloud storage you want to connect'**
   String get chooseCloudStorage;
 
+  /// No description provided for @allProvidersConnected.
+  ///
+  /// In en, this message translates to:
+  /// **'All providers are already connected'**
+  String get allProvidersConnected;
+
   /// No description provided for @connect.
   ///
   /// In en, this message translates to:

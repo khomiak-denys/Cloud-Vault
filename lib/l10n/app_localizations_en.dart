@@ -51,6 +51,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chooseCloudStorage => 'Choose cloud storage you want to connect';
 
   @override
+  String get allProvidersConnected => 'All providers are already connected';
+
+  @override
   String get connect => 'Connect';
 
   @override
