@@ -192,6 +192,9 @@ class _LoginScreenState extends State<LoginScreen> {
       _showError('Login failed');
       return;
     }
+
+    if (!mounted) return;
+    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
   }
 
   void _showError(String message) {

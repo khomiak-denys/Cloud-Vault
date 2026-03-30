@@ -15,7 +15,6 @@ import '../data/oauth_deep_link_service.dart';
 import '../modals/add_vault_modal.dart';
 import '../modals/language_modal.dart';
 import '../models/vault_item.dart';
-import '../screens/login_screen.dart';
 import '../screens/profile_screen.dart';
 import '../state/locale_controller.dart';
 import '../state/theme_controller.dart';
@@ -287,14 +286,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appCacheStore.clear();
     }
 
-    if (!mounted) return;
-    await Navigator.of(
-      context,
-    ).pushNamedAndRemoveUntil(LoginScreen.routeName, (route) => false);
-
-    if (signOutError != null && mounted) {
+    if (signOutError != null) {
       _showToast('Signed out locally');
     }
+
+    if (!mounted) return;
+    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
   }
 
   @override

@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:cloud_vault/l10n/app_localizations.dart';
 
+import 'api/auth_session.dart';
 import 'screens/cloud_vault_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
@@ -52,7 +53,7 @@ class CloudVaultApp extends StatelessWidget {
             ),
           ),
           routes: {
-            LoginScreen.routeName: (_) => const LoginScreen(),
+            LoginScreen.routeName: (_) => const _AuthGate(),
             RegisterScreen.routeName: (_) => const RegisterScreen(),
           },
           home: const _AuthGate(),
@@ -81,7 +82,10 @@ class _AuthGate extends StatelessWidget {
         }
 
         final user = snapshot.data ?? FirebaseAuth.instance.currentUser;
-        if (user != null) {
+        final hasBearerToken = (AuthSession.instance.bearerToken ?? '')
+            .trim()
+            .isNotEmpty;
+        if (user != null && hasBearerToken) {
           return const CloudVaultScreen();
         }
         return const LoginScreen();
