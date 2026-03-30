@@ -1,7 +1,6 @@
 import 'dart:ui';
 
 import 'package:cloud_vault/l10n/app_localizations.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -363,31 +362,18 @@ class _AddVaultModalSheetState extends State<_AddVaultModalSheet> {
 }
 
 String? _connectRedirectUriForProvider(String providerId) {
-  const oauthProviders = {'google-drive', 'dropbox', 'onedrive'};
-  if (!oauthProviders.contains(providerId)) {
-    return null;
-  }
-
-  if (_supportsAppSchemeRedirect) {
-    return _appOauthCallbackUri;
-  }
-
-  final base = ApiConfig.baseUrl.endsWith('/')
-      ? ApiConfig.baseUrl
-      : '${ApiConfig.baseUrl}/';
-  return Uri.parse(
-    base,
-  ).resolve('providers/$providerId/connect/callback').toString();
+  final callbackPath = switch (providerId) {
+    'google-drive' => '/v1/providers/google-drive/connect/callback',
+    'dropbox' => '/v1/providers/dropbox/connect/callback',
+    'onedrive' => '/v1/providers/onedrive/connect/callback',
+    _ => null,
+  };
+  if (callbackPath == null) return null;
+  return Uri.parse(ApiConfig.baseUrl).resolve(callbackPath).toString();
 }
 
 bool _expectsAppCallback(String? redirectUri) =>
     redirectUri?.toLowerCase().startsWith(_appOauthCallbackUri) == true;
-
-bool get _supportsAppSchemeRedirect {
-  if (kIsWeb) return false;
-  return defaultTargetPlatform == TargetPlatform.android ||
-      defaultTargetPlatform == TargetPlatform.iOS;
-}
 
 const _appOauthCallbackUri = 'cloudvault://oauth-callback';
 
