@@ -15,7 +15,6 @@ import '../data/oauth_deep_link_service.dart';
 import '../modals/add_vault_modal.dart';
 import '../modals/language_modal.dart';
 import '../models/vault_item.dart';
-import '../screens/login_screen.dart';
 import '../screens/profile_screen.dart';
 import '../state/locale_controller.dart';
 import '../state/theme_controller.dart';
@@ -277,13 +276,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _logout() async {
-    await FirebaseAuth.instance.signOut();
-    await AuthSession.instance.clearTokens();
-    appCacheStore.clear();
-    if (!mounted) return;
-    await Navigator.of(
-      context,
-    ).pushNamedAndRemoveUntil(LoginScreen.routeName, (route) => false);
+    try {
+      await FirebaseAuth.instance.signOut();
+    } finally {
+      await AuthSession.instance.clearTokens();
+      appCacheStore.clear();
+    }
   }
 
   @override
