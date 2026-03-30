@@ -91,6 +91,7 @@
   "themeDisabledToast": "Light theme enabled",
   "notificationsEnabledToast": "Notifications enabled",
   "notificationsDisabledToast": "Notifications disabled",
+  "logoutLocalOnlyToast": "Signed out locally",
   "disconnectedToast": "{storage} disconnected",
   "@@disconnectedToast": {
     "placeholders": {

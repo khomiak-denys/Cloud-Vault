@@ -276,6 +276,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _logout() async {
+    final l10n = AppLocalizations.of(context)!;
     Object? signOutError;
     try {
       await FirebaseAuth.instance.signOut();
@@ -286,11 +287,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
       appCacheStore.clear();
     }
 
+    if (!mounted) return;
     if (signOutError != null) {
-      _showToast('Signed out locally');
+      _showToast(l10n.logoutLocalOnlyToast);
     }
 
-    if (!mounted) return;
     Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
   }
 

@@ -247,6 +247,9 @@ class AppLocalizationsUk extends AppLocalizations {
   String get notificationsDisabledToast => 'Сповіщення вимкнено';
 
   @override
+  String get logoutLocalOnlyToast => 'Вихід виконано локально';
+
+  @override
   String disconnectedToast(Object storage) {
     return '$storage відключено';
   }

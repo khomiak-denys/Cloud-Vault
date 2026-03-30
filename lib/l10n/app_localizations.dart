@@ -560,6 +560,12 @@ abstract class AppLocalizations {
   /// **'Notifications disabled'**
   String get notificationsDisabledToast;
 
+  /// No description provided for @logoutLocalOnlyToast.
+  ///
+  /// In en, this message translates to:
+  /// **'Signed out locally'**
+  String get logoutLocalOnlyToast;
+
   /// No description provided for @disconnectedToast.
   ///
   /// In en, this message translates to:

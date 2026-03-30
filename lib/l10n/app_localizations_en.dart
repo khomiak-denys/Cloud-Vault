@@ -246,6 +246,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationsDisabledToast => 'Notifications disabled';
 
   @override
+  String get logoutLocalOnlyToast => 'Signed out locally';
+
+  @override
   String disconnectedToast(Object storage) {
     return '$storage disconnected';
   }
