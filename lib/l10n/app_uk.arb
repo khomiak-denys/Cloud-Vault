@@ -91,6 +91,7 @@
   "themeDisabledToast": "Світлу тему увімкнено",
   "notificationsEnabledToast": "Сповіщення увімкнено",
   "notificationsDisabledToast": "Сповіщення вимкнено",
+  "logoutLocalOnlyToast": "Вихід виконано локально",
   "disconnectedToast": "{storage} відключено",
   "@@disconnectedToast": {
     "placeholders": {

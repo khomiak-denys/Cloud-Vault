@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_vault/l10n/app_localizations.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../api/auth_session.dart';
@@ -14,7 +15,6 @@ import '../data/oauth_deep_link_service.dart';
 import '../modals/add_vault_modal.dart';
 import '../modals/language_modal.dart';
 import '../models/vault_item.dart';
-import '../screens/login_screen.dart';
 import '../screens/profile_screen.dart';
 import '../state/locale_controller.dart';
 import '../state/theme_controller.dart';
@@ -276,12 +276,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _logout() async {
-    await AuthSession.instance.clearTokens();
-    appCacheStore.clear();
+    final l10n = AppLocalizations.of(context)!;
+    Object? signOutError;
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (error) {
+      signOutError = error;
+    } finally {
+      await AuthSession.instance.clearTokens();
+      appCacheStore.clear();
+    }
+
     if (!mounted) return;
-    await Navigator.of(
-      context,
-    ).pushNamedAndRemoveUntil(LoginScreen.routeName, (route) => false);
+    if (signOutError != null) {
+      _showToast(l10n.logoutLocalOnlyToast);
+    }
+
+    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
   }
 
   @override
@@ -372,7 +383,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Expanded(
               child: _isLoading
-                  ? const SettingsLoadingSkeleton()
+                  ? SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: const SettingsLoadingSkeleton(),
+                    )
                   : RefreshIndicator(
                       onRefresh: () => _load(forceRefresh: true),
                       child: SingleChildScrollView(

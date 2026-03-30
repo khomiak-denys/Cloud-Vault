@@ -6,7 +6,6 @@ import '../api/auth_session.dart';
 import '../theme/app_theme_colors.dart';
 import '../widgets/auth_form_field.dart';
 import '../widgets/auth_screen_frame.dart';
-import 'cloud_vault_screen.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -170,10 +169,11 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     try {
-      final credentials = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
-      );
+      final credentials = await FirebaseAuth.instance
+          .signInWithEmailAndPassword(
+            email: _emailController.text.trim(),
+            password: _passwordController.text.trim(),
+          );
       final idToken = await credentials.user?.getIdToken();
 
       if (idToken == null || idToken.isEmpty) {
@@ -194,10 +194,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     if (!mounted) return;
-
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute<void>(builder: (_) => const CloudVaultScreen()),
-    );
+    Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
   }
 
   void _showError(String message) {

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:cloud_vault/l10n/app_localizations.dart';
 
+import 'api/auth_session.dart';
+import 'screens/cloud_vault_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'state/locale_controller.dart';
@@ -49,11 +53,42 @@ class CloudVaultApp extends StatelessWidget {
             ),
           ),
           routes: {
-            LoginScreen.routeName: (_) => const LoginScreen(),
+            LoginScreen.routeName: (_) => const _AuthGate(),
             RegisterScreen.routeName: (_) => const RegisterScreen(),
           },
-          home: const LoginScreen(),
+          home: const _AuthGate(),
         );
+      },
+    );
+  }
+}
+
+class _AuthGate extends StatelessWidget {
+  const _AuthGate();
+
+  @override
+  Widget build(BuildContext context) {
+    if (Firebase.apps.isEmpty) {
+      return const LoginScreen();
+    }
+
+    return StreamBuilder<User?>(
+      stream: FirebaseAuth.instance.authStateChanges(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final user = snapshot.data ?? FirebaseAuth.instance.currentUser;
+        final hasBearerToken = (AuthSession.instance.bearerToken ?? '')
+            .trim()
+            .isNotEmpty;
+        if (user != null && hasBearerToken) {
+          return const CloudVaultScreen();
+        }
+        return const LoginScreen();
       },
     );
   }
