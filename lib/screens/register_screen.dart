@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_theme_colors.dart';
 import '../widgets/auth_form_field.dart';
 import '../widgets/auth_screen_frame.dart';
-import 'cloud_vault_screen.dart';
+import 'login_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -212,9 +212,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute<void>(builder: (_) => const CloudVaultScreen()),
-      (route) => false,
-    );
+    Navigator.of(
+      context,
+    ).pushNamedAndRemoveUntil(LoginScreen.routeName, (route) => false);
   }
 }

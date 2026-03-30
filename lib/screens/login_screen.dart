@@ -192,8 +192,6 @@ class _LoginScreenState extends State<LoginScreen> {
       _showError('Login failed');
       return;
     }
-
-    if (!mounted) return;
   }
 
   void _showError(String message) {
