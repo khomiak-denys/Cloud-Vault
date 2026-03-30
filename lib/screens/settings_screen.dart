@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:cloud_vault/l10n/app_localizations.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../api/auth_session.dart';
@@ -276,6 +277,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _logout() async {
+    await FirebaseAuth.instance.signOut();
     await AuthSession.instance.clearTokens();
     appCacheStore.clear();
     if (!mounted) return;
@@ -372,7 +374,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             Expanded(
               child: _isLoading
-                  ? const SettingsLoadingSkeleton()
+                  ? SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: const SettingsLoadingSkeleton(),
+                    )
                   : RefreshIndicator(
                       onRefresh: () => _load(forceRefresh: true),
                       child: SingleChildScrollView(

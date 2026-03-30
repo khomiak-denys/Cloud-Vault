@@ -106,8 +106,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       final now = DateTime.now();
       final generatedAt = DateFormat('yyyy-MM-dd HH:mm').format(now);
       final fileSuffix = DateFormat('yyyyMMdd-HHmm').format(now);
-      final totalUsed = _usageItems.fold<double>(0, (acc, item) => acc + item.usedBytes);
-      final totalSpace = _usageItems.fold<double>(0, (acc, item) => acc + item.totalBytes);
+      final totalUsed = _usageItems.fold<double>(
+        0,
+        (acc, item) => acc + item.usedBytes,
+      );
+      final totalSpace = _usageItems.fold<double>(
+        0,
+        (acc, item) => acc + item.totalBytes,
+      );
       final totalFree = totalSpace - totalUsed;
       final baseFont = pw.Font.ttf(
         await rootBundle.load('assets/fonts/NotoSans-Regular.ttf'),
@@ -120,10 +126,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       doc.addPage(
         pw.MultiPage(
           pageFormat: PdfPageFormat.a4,
-          theme: pw.ThemeData.withFont(
-            base: baseFont,
-            bold: boldFont,
-          ),
+          theme: pw.ThemeData.withFont(base: baseFont, bold: boldFont),
           build: (context) => [
             pw.Text(
               l10n.pdfReportTitle,
@@ -162,7 +165,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             if (_recommendations.isEmpty)
               pw.Text('-')
             else
-              ..._recommendations.take(5).map(
+              ..._recommendations
+                  .take(5)
+                  .map(
                     (item) => pw.Padding(
                       padding: const pw.EdgeInsets.only(bottom: 6),
                       child: pw.Bullet(text: '${item.title}: ${item.body}'),
@@ -188,10 +193,18 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colors = AppThemeColors.of(context);
 
-    final totalUsed = _usageItems.fold<double>(0, (acc, item) => acc + item.usedBytes);
-    final totalSpace = _usageItems.fold<double>(0, (acc, item) => acc + item.totalBytes);
+    final totalUsed = _usageItems.fold<double>(
+      0,
+      (acc, item) => acc + item.usedBytes,
+    );
+    final totalSpace = _usageItems.fold<double>(
+      0,
+      (acc, item) => acc + item.totalBytes,
+    );
     final totalFree = totalSpace - totalUsed;
-    final almostFullStorages = _usageItems.where((s) => s.usagePercent >= 90).toList();
+    final almostFullStorages = _usageItems
+        .where((s) => s.usagePercent >= 90)
+        .toList();
 
     return Scaffold(
       body: MobileScreenShell(
@@ -199,7 +212,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           children: [
             Expanded(
               child: _isLoading
-                  ? const AnalyticsLoadingSkeleton()
+                  ? SingleChildScrollView(
+                      physics: const AlwaysScrollableScrollPhysics(),
+                      child: const AnalyticsLoadingSkeleton(),
+                    )
                   : RefreshIndicator(
                       onRefresh: () => _load(forceRefresh: true),
                       child: SingleChildScrollView(
@@ -242,7 +258,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             ),
                             const SizedBox(height: 16),
                             if (almostFullStorages.isNotEmpty) ...[
-                              AnalyticsWarningCard(storages: almostFullStorages),
+                              AnalyticsWarningCard(
+                                storages: almostFullStorages,
+                              ),
                               const SizedBox(height: 16),
                             ],
                             AnalyticsSectionCard(
@@ -251,7 +269,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                 children: [
                                   SizedBox(
                                     height: 220,
-                                    child: AnalyticsPieUsageChart(items: _usageItems),
+                                    child: AnalyticsPieUsageChart(
+                                      items: _usageItems,
+                                    ),
                                   ),
                                   const SizedBox(height: 10),
                                   ..._usageItems.map(
@@ -306,7 +326,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                         AnalyticsTipCard(
                                           emoji: 'i',
                                           title: 'No recommendations available',
-                                          body: 'The backend did not return storage optimization tips.',
+                                          body:
+                                              'The backend did not return storage optimization tips.',
                                           bg: isDark
                                               ? const Color(0xFF182A4A)
                                               : const Color(0xFFEAF2FF),
@@ -320,7 +341,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                       ]
                                     : _recommendations.take(2).map((r) {
                                         return Padding(
-                                          padding: const EdgeInsets.only(bottom: 10),
+                                          padding: const EdgeInsets.only(
+                                            bottom: 10,
+                                          ),
                                           child: AnalyticsTipCard(
                                             emoji: '*',
                                             title: r.title,
@@ -343,13 +366,19 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             SizedBox(
                               width: double.infinity,
                               child: TextButton.icon(
-                                onPressed: _usageItems.isEmpty ? null : _exportPdfReport,
+                                onPressed: _usageItems.isEmpty
+                                    ? null
+                                    : _exportPdfReport,
                                 icon: const Icon(Icons.picture_as_pdf_outlined),
                                 label: Text(l10n.exportPdf),
                                 style: TextButton.styleFrom(
-                                  backgroundColor: colors.secondaryButtonBackground,
-                                  foregroundColor: colors.secondaryButtonForeground,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  backgroundColor:
+                                      colors.secondaryButtonBackground,
+                                  foregroundColor:
+                                      colors.secondaryButtonForeground,
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(14),
                                   ),
