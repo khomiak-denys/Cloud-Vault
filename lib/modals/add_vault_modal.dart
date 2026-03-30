@@ -4,7 +4,6 @@ import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../api/api_config.dart';
 import '../api/api_exception.dart';
 import '../data/provider_identity.dart';
 import '../data/app_services.dart';
@@ -362,14 +361,9 @@ class _AddVaultModalSheetState extends State<_AddVaultModalSheet> {
 }
 
 String? _connectRedirectUriForProvider(String providerId) {
-  final callbackPath = switch (providerId) {
-    'google-drive' => '/v1/providers/google-drive/connect/callback',
-    'dropbox' => '/v1/providers/dropbox/connect/callback',
-    'onedrive' => '/v1/providers/onedrive/connect/callback',
-    _ => null,
-  };
-  if (callbackPath == null) return null;
-  return Uri.parse(ApiConfig.baseUrl).resolve(callbackPath).toString();
+  const oauthProviders = {'google-drive', 'dropbox', 'onedrive'};
+  if (!oauthProviders.contains(providerId)) return null;
+  return _appOauthCallbackUri;
 }
 
 bool _expectsAppCallback(String? redirectUri) =>
