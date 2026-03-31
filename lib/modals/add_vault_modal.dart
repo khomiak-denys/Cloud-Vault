@@ -303,7 +303,9 @@ class _AddVaultModalSheetState extends State<_AddVaultModalSheet> {
                                         AddVaultFlowResult(
                                           didStartConnect: true,
                                           expectsAppCallback:
-                                              _expectsAppCallback(redirectUri),
+                                              _expectsOAuthAppCallback(
+                                                providerId,
+                                              ),
                                         ),
                                       );
                                     }
@@ -362,34 +364,27 @@ class _AddVaultModalSheetState extends State<_AddVaultModalSheet> {
   }
 }
 
-String? _connectRedirectUriForProvider(String providerId) {
+bool _providerUsesOAuthCallback(String providerId) {
   const oauthProviders = {'google-drive', 'dropbox', 'onedrive'};
-  if (!oauthProviders.contains(providerId)) {
-    return null;
-  }
-
-  if (_supportsAppSchemeRedirect) {
-    return _appOauthCallbackUri;
-  }
-
-  final base = ApiConfig.baseUrl.endsWith('/')
-      ? ApiConfig.baseUrl
-      : '${ApiConfig.baseUrl}/';
-  return Uri.parse(
-    base,
-  ).resolve('providers/$providerId/connect/callback').toString();
+  return oauthProviders.contains(providerId);
 }
 
-bool _expectsAppCallback(String? redirectUri) =>
-    redirectUri?.toLowerCase().startsWith(_appOauthCallbackUri) == true;
-
-bool get _supportsAppSchemeRedirect {
+bool _canReceiveOAuthDeepLink() {
   if (kIsWeb) return false;
   return defaultTargetPlatform == TargetPlatform.android ||
-      defaultTargetPlatform == TargetPlatform.iOS;
+      defaultTargetPlatform == TargetPlatform.iOS ||
+      defaultTargetPlatform == TargetPlatform.macOS;
 }
 
-const _appOauthCallbackUri = 'cloudvault://oauth-callback';
+bool _expectsOAuthAppCallback(String providerId) =>
+    _providerUsesOAuthCallback(providerId) && _canReceiveOAuthDeepLink();
+
+String? _connectRedirectUriForProvider(String providerId) {
+  if (!_providerUsesOAuthCallback(providerId)) return null;
+  return ApiConfig.resolveApiUri(
+    '/providers/$providerId/connect/callback',
+  ).toString();
+}
 
 void _showSnack(BuildContext context, String message) {
   ScaffoldMessenger.of(context)
