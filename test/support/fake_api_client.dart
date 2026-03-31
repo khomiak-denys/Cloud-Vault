@@ -143,6 +143,22 @@ class FakeApiClient extends ApiClient {
   }
 
   @override
+  Future<bool> refreshBearerToken() async {
+    throw StateError(
+      'FakeApiClient.refreshBearerToken() is not implemented in tests',
+    );
+  }
+
+  @override
+  Future<Uint8List> postBytes(
+    String path, {
+    Map<String, dynamic>? body,
+    Map<String, String>? query,
+  }) async {
+    throw StateError('No POST_BYTES handler for $path');
+  }
+
+  @override
   Future<Map<String, dynamic>> postMultipart(
     String path, {
     required Map<String, String> fields,
@@ -177,7 +193,7 @@ class FakeApiClient extends ApiClient {
         fields: fields,
         fileField: fileField,
         fileBytes: fileBytes,
-        filePath: filePath,
+        filePath: effectivePath,
         fileStream: fileStream,
         fileLength: fileLength,
         fileName: fileName,
@@ -192,7 +208,7 @@ class FakeApiClient extends ApiClient {
       fields: fields,
       fileField: fileField,
       fileBytes: fileBytes,
-      filePath: filePath,
+      filePath: effectivePath,
       fileStream: fileStream,
       fileLength: fileLength,
       fileName: fileName,
