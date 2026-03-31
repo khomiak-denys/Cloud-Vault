@@ -17,6 +17,8 @@ typedef BytesHandler =
       int maxBytes,
       Duration timeout,
     );
+typedef RawBytesHandler =
+    Uint8List Function(Map<String, dynamic>? body, Map<String, String>? query);
 typedef MultipartHandler =
     Map<String, dynamic> Function({
       required Map<String, String> fields,
@@ -71,7 +73,10 @@ class FakeApiClient extends ApiClient {
   final Map<String, JsonHandler> getHandlers = <String, JsonHandler>{};
   final Map<String, JsonHandler> postHandlers = <String, JsonHandler>{};
   final Map<String, JsonHandler> deleteHandlers = <String, JsonHandler>{};
-  final Map<String, BytesHandler> postBytesHandlers = <String, BytesHandler>{};
+  final Map<String, RawBytesHandler> postBytesHandlers =
+      <String, RawBytesHandler>{};
+  final Map<String, BytesHandler> postBytesCappedHandlers =
+      <String, BytesHandler>{};
   final Map<String, MultipartHandler> multipartHandlers =
       <String, MultipartHandler>{};
 
@@ -127,7 +132,7 @@ class FakeApiClient extends ApiClient {
   }) async {
     calls.add(
       ApiCall(
-        method: 'POST_BYTES',
+        method: 'POST_BYTES_CAPPED',
         path: path,
         body: body,
         query: query,
@@ -135,9 +140,9 @@ class FakeApiClient extends ApiClient {
         timeout: timeout,
       ),
     );
-    final handler = postBytesHandlers[path];
+    final handler = postBytesCappedHandlers[path];
     if (handler == null) {
-      throw StateError('No POST_BYTES handler for $path');
+      throw StateError('No POST_BYTES_CAPPED handler for $path');
     }
     return handler(body, query, maxBytes, timeout);
   }
@@ -155,7 +160,14 @@ class FakeApiClient extends ApiClient {
     Map<String, dynamic>? body,
     Map<String, String>? query,
   }) async {
-    throw StateError('No POST_BYTES handler for $path');
+    calls.add(
+      ApiCall(method: 'POST_BYTES', path: path, body: body, query: query),
+    );
+    final handler = postBytesHandlers[path];
+    if (handler == null) {
+      throw StateError('No POST_BYTES handler for $path');
+    }
+    return handler(body, query);
   }
 
   @override

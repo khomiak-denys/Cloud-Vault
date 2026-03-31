@@ -202,7 +202,7 @@ void main() {
     );
 
     test('previewStreamBytes() passes payload and caps', () async {
-      client.postBytesHandlers['/files/preview-stream'] =
+      client.postBytesCappedHandlers['/files/preview-stream'] =
           (body, _, maxBytes, timeout) {
             expect(body?['connectionId'], 'c1');
             expect(body?['fileName'], 'file.pdf');
