@@ -1,9 +1,11 @@
 import 'dart:ui';
 
 import 'package:cloud_vault/l10n/app_localizations.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../api/api_config.dart';
 import '../api/api_exception.dart';
 import '../data/provider_identity.dart';
 import '../data/app_services.dart';
@@ -301,7 +303,7 @@ class _AddVaultModalSheetState extends State<_AddVaultModalSheet> {
                                         AddVaultFlowResult(
                                           didStartConnect: true,
                                           expectsAppCallback:
-                                              _providerUsesOAuthCallback(
+                                              _expectsOAuthAppCallback(
                                                 providerId,
                                               ),
                                         ),
@@ -367,15 +369,21 @@ bool _providerUsesOAuthCallback(String providerId) {
   return oauthProviders.contains(providerId);
 }
 
+bool _canReceiveOAuthDeepLink() {
+  if (kIsWeb) return false;
+  return defaultTargetPlatform == TargetPlatform.android ||
+      defaultTargetPlatform == TargetPlatform.iOS ||
+      defaultTargetPlatform == TargetPlatform.macOS;
+}
+
+bool _expectsOAuthAppCallback(String providerId) =>
+    _providerUsesOAuthCallback(providerId) && _canReceiveOAuthDeepLink();
+
 String? _connectRedirectUriForProvider(String providerId) {
-  final callbackPath = switch (providerId) {
-    'google-drive' => '/v1/providers/google-drive/connect/callback',
-    'dropbox' => '/v1/providers/dropbox/connect/callback',
-    'onedrive' => '/v1/providers/onedrive/connect/callback',
-    _ => null,
-  };
-  if (callbackPath == null) return null;
-  return Uri.parse('http://localhost:3000').resolve(callbackPath).toString();
+  if (!_providerUsesOAuthCallback(providerId)) return null;
+  return ApiConfig.resolveApiUri(
+    '/providers/$providerId/connect/callback',
+  ).toString();
 }
 
 void _showSnack(BuildContext context, String message) {
