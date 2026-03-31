@@ -301,7 +301,9 @@ class _AddVaultModalSheetState extends State<_AddVaultModalSheet> {
                                         AddVaultFlowResult(
                                           didStartConnect: true,
                                           expectsAppCallback:
-                                              _expectsAppCallback(redirectUri),
+                                              _providerUsesOAuthCallback(
+                                                providerId,
+                                              ),
                                         ),
                                       );
                                     }
@@ -360,16 +362,21 @@ class _AddVaultModalSheetState extends State<_AddVaultModalSheet> {
   }
 }
 
-String? _connectRedirectUriForProvider(String providerId) {
+bool _providerUsesOAuthCallback(String providerId) {
   const oauthProviders = {'google-drive', 'dropbox', 'onedrive'};
-  if (!oauthProviders.contains(providerId)) return null;
-  return _appOauthCallbackUri;
+  return oauthProviders.contains(providerId);
 }
 
-bool _expectsAppCallback(String? redirectUri) =>
-    redirectUri?.toLowerCase().startsWith(_appOauthCallbackUri) == true;
-
-const _appOauthCallbackUri = 'cloudvault://oauth-callback';
+String? _connectRedirectUriForProvider(String providerId) {
+  final callbackPath = switch (providerId) {
+    'google-drive' => '/v1/providers/google-drive/connect/callback',
+    'dropbox' => '/v1/providers/dropbox/connect/callback',
+    'onedrive' => '/v1/providers/onedrive/connect/callback',
+    _ => null,
+  };
+  if (callbackPath == null) return null;
+  return Uri.parse('http://localhost:3000').resolve(callbackPath).toString();
+}
 
 void _showSnack(BuildContext context, String message) {
   ScaffoldMessenger.of(context)
