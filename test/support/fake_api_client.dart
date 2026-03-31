@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:cloud_vault/api/api_client.dart';
-import 'package:cloud_vault/api/api_exception.dart';
 import 'package:http/http.dart' as http;
 
 typedef JsonHandler =
