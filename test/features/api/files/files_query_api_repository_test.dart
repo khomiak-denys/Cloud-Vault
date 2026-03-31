@@ -15,6 +15,10 @@ void main() {
       repository = ApiRepository(client);
     });
 
+    tearDown(() {
+      client.close();
+    });
+
     test(
       'recentFiles(), favoriteFiles(), dashboardSummaryRecentFiles() parse files',
       () async {
@@ -54,7 +58,7 @@ void main() {
             ],
           };
         };
-        client.getHandlers['/dashboard/summary'] = (_, __) => <String, dynamic>{
+        client.getHandlers['/dashboard/summary'] = (_, _) => <String, dynamic>{
           'connectionId': 'all',
           'recentFiles': <Map<String, dynamic>>[
             <String, dynamic>{
@@ -85,9 +89,9 @@ void main() {
     );
 
     test(
-      'listFiles() normalizes paths for path and id based providers',
+      'listFiles() normalizes id-based and path-based provider paths',
       () async {
-        client.postHandlers['/files/list'] = (_, __) => <String, dynamic>{
+        client.postHandlers['/files/list'] = (_, _) => <String, dynamic>{
           'items': <Map<String, dynamic>>[
             <String, dynamic>{
               'fileId': 'id1',
@@ -113,15 +117,21 @@ void main() {
           providerId: 'google-drive',
           path: '/root/folderA',
         );
+        await repository.listFiles(
+          connectionId: 'c1',
+          providerId: 'box',
+          path: '/docs/sub',
+        );
 
         expect(client.calls[0].body?['path'], 'docs');
         expect(client.calls[0].body?['pageSize'], 100);
         expect(client.calls[1].body?['path'], 'folderA');
+        expect(client.calls[2].body?['path'], 'root/docs/sub');
       },
     );
 
     test('searchFiles() includes providerIds and extracts facets', () async {
-      client.postHandlers['/files/search'] = (body, __) {
+      client.postHandlers['/files/search'] = (body, _) {
         expect(body?['query'], 'report');
         expect(body?['providerIds'], <String>['dropbox']);
         return <String, dynamic>{
@@ -160,15 +170,14 @@ void main() {
     test(
       'downloadUrl(), previewUrl(), shareLink() parse preferred fields',
       () async {
-        client.postHandlers['/files/download-url'] = (_, __) =>
+        client.postHandlers['/files/download-url'] = (_, _) =>
             <String, dynamic>{'url': 'https://download'};
-        client.postHandlers['/files/preview-url'] = (_, __) =>
-            <String, dynamic>{
-              'url': 'https://preview',
-              'method': ' get ',
-              'headers': <String, dynamic>{'Authorization': 'Bearer x'},
-            };
-        client.postHandlers['/files/share-link'] = (_, __) => <String, dynamic>{
+        client.postHandlers['/files/preview-url'] = (_, _) => <String, dynamic>{
+          'url': 'https://preview',
+          'method': ' get ',
+          'headers': <String, dynamic>{'Authorization': 'Bearer x'},
+        };
+        client.postHandlers['/files/share-link'] = (_, _) => <String, dynamic>{
           'shareUrl': 'https://share',
         };
 
@@ -194,7 +203,7 @@ void main() {
 
     test('previewStreamBytes() passes payload and caps', () async {
       client.postBytesHandlers['/files/preview-stream'] =
-          (body, __, maxBytes, timeout) {
+          (body, _, maxBytes, timeout) {
             expect(body?['connectionId'], 'c1');
             expect(body?['fileName'], 'file.pdf');
             expect(maxBytes, 1024);

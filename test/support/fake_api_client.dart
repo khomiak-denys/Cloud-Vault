@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:cloud_vault/api/api_client.dart';
+import 'package:cloud_vault/api/api_exception.dart';
 import 'package:http/http.dart' as http;
 
 typedef JsonHandler =
@@ -61,7 +62,11 @@ class ApiCall {
 }
 
 class FakeApiClient extends ApiClient {
-  FakeApiClient() : super(httpClient: http.Client());
+  factory FakeApiClient() => FakeApiClient._(http.Client());
+
+  FakeApiClient._(this._ownedClient) : super(httpClient: _ownedClient);
+
+  final http.Client _ownedClient;
 
   final Map<String, JsonHandler> getHandlers = <String, JsonHandler>{};
   final Map<String, JsonHandler> postHandlers = <String, JsonHandler>{};
@@ -149,6 +154,22 @@ class FakeApiClient extends ApiClient {
     required String fileName,
     Duration timeout = const Duration(seconds: 30),
   }) async {
+    final effectivePath = filePath?.trim();
+    final hasFilePath = effectivePath != null && effectivePath.isNotEmpty;
+    if (fileStream != null && fileLength == null) {
+      throw ApiException(
+        'Multipart stream payload requires a non-null fileLength',
+      );
+    }
+    if (fileLength != null && fileLength < 0) {
+      throw ApiException('Multipart stream payload has invalid fileLength');
+    }
+    final hasFileBytes = fileBytes != null;
+    final hasFileStream = fileStream != null && fileLength != null;
+    if (!hasFilePath && !hasFileBytes && !hasFileStream) {
+      throw ApiException('Multipart file payload is missing');
+    }
+
     calls.add(
       ApiCall(
         method: 'POST_MULTIPART',
@@ -177,5 +198,9 @@ class FakeApiClient extends ApiClient {
       fileName: fileName,
       timeout: timeout,
     );
+  }
+
+  void close() {
+    _ownedClient.close();
   }
 }

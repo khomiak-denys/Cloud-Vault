@@ -13,10 +13,14 @@ void main() {
       repository = ApiRepository(client);
     });
 
+    tearDown(() {
+      client.close();
+    });
+
     test(
       'storageUsageReport() and storageUsage() parse totals and items',
       () async {
-        client.getHandlers['/analytics/storage-usage'] = (_, __) =>
+        client.getHandlers['/analytics/storage-usage'] = (_, _) =>
             <String, dynamic>{
               'totals': <String, dynamic>{
                 'usedBytes': 50,
@@ -45,7 +49,7 @@ void main() {
 
     test('recommendations() maps description/body and filters empty', () async {
       client.getHandlers['/analytics/storage-optimization-recommendations'] =
-          (_, __) => <String, dynamic>{
+          (_, _) => <String, dynamic>{
             'recommendations': <Map<String, dynamic>>[
               <String, dynamic>{'title': 'T1', 'description': 'D1'},
               <String, dynamic>{'title': 'T2', 'body': ''},

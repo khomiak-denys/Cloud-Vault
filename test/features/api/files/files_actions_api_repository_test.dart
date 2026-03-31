@@ -13,12 +13,16 @@ void main() {
       repository = ApiRepository(client);
     });
 
+    tearDown(() {
+      client.close();
+    });
+
     test('setFavorite() and unsetFavorite() normalize kind', () async {
-      client.postHandlers['/files/favorites/set'] = (body, __) {
+      client.postHandlers['/files/favorites/set'] = (body, _) {
         expect(body?['kind'], 'file');
         return <String, dynamic>{};
       };
-      client.postHandlers['/files/favorites/unset'] = (body, __) {
+      client.postHandlers['/files/favorites/unset'] = (body, _) {
         expect(body?['kind'], 'folder');
         return <String, dynamic>{};
       };
@@ -40,13 +44,13 @@ void main() {
     test(
       'renameFile(), deleteFile(), createFolder(), fileProperties()',
       () async {
-        client.postHandlers['/files/rename'] = (_, __) => <String, dynamic>{};
-        client.postHandlers['/files/delete'] = (_, __) => <String, dynamic>{};
-        client.postHandlers['/files/create-folder'] = (body, __) {
+        client.postHandlers['/files/rename'] = (_, _) => <String, dynamic>{};
+        client.postHandlers['/files/delete'] = (_, _) => <String, dynamic>{};
+        client.postHandlers['/files/create-folder'] = (body, _) {
           expect(body?['parentId'], 'folderA');
           return <String, dynamic>{};
         };
-        client.postHandlers['/files/properties'] = (_, __) => <String, dynamic>{
+        client.postHandlers['/files/properties'] = (_, _) => <String, dynamic>{
           'size': 100,
         };
 

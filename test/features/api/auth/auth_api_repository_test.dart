@@ -14,8 +14,12 @@ void main() {
       repository = ApiRepository(client);
     });
 
+    tearDown(() {
+      client.close();
+    });
+
     test('me() parses user from nested data', () async {
-      client.getHandlers['/me'] = (_, __) => <String, dynamic>{
+      client.getHandlers['/me'] = (_, _) => <String, dynamic>{
         'data': <String, dynamic>{
           'uid': 'u1',
           'email': 'u@example.com',
@@ -30,7 +34,7 @@ void main() {
     });
 
     test('connections() normalizes provider id and usage fields', () async {
-      client.getHandlers['/connections'] = (_, __) => <String, dynamic>{
+      client.getHandlers['/connections'] = (_, _) => <String, dynamic>{
         'items': <Map<String, dynamic>>[
           <String, dynamic>{
             'id': 'c1',
@@ -49,8 +53,7 @@ void main() {
     });
 
     test('startProviderConnect() sends prompt and redirectUri', () async {
-      client
-          .postHandlers['/providers/google-drive/connect/start'] = (body, __) {
+      client.postHandlers['/providers/google-drive/connect/start'] = (body, _) {
         expect(body?['prompt'], 'consent');
         expect(
           body?['redirectUri'],
@@ -70,7 +73,7 @@ void main() {
     test(
       'startMegaConnect() parses result and throws on invalid response',
       () async {
-        client.postHandlers['/providers/mega/connect/start'] = (body, __) {
+        client.postHandlers['/providers/mega/connect/start'] = (body, _) {
           expect(body?['email'], 'a@b.com');
           expect(body?['password'], 'p');
           expect(body?['secondFactorCode'], '123456');
@@ -88,17 +91,17 @@ void main() {
         );
         expect(ok.connectionId, 'conn1');
 
-        client.postHandlers['/providers/mega/connect/start'] = (_, __) =>
+        client.postHandlers['/providers/mega/connect/start'] = (_, _) =>
             <String, dynamic>{'providerId': 'mega'};
-        expect(
-          () => repository.startMegaConnect(email: 'a@b.com', password: 'p'),
+        await expectLater(
+          repository.startMegaConnect(email: 'a@b.com', password: 'p'),
           throwsA(isA<ApiException>()),
         );
       },
     );
 
     test('disconnectConnection() calls delete endpoint', () async {
-      client.deleteHandlers['/connections/c1'] = (_, __) => <String, dynamic>{};
+      client.deleteHandlers['/connections/c1'] = (_, _) => <String, dynamic>{};
       await repository.disconnectConnection('c1');
       expect(client.calls.last.method, 'DELETE');
       expect(client.calls.last.path, '/connections/c1');
