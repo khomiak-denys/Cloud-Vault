@@ -5,13 +5,11 @@ import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
+import 'package:provider/provider.dart';
 
 import '../api/api_exception.dart';
-import '../api/api_repository.dart';
-import '../data/api_mappers.dart';
-import '../data/app_services.dart';
 import '../data/storage_formatters.dart';
-import '../models/storage_usage_item.dart';
+import '../state/providers/analytics_provider.dart';
 import '../theme/app_theme_colors.dart';
 import '../utils/tab_navigation.dart';
 import '../widgets/analytics/analytics_components.dart';
@@ -27,13 +25,6 @@ class AnalyticsScreen extends StatefulWidget {
 }
 
 class _AnalyticsScreenState extends State<AnalyticsScreen> {
-  static const _cacheKey = 'analytics_bundle_v1';
-  static const _cacheTtl = Duration(minutes: 3);
-
-  List<StorageUsageItem> _usageItems = const [];
-  List<ApiStorageRecommendation> _recommendations = const [];
-  bool _isLoading = true;
-
   @override
   void initState() {
     super.initState();
@@ -41,50 +32,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   }
 
   Future<void> _load({bool forceRefresh = false}) async {
-    if (!forceRefresh) {
-      final cached = appCacheStore.get<_AnalyticsBundle>(_cacheKey);
-      if (cached != null) {
-        setState(() {
-          _usageItems = cached.usageItems;
-          _recommendations = cached.recommendations;
-          _isLoading = false;
-        });
-        return;
-      }
-    }
-
-    setState(() => _isLoading = true);
+    final analyticsProvider = context.read<AnalyticsProvider>();
 
     try {
-      final results = await Future.wait([
-        appApiRepository.storageUsage(),
-        appApiRepository.recommendations(),
-      ]);
-
-      final usage = results[0] as List<ApiConnection>;
-      final recommendations = results[1] as List<ApiStorageRecommendation>;
-
-      if (!mounted) return;
-      final mappedUsage = usage.map(mapConnectionToStorageUsageItem).toList();
-      appCacheStore.set<_AnalyticsBundle>(
-        _cacheKey,
-        _AnalyticsBundle(mappedUsage, recommendations),
-        ttl: _cacheTtl,
-      );
-      setState(() {
-        _usageItems = mappedUsage;
-        _recommendations = recommendations;
-      });
+      await analyticsProvider.ensureLoaded(forceRefresh: forceRefresh);
     } on ApiException catch (e) {
       if (!mounted) return;
       _showSnack('API error: ${e.statusCode ?? ''} ${e.message}'.trim());
     } catch (_) {
       if (!mounted) return;
       _showSnack('Failed to load analytics');
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
     }
   }
 
@@ -102,15 +59,18 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   Future<void> _exportPdfReport() async {
     final l10n = AppLocalizations.of(context)!;
+    final analyticsProvider = context.read<AnalyticsProvider>();
+    final usageItems = analyticsProvider.usageItems;
+    final recommendations = analyticsProvider.recommendations;
     try {
       final now = DateTime.now();
       final generatedAt = DateFormat('yyyy-MM-dd HH:mm').format(now);
       final fileSuffix = DateFormat('yyyyMMdd-HHmm').format(now);
-      final totalUsed = _usageItems.fold<double>(
+      final totalUsed = usageItems.fold<double>(
         0,
         (acc, item) => acc + item.usedBytes,
       );
-      final totalSpace = _usageItems.fold<double>(
+      final totalSpace = usageItems.fold<double>(
         0,
         (acc, item) => acc + item.totalBytes,
       );
@@ -144,7 +104,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
             ),
             pw.SizedBox(height: 8),
-            ..._usageItems.map((item) {
+            ...usageItems.map((item) {
               final percent = totalUsed > 0
                   ? ((item.usedBytes / totalUsed) * 100)
                   : 0.0;
@@ -162,10 +122,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               style: pw.TextStyle(fontSize: 16, fontWeight: pw.FontWeight.bold),
             ),
             pw.SizedBox(height: 8),
-            if (_recommendations.isEmpty)
+            if (recommendations.isEmpty)
               pw.Text('-')
             else
-              ..._recommendations
+              ...recommendations
                   .take(5)
                   .map(
                     (item) => pw.Padding(
@@ -192,17 +152,21 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final colors = AppThemeColors.of(context);
+    final analyticsProvider = context.watch<AnalyticsProvider>();
+    final usageItems = analyticsProvider.usageItems;
+    final recommendations = analyticsProvider.recommendations;
+    final isLoading = analyticsProvider.isLoading;
 
-    final totalUsed = _usageItems.fold<double>(
+    final totalUsed = usageItems.fold<double>(
       0,
       (acc, item) => acc + item.usedBytes,
     );
-    final totalSpace = _usageItems.fold<double>(
+    final totalSpace = usageItems.fold<double>(
       0,
       (acc, item) => acc + item.totalBytes,
     );
     final totalFree = totalSpace - totalUsed;
-    final almostFullStorages = _usageItems
+    final almostFullStorages = usageItems
         .where((s) => s.usagePercent >= 90)
         .toList();
 
@@ -211,7 +175,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         child: Column(
           children: [
             Expanded(
-              child: _isLoading
+              child: isLoading
                   ? SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: const AnalyticsLoadingSkeleton(),
@@ -270,11 +234,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                   SizedBox(
                                     height: 220,
                                     child: AnalyticsPieUsageChart(
-                                      items: _usageItems,
+                                      items: usageItems,
                                     ),
                                   ),
                                   const SizedBox(height: 10),
-                                  ..._usageItems.map(
+                                  ...usageItems.map(
                                     (item) => Padding(
                                       padding: const EdgeInsets.only(bottom: 8),
                                       child: Row(
@@ -315,13 +279,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             const SizedBox(height: 16),
                             AnalyticsSectionCard(
                               title: l10n.usageVsFree,
-                              child: AnalyticsBarUsageChart(items: _usageItems),
+                              child: AnalyticsBarUsageChart(items: usageItems),
                             ),
                             const SizedBox(height: 16),
                             AnalyticsSectionCard(
                               title: l10n.recommendations,
                               child: Column(
-                                children: _recommendations.isEmpty
+                                children: recommendations.isEmpty
                                     ? [
                                         AnalyticsTipCard(
                                           emoji: 'i',
@@ -339,7 +303,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                               : const Color(0xFF475569),
                                         ),
                                       ]
-                                    : _recommendations.take(2).map((r) {
+                                    : recommendations.take(2).map((r) {
                                         return Padding(
                                           padding: const EdgeInsets.only(
                                             bottom: 10,
@@ -366,7 +330,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             SizedBox(
                               width: double.infinity,
                               child: TextButton.icon(
-                                onPressed: _usageItems.isEmpty
+                                onPressed: usageItems.isEmpty
                                     ? null
                                     : _exportPdfReport,
                                 icon: const Icon(Icons.picture_as_pdf_outlined),
@@ -404,11 +368,4 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       ),
     );
   }
-}
-
-class _AnalyticsBundle {
-  const _AnalyticsBundle(this.usageItems, this.recommendations);
-
-  final List<StorageUsageItem> usageItems;
-  final List<ApiStorageRecommendation> recommendations;
 }

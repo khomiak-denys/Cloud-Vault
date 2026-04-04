@@ -3,13 +3,12 @@ import 'dart:async';
 import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../api/auth_session.dart';
 import '../api/api_exception.dart';
-import '../api/api_repository.dart';
 import '../data/api_mappers.dart';
 import '../data/app_services.dart';
-import '../data/cache_keys.dart';
 import '../data/oauth_callback_handler.dart';
 import '../data/oauth_deep_link_service.dart';
 import '../modals/add_vault_modal.dart';
@@ -17,6 +16,9 @@ import '../modals/language_modal.dart';
 import '../models/vault_item.dart';
 import '../screens/profile_screen.dart';
 import '../state/locale_controller.dart';
+import '../state/providers/analytics_provider.dart';
+import '../state/providers/connections_provider.dart';
+import '../state/providers/favorites_provider.dart';
 import '../state/theme_controller.dart';
 import '../theme/app_theme_colors.dart';
 import '../utils/tab_navigation.dart';
@@ -36,15 +38,7 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  static const _cacheKey = 'settings_bundle_v1';
-  static const _cacheTtl = Duration(minutes: 2);
-  static const _profileUsageCacheTtl = Duration(minutes: 2);
-
   bool notifications = true;
-  bool _isLoading = true;
-  List<VaultItem> _vaultItems = const [];
-  List<ApiConnection> _connections = const [];
-  ApiUser? _me;
   StreamSubscription<OAuthCallbackEvent>? _oauthCallbackSubscription;
 
   @override
@@ -64,78 +58,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _load({bool forceRefresh = false}) async {
-    if (!forceRefresh) {
-      final cached = appCacheStore.get<_SettingsBundle>(_cacheKey);
-      if (cached != null) {
-        setState(() {
-          _me = cached.me;
-          _vaultItems = cached.vaultItems;
-          _connections = cached.connections;
-          _isLoading = false;
-        });
-        _prefetchProfileUsage();
-        return;
-      }
-    }
-
-    setState(() => _isLoading = true);
-
+    final connectionsProvider = context.read<ConnectionsProvider>();
     try {
-      final results = await Future.wait([
-        appApiRepository.me(),
-        appApiRepository.connections(),
-      ]);
-
-      final me = results[0] as ApiUser?;
-      final connections = results[1] as List<ApiConnection>;
-      final mappedVaultItems = connections
-          .map(mapConnectionToVaultItem)
-          .toList();
-
-      appCacheStore.set<_SettingsBundle>(
-        _cacheKey,
-        _SettingsBundle(
-          me: me,
-          connections: connections,
-          vaultItems: mappedVaultItems,
-        ),
-        ttl: _cacheTtl,
-      );
-
-      if (!mounted) return;
-      setState(() {
-        _me = me;
-        _connections = connections;
-        _vaultItems = mappedVaultItems;
-        _isLoading = false;
-      });
+      await connectionsProvider.ensureLoaded(forceRefresh: forceRefresh);
     } on ApiException catch (e) {
       if (!mounted) return;
       _showToast('API error: ${e.statusCode ?? ''} ${e.message}'.trim());
-      setState(() => _isLoading = false);
     } catch (_) {
       if (!mounted) return;
       _showToast('Failed to load settings data');
-      setState(() => _isLoading = false);
     }
   }
 
   Future<void> _prefetchProfileUsage({bool forceRefresh = false}) async {
-    if (!forceRefresh) {
-      final cachedUsedBytes = appCacheStore.get<double>(kProfileUsageCacheKey);
-      if (cachedUsedBytes != null) return;
-    }
-
     try {
-      final usage = await appApiRepository.storageUsage();
-      final usedBytes = usage.fold<double>(
-        0,
-        (acc, item) => acc + item.usedBytes,
-      );
-      appCacheStore.set<double>(
-        kProfileUsageCacheKey,
-        usedBytes,
-        ttl: _profileUsageCacheTtl,
+      await context.read<ConnectionsProvider>().ensureLoaded(
+        forceRefresh: forceRefresh,
       );
     } catch (_) {
       // Silent prefetch: settings UI should not fail if usage is unavailable.
@@ -144,25 +82,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<bool> _refreshConnectionsOnly() async {
     try {
-      final connections = await appApiRepository.connections();
-      final mappedVaultItems = connections
-          .map(mapConnectionToVaultItem)
-          .toList();
-
-      if (!mounted) return false;
-      setState(() {
-        _connections = connections;
-        _vaultItems = mappedVaultItems;
-      });
-
-      appCacheStore.set<_SettingsBundle>(
-        _cacheKey,
-        _SettingsBundle(
-          me: _me,
-          connections: connections,
-          vaultItems: mappedVaultItems,
-        ),
-        ttl: _cacheTtl,
+      await context.read<ConnectionsProvider>().ensureLoaded(
+        forceRefresh: true,
       );
       return true;
     } on ApiException catch (e) {
@@ -181,8 +102,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     await handleOAuthCallbackEvent(
       event: event,
       refreshOnSuccess: _refreshConnectionsOnly,
-      hasConnection: (connectionId) =>
-          _connections.any((item) => item.id == connectionId),
+      hasConnection: (connectionId) => context
+          .read<ConnectionsProvider>()
+          .connections
+          .any((item) => item.id == connectionId),
       showMessage: _showToast,
       showErrorWithRetry: _showOAuthErrorWithRetry,
       onRetry: _startAddProviderFlow,
@@ -277,14 +200,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _logout() async {
     final l10n = AppLocalizations.of(context)!;
+    final connectionsProvider = context.read<ConnectionsProvider>();
+    final favoritesProvider = context.read<FavoritesProvider>();
+    final analyticsProvider = context.read<AnalyticsProvider>();
     Object? signOutError;
     try {
       await FirebaseAuth.instance.signOut();
     } catch (error) {
       signOutError = error;
     } finally {
-      await AuthSession.instance.clearTokens();
-      appCacheStore.clear();
+      try {
+        await AuthSession.instance.clearTokens();
+      } catch (_) {
+        // Keep logout flow resilient even when local persistence is unavailable.
+      }
+      connectionsProvider.reset();
+      favoritesProvider.reset();
+      analyticsProvider.reset();
     }
 
     if (!mounted) return;
@@ -303,6 +235,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final languageValue = appLocaleController.locale.languageCode == 'uk'
         ? l10n.languageUkrainian
         : l10n.languageEnglish;
+    final connectionsProvider = context.watch<ConnectionsProvider>();
+    final me = connectionsProvider.me;
+    final connections = connectionsProvider.connections;
+    final vaultItems = connections.map(mapConnectionToVaultItem).toList();
+    final isLoading = connectionsProvider.isLoading;
 
     final sections = [
       SettingsSectionData(
@@ -311,13 +248,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
           SettingsItemData(
             icon: Icons.person_outline,
             label: l10n.profile,
-            value: _me?.name ?? '',
+            value: me?.name ?? '',
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute<void>(
                   builder: (_) => ProfileScreen(
-                    initialUser: _me,
-                    initialConnections: _connections,
+                    initialUser: me,
+                    initialConnections: connections,
                   ),
                 ),
               );
@@ -382,7 +319,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         child: Column(
           children: [
             Expanded(
-              child: _isLoading
+              child: isLoading
                   ? SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
                       child: const SettingsLoadingSkeleton(),
@@ -396,15 +333,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             SettingsProfileCard(
-                              name: _me?.name ?? '',
-                              email: _me?.email ?? '',
+                              name: me?.name ?? '',
+                              email: me?.email ?? '',
                             ),
                             const SizedBox(height: 18),
                             ConnectedStoragesCard(
                               title: l10n.connectedStorages,
                               addLabel: l10n.add,
                               connectedLabel: l10n.connected,
-                              items: _vaultItems,
+                              items: vaultItems,
                               onAddTap: () async {
                                 await _startAddProviderFlow();
                               },
@@ -444,16 +381,4 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-}
-
-class _SettingsBundle {
-  const _SettingsBundle({
-    required this.me,
-    required this.connections,
-    required this.vaultItems,
-  });
-
-  final ApiUser? me;
-  final List<ApiConnection> connections;
-  final List<VaultItem> vaultItems;
 }
