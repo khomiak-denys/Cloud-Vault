@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../api/api_exception.dart';
-import '../api/api_repository.dart';
 import '../data/storage_formatters.dart';
 import '../state/providers/connections_provider.dart';
 import '../theme/app_theme_colors.dart';
@@ -11,10 +10,7 @@ import '../widgets/loading_skeletons.dart';
 import '../widgets/mobile_screen_shell.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({super.key, this.initialUser, this.initialConnections});
-
-  final ApiUser? initialUser;
-  final List<ApiConnection>? initialConnections;
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();

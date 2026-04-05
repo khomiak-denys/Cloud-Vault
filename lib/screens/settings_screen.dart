@@ -237,8 +237,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
         : l10n.languageEnglish;
     final connectionsProvider = context.watch<ConnectionsProvider>();
     final me = connectionsProvider.me;
-    final connections = connectionsProvider.connections;
-    final vaultItems = connections.map(mapConnectionToVaultItem).toList();
+    final vaultItems = connectionsProvider.connections
+        .map(mapConnectionToVaultItem)
+        .toList();
     final isLoading = connectionsProvider.isLoading;
 
     final sections = [
@@ -251,12 +252,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             value: me?.name ?? '',
             onTap: () {
               Navigator.of(context).push(
-                MaterialPageRoute<void>(
-                  builder: (_) => ProfileScreen(
-                    initialUser: me,
-                    initialConnections: connections,
-                  ),
-                ),
+                MaterialPageRoute<void>(builder: (_) => const ProfileScreen()),
               );
             },
           ),
