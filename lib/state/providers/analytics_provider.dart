@@ -23,6 +23,7 @@ class AnalyticsProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   Future<void>? _inflight;
+  int _generation = 0;
 
   List<StorageUsageItem> get usageItems => _usageItems;
   List<ApiStorageRecommendation> get recommendations => _recommendations;
@@ -53,20 +54,25 @@ class AnalyticsProvider extends ChangeNotifier {
   }
 
   void invalidate() {
+    _generation += 1;
     _lastLoadedAt = null;
+    _inflight = null;
     notifyListeners();
   }
 
   void reset() {
+    _generation += 1;
     _usageItems = const <StorageUsageItem>[];
     _recommendations = const <ApiStorageRecommendation>[];
     _lastLoadedAt = null;
     _error = null;
     _isLoading = false;
+    _inflight = null;
     notifyListeners();
   }
 
   Future<void> _load() async {
+    final int requestGeneration = _generation;
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -78,20 +84,33 @@ class AnalyticsProvider extends ChangeNotifier {
       ]);
       final usage = results[0] as List<ApiConnection>;
       final recommendations = results[1] as List<ApiStorageRecommendation>;
+      if (!_isCurrentGeneration(requestGeneration)) {
+        return;
+      }
 
       _usageItems = usage.map(mapConnectionToStorageUsageItem).toList();
       _recommendations = recommendations;
       _lastLoadedAt = DateTime.now();
       _error = null;
     } on ApiException catch (e) {
+      if (!_isCurrentGeneration(requestGeneration)) {
+        return;
+      }
       _error = 'API error: ${e.statusCode ?? ''} ${e.message}'.trim();
       rethrow;
     } catch (_) {
+      if (!_isCurrentGeneration(requestGeneration)) {
+        return;
+      }
       _error = 'Failed to load analytics';
       rethrow;
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (_isCurrentGeneration(requestGeneration)) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
+
+  bool _isCurrentGeneration(int generation) => _generation == generation;
 }

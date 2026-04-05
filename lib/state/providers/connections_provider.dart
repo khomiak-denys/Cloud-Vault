@@ -23,6 +23,7 @@ class ConnectionsProvider extends ChangeNotifier {
   bool _isLoading = false;
   String? _error;
   Future<void>? _inflight;
+  int _generation = 0;
 
   ApiUser? get me => _me;
   List<ApiConnection> get connections => _connections;
@@ -56,11 +57,14 @@ class ConnectionsProvider extends ChangeNotifier {
   }
 
   void invalidate() {
+    _generation += 1;
     _lastLoadedAt = null;
+    _inflight = null;
     notifyListeners();
   }
 
   void reset() {
+    _generation += 1;
     _me = null;
     _connections = const <ApiConnection>[];
     _profileUsedBytes = 0;
@@ -69,10 +73,12 @@ class ConnectionsProvider extends ChangeNotifier {
     _lastLoadedAt = null;
     _error = null;
     _isLoading = false;
+    _inflight = null;
     notifyListeners();
   }
 
   Future<void> _load() async {
+    final int requestGeneration = _generation;
     _isLoading = true;
     _error = null;
     notifyListeners();
@@ -94,6 +100,9 @@ class ConnectionsProvider extends ChangeNotifier {
         baseConnections,
         usageConnections,
       );
+      if (!_isCurrentGeneration(requestGeneration)) {
+        return;
+      }
       final totalUsedBytes =
           usageReport?.usedBytes ??
           mergedConnections.fold<double>(
@@ -115,16 +124,26 @@ class ConnectionsProvider extends ChangeNotifier {
       _lastLoadedAt = DateTime.now();
       _error = null;
     } on ApiException catch (e) {
+      if (!_isCurrentGeneration(requestGeneration)) {
+        return;
+      }
       _error = 'API error: ${e.statusCode ?? ''} ${e.message}'.trim();
       rethrow;
     } catch (_) {
+      if (!_isCurrentGeneration(requestGeneration)) {
+        return;
+      }
       _error = 'Failed to load connections data';
       rethrow;
     } finally {
-      _isLoading = false;
-      notifyListeners();
+      if (_isCurrentGeneration(requestGeneration)) {
+        _isLoading = false;
+        notifyListeners();
+      }
     }
   }
+
+  bool _isCurrentGeneration(int generation) => _generation == generation;
 
   Future<ApiStorageUsageReport?> _loadUsageReportSafe() async {
     try {
