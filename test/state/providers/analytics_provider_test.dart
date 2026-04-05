@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:cloud_vault/api/api_exception.dart';
@@ -105,6 +107,63 @@ void main() {
       expect(provider.isLoading, isFalse);
       expect(provider.isStale, isTrue);
     });
+
+    test(
+      'reset() during in-flight load ignores stale result and allows fresh load',
+      () async {
+        final delayedClient = FakeApiClient();
+        final delayedRepository = _DelayedAnalyticsRepository(delayedClient);
+        final delayedProvider = AnalyticsProvider(
+          repository: delayedRepository,
+          ttl: const Duration(minutes: 3),
+        );
+        addTearDown(delayedClient.close);
+
+        final firstLoad = delayedProvider.ensureLoaded(forceRefresh: true);
+        await Future<void>.delayed(Duration.zero);
+        delayedProvider.reset();
+        final secondLoad = delayedProvider.ensureLoaded(forceRefresh: true);
+
+        expect(delayedRepository.usageCalls, 2);
+        expect(delayedRepository.recommendationsCalls, 2);
+
+        delayedRepository.complete(
+          index: 0,
+          usage: const <ApiConnection>[
+            ApiConnection(
+              id: 'old-c1',
+              providerId: 'google-drive',
+              providerName: 'Old Drive',
+              usedBytes: 1,
+              totalBytes: 2,
+            ),
+          ],
+          recommendations: const <ApiStorageRecommendation>[
+            ApiStorageRecommendation(title: 'Old tip', body: 'Old body'),
+          ],
+        );
+        delayedRepository.complete(
+          index: 1,
+          usage: const <ApiConnection>[
+            ApiConnection(
+              id: 'new-c1',
+              providerId: 'google-drive',
+              providerName: 'New Drive',
+              usedBytes: 3,
+              totalBytes: 4,
+            ),
+          ],
+          recommendations: const <ApiStorageRecommendation>[
+            ApiStorageRecommendation(title: 'New tip', body: 'New body'),
+          ],
+        );
+
+        await Future.wait<void>(<Future<void>>[firstLoad, secondLoad]);
+
+        expect(delayedProvider.usageItems.single.id, 'new-c1');
+        expect(delayedProvider.recommendations.single.title, 'New tip');
+      },
+    );
   });
 }
 
@@ -112,4 +171,45 @@ int _getCalls(FakeApiClient client, String path) {
   return client.calls
       .where((call) => call.method == 'GET' && call.path == path)
       .length;
+}
+
+class _DelayedAnalyticsRepository extends ApiRepository {
+  _DelayedAnalyticsRepository(FakeApiClient super.client);
+
+  int usageCalls = 0;
+  int recommendationsCalls = 0;
+
+  final List<Completer<List<ApiConnection>>> _usageCompleters =
+      <Completer<List<ApiConnection>>>[
+        Completer<List<ApiConnection>>(),
+        Completer<List<ApiConnection>>(),
+      ];
+  final List<Completer<List<ApiStorageRecommendation>>>
+  _recommendationsCompleters = <Completer<List<ApiStorageRecommendation>>>[
+    Completer<List<ApiStorageRecommendation>>(),
+    Completer<List<ApiStorageRecommendation>>(),
+  ];
+
+  @override
+  Future<List<ApiConnection>> storageUsage() {
+    final completer = _usageCompleters[usageCalls];
+    usageCalls += 1;
+    return completer.future;
+  }
+
+  @override
+  Future<List<ApiStorageRecommendation>> recommendations() {
+    final completer = _recommendationsCompleters[recommendationsCalls];
+    recommendationsCalls += 1;
+    return completer.future;
+  }
+
+  void complete({
+    required int index,
+    required List<ApiConnection> usage,
+    required List<ApiStorageRecommendation> recommendations,
+  }) {
+    _usageCompleters[index].complete(usage);
+    _recommendationsCompleters[index].complete(recommendations);
+  }
 }

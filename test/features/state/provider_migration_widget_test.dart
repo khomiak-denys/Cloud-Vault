@@ -1,4 +1,3 @@
-import 'package:cloud_vault/api/api_repository.dart';
 import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:cloud_vault/screens/analytics_screen.dart';
 import 'package:cloud_vault/screens/cloud_vault_screen.dart';
@@ -12,8 +11,6 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:provider/single_child_widget.dart';
-
-import '../../support/fake_api_client.dart';
 
 void main() {
   group('Provider migration widget parity', () {
@@ -168,7 +165,7 @@ Widget _buildTestApp({
 }
 
 class SpyConnectionsProvider extends ConnectionsProvider {
-  SpyConnectionsProvider() : super(repository: ApiRepository(FakeApiClient()));
+  SpyConnectionsProvider() : super();
 
   int calls = 0;
   int forceRefreshCalls = 0;
@@ -183,7 +180,7 @@ class SpyConnectionsProvider extends ConnectionsProvider {
 }
 
 class SpyFavoritesProvider extends FavoritesProvider {
-  SpyFavoritesProvider() : super(repository: ApiRepository(FakeApiClient()));
+  SpyFavoritesProvider() : super();
 
   int calls = 0;
   int forceRefreshCalls = 0;
@@ -198,7 +195,7 @@ class SpyFavoritesProvider extends FavoritesProvider {
 }
 
 class SpyAnalyticsProvider extends AnalyticsProvider {
-  SpyAnalyticsProvider() : super(repository: ApiRepository(FakeApiClient()));
+  SpyAnalyticsProvider() : super();
 
   int calls = 0;
   int forceRefreshCalls = 0;
