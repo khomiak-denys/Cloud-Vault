@@ -174,7 +174,8 @@ int _getCalls(FakeApiClient client, String path) {
 }
 
 class _DelayedAnalyticsRepository extends ApiRepository {
-  _DelayedAnalyticsRepository(FakeApiClient super.client);
+  // ignore: use_super_parameters
+  _DelayedAnalyticsRepository(FakeApiClient client) : super(client);
 
   int usageCalls = 0;
   int recommendationsCalls = 0;

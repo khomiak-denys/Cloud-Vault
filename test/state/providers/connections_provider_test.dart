@@ -204,7 +204,8 @@ int _getCalls(FakeApiClient client, String path) {
 }
 
 class _DelayedConnectionsRepository extends ApiRepository {
-  _DelayedConnectionsRepository(FakeApiClient super.client);
+  // ignore: use_super_parameters
+  _DelayedConnectionsRepository(FakeApiClient client) : super(client);
 
   int meCalls = 0;
   int connectionsCalls = 0;

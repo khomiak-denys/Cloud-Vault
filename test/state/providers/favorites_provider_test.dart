@@ -161,7 +161,8 @@ int _getCalls(FakeApiClient client, String path) {
 }
 
 class _DelayedFavoritesRepository extends ApiRepository {
-  _DelayedFavoritesRepository(FakeApiClient super.client);
+  // ignore: use_super_parameters
+  _DelayedFavoritesRepository(FakeApiClient client) : super(client);
 
   int favoriteCalls = 0;
 
