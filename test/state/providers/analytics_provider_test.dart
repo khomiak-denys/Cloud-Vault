@@ -8,6 +8,8 @@ import 'package:cloud_vault/state/providers/analytics_provider.dart';
 
 import '../../support/fake_api_client.dart';
 
+typedef _RecommendationsCompleter = Completer<List<ApiStorageRecommendation>>;
+
 void main() {
   group('AnalyticsProvider', () {
     late FakeApiClient client;
@@ -185,11 +187,11 @@ class _DelayedAnalyticsRepository extends ApiRepository {
         Completer<List<ApiConnection>>(),
         Completer<List<ApiConnection>>(),
       ];
-  final List<Completer<List<ApiStorageRecommendation>>>
-  _recommendationsCompleters = <Completer<List<ApiStorageRecommendation>>>[
-    Completer<List<ApiStorageRecommendation>>(),
-    Completer<List<ApiStorageRecommendation>>(),
-  ];
+  final List<_RecommendationsCompleter> _recommendationsCompleters =
+      <_RecommendationsCompleter>[
+        Completer<List<ApiStorageRecommendation>>(),
+        Completer<List<ApiStorageRecommendation>>(),
+      ];
 
   @override
   Future<List<ApiConnection>> storageUsage() {
