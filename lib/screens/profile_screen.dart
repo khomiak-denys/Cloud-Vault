@@ -81,7 +81,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     if (!_isEditing && _nameController.text != providerName) {
       _nameController.text = providerName;
     }
-    if (_emailController.text != providerEmail) {
+    if (!_isEditing && _emailController.text != providerEmail) {
       _emailController.text = providerEmail;
     }
 
