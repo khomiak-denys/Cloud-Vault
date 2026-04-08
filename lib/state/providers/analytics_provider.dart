@@ -56,6 +56,8 @@ class AnalyticsProvider extends ChangeNotifier {
   void invalidate() {
     _generation += 1;
     _lastLoadedAt = null;
+    _isLoading = false;
+    _error = null;
     _inflight = null;
     notifyListeners();
   }
