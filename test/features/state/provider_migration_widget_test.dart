@@ -192,10 +192,7 @@ class SpyFavoritesProvider extends FavoritesProvider {
   int forceRefreshCalls = 0;
 
   @override
-  Future<void> ensureLoaded({
-    bool forceRefresh = false,
-    bool includeMe = true,
-  }) async {
+  Future<void> ensureLoaded({bool forceRefresh = false}) async {
     calls += 1;
     if (forceRefresh) {
       forceRefreshCalls += 1;
@@ -210,10 +207,7 @@ class SpyAnalyticsProvider extends AnalyticsProvider {
   int forceRefreshCalls = 0;
 
   @override
-  Future<void> ensureLoaded({
-    bool forceRefresh = false,
-    bool includeMe = true,
-  }) async {
+  Future<void> ensureLoaded({bool forceRefresh = false}) async {
     calls += 1;
     if (forceRefresh) {
       forceRefreshCalls += 1;
