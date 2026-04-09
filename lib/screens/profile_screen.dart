@@ -75,6 +75,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final isLoading = connectionsProvider.isLoading;
     final storagesCount = connectionsProvider.connections.length;
     final usedBytes = connectionsProvider.profileUsedBytes;
+    final avatarInitial = _nameController.text.isNotEmpty
+        ? _nameController.text[0].toUpperCase()
+        : '?';
 
     final userName = me?.name ?? '';
     final userEmail = me?.email ?? '';
@@ -170,10 +173,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ),
                                         child: Center(
                                           child: Text(
-                                            _nameController.text.isNotEmpty
-                                                ? _nameController.text[0]
-                                                      .toUpperCase()
-                                                : '?',
+                                            avatarInitial,
                                             style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 66,
