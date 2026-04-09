@@ -81,6 +81,19 @@ void main() {
       expect(_getCalls(client, '/analytics/storage-usage'), 2);
     });
 
+    test(
+      'ensureConnectionsLoaded() avoids /me call when only connections are needed',
+      () async {
+        await provider.ensureConnectionsLoaded();
+        await provider.ensureConnectionsLoaded();
+
+        expect(_getCalls(client, '/me'), 0);
+        expect(_getCalls(client, '/connections'), 1);
+        expect(_getCalls(client, '/analytics/storage-usage'), 1);
+        expect(provider.me, isNull);
+      },
+    );
+
     test('error keeps previous data and sets error message', () async {
       await provider.ensureLoaded();
       client.getHandlers['/connections'] = (_, _) {

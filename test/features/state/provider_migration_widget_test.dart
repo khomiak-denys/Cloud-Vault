@@ -105,7 +105,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(settingsConnections.calls, 2);
+      expect(settingsConnections.calls, 1);
 
       await tester.drag(
         find.byType(SingleChildScrollView).first,
@@ -174,7 +174,10 @@ class SpyConnectionsProvider extends ConnectionsProvider {
   int forceRefreshCalls = 0;
 
   @override
-  Future<void> ensureLoaded({bool forceRefresh = false}) async {
+  Future<void> ensureLoaded({
+    bool forceRefresh = false,
+    bool includeMe = true,
+  }) async {
     calls += 1;
     if (forceRefresh) {
       forceRefreshCalls += 1;
@@ -189,7 +192,10 @@ class SpyFavoritesProvider extends FavoritesProvider {
   int forceRefreshCalls = 0;
 
   @override
-  Future<void> ensureLoaded({bool forceRefresh = false}) async {
+  Future<void> ensureLoaded({
+    bool forceRefresh = false,
+    bool includeMe = true,
+  }) async {
     calls += 1;
     if (forceRefresh) {
       forceRefreshCalls += 1;
@@ -204,7 +210,10 @@ class SpyAnalyticsProvider extends AnalyticsProvider {
   int forceRefreshCalls = 0;
 
   @override
-  Future<void> ensureLoaded({bool forceRefresh = false}) async {
+  Future<void> ensureLoaded({
+    bool forceRefresh = false,
+    bool includeMe = true,
+  }) async {
     calls += 1;
     if (forceRefresh) {
       forceRefreshCalls += 1;
