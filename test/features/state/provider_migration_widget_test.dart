@@ -86,13 +86,13 @@ void main() {
     testWidgets('Settings and Profile pull-to-refresh trigger force refresh', (
       WidgetTester tester,
     ) async {
-      final connections = SpyConnectionsProvider();
+      final settingsConnections = SpyConnectionsProvider();
 
       await tester.pumpWidget(
         _buildTestApp(
           providers: <SingleChildWidget>[
             ChangeNotifierProvider<ConnectionsProvider>.value(
-              value: connections,
+              value: settingsConnections,
             ),
             ChangeNotifierProvider<FavoritesProvider>(
               create: (_) => SpyFavoritesProvider(),
@@ -105,7 +105,7 @@ void main() {
         ),
       );
       await tester.pump();
-      expect(connections.calls, 2);
+      expect(settingsConnections.calls, 2);
 
       await tester.drag(
         find.byType(SingleChildScrollView).first,
@@ -113,13 +113,15 @@ void main() {
       );
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
-      expect(connections.forceRefreshCalls, 1);
+      expect(settingsConnections.forceRefreshCalls, 1);
+
+      final profileConnections = SpyConnectionsProvider();
 
       await tester.pumpWidget(
         _buildTestApp(
           providers: <SingleChildWidget>[
             ChangeNotifierProvider<ConnectionsProvider>.value(
-              value: connections,
+              value: profileConnections,
             ),
             ChangeNotifierProvider<FavoritesProvider>(
               create: (_) => SpyFavoritesProvider(),
@@ -132,6 +134,7 @@ void main() {
         ),
       );
       await tester.pump();
+      expect(profileConnections.calls, 1);
 
       await tester.drag(
         find.byType(SingleChildScrollView).first,
@@ -139,7 +142,7 @@ void main() {
       );
       await tester.pump();
       await tester.pump(const Duration(seconds: 1));
-      expect(connections.forceRefreshCalls, 2);
+      expect(profileConnections.forceRefreshCalls, 1);
     });
   });
 }
