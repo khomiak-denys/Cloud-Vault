@@ -166,6 +166,48 @@ void main() {
         expect(delayedProvider.recommendations.single.title, 'New tip');
       },
     );
+
+    test(
+      'invalidate() during in-flight load resets loading state and ignores stale result',
+      () async {
+        final delayedClient = FakeApiClient();
+        final delayedRepository = _DelayedAnalyticsRepository(delayedClient);
+        final delayedProvider = AnalyticsProvider(
+          repository: delayedRepository,
+          ttl: const Duration(minutes: 3),
+        );
+        addTearDown(delayedClient.close);
+
+        final firstLoad = delayedProvider.ensureLoaded(forceRefresh: true);
+        await Future<void>.delayed(Duration.zero);
+        expect(delayedProvider.isLoading, isTrue);
+
+        delayedProvider.invalidate();
+
+        expect(delayedProvider.isLoading, isFalse);
+        expect(delayedProvider.error, isNull);
+
+        delayedRepository.complete(
+          index: 0,
+          usage: const <ApiConnection>[
+            ApiConnection(
+              id: 'old-c1',
+              providerId: 'google-drive',
+              providerName: 'Old Drive',
+              usedBytes: 1,
+              totalBytes: 2,
+            ),
+          ],
+          recommendations: const <ApiStorageRecommendation>[
+            ApiStorageRecommendation(title: 'Old tip', body: 'Old body'),
+          ],
+        );
+        await firstLoad;
+
+        expect(delayedProvider.usageItems, isEmpty);
+        expect(delayedProvider.recommendations, isEmpty);
+      },
+    );
   });
 }
 

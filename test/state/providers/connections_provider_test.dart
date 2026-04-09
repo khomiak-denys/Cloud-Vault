@@ -194,6 +194,59 @@ void main() {
         expect(delayedProvider.totalUsedBytes, 3);
       },
     );
+
+    test(
+      'invalidate() during in-flight load resets loading state and ignores stale result',
+      () async {
+        final delayedClient = FakeApiClient();
+        final delayedRepository = _DelayedConnectionsRepository(delayedClient);
+        final delayedProvider = ConnectionsProvider(
+          repository: delayedRepository,
+          ttl: const Duration(minutes: 2),
+        );
+        addTearDown(delayedClient.close);
+
+        final firstLoad = delayedProvider.ensureLoaded(forceRefresh: true);
+        await Future<void>.delayed(Duration.zero);
+        expect(delayedProvider.isLoading, isTrue);
+
+        delayedProvider.invalidate();
+
+        expect(delayedProvider.isLoading, isFalse);
+        expect(delayedProvider.error, isNull);
+
+        delayedRepository.complete(
+          index: 0,
+          me: const ApiUser(uid: 'old', email: 'old@x', name: 'Old User'),
+          connections: const <ApiConnection>[
+            ApiConnection(
+              id: 'old-c1',
+              providerId: 'google-drive',
+              providerName: 'Old Drive',
+              usedBytes: 1,
+              totalBytes: 2,
+            ),
+          ],
+          usageReport: const ApiStorageUsageReport(
+            connections: <ApiConnection>[
+              ApiConnection(
+                id: 'old-c1',
+                providerId: 'google-drive',
+                providerName: 'Old Drive',
+                usedBytes: 1,
+                totalBytes: 2,
+              ),
+            ],
+            usedBytes: 1,
+            totalBytes: 2,
+          ),
+        );
+        await firstLoad;
+
+        expect(delayedProvider.me, isNull);
+        expect(delayedProvider.connections, isEmpty);
+      },
+    );
   });
 }
 

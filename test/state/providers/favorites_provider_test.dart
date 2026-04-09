@@ -151,6 +151,50 @@ void main() {
         expect(delayedProvider.favoriteFiles.single.id, 'new-f1');
       },
     );
+
+    test(
+      'invalidate() during in-flight load resets loading state and ignores stale result',
+      () async {
+        final delayedClient = FakeApiClient();
+        final delayedRepository = _DelayedFavoritesRepository(delayedClient);
+        final delayedProvider = FavoritesProvider(
+          repository: delayedRepository,
+          ttl: const Duration(minutes: 2),
+        );
+        addTearDown(delayedClient.close);
+
+        final firstLoad = delayedProvider.ensureLoaded(forceRefresh: true);
+        await Future<void>.delayed(Duration.zero);
+        expect(delayedProvider.isLoading, isTrue);
+
+        delayedProvider.invalidate();
+
+        expect(delayedProvider.isLoading, isFalse);
+        expect(delayedProvider.error, isNull);
+
+        delayedRepository.complete(
+          index: 0,
+          files: <ApiFileItem>[
+            ApiFileItem(
+              id: 'old-f1',
+              connectionId: 'c1',
+              name: 'old.pdf',
+              path: '/root/old.pdf',
+              displayPath: '/root/old.pdf',
+              sizeBytes: 10,
+              modifiedAt: DateTime.utc(2026, 4, 1),
+              providerId: 'google-drive',
+              providerName: 'Google Drive',
+              isFavorite: true,
+              kind: 'file',
+            ),
+          ],
+        );
+        await firstLoad;
+
+        expect(delayedProvider.favoriteFiles, isEmpty);
+      },
+    );
   });
 }
 
