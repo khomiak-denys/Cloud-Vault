@@ -76,13 +76,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final storagesCount = connectionsProvider.connections.length;
     final usedBytes = connectionsProvider.profileUsedBytes;
 
-    final providerName = me?.name ?? '';
-    final providerEmail = me?.email ?? '';
-    if (!_isEditing && _nameController.text != providerName) {
-      _nameController.text = providerName;
+    final userName = me?.name ?? '';
+    final userEmail = me?.email ?? '';
+    if (!_isEditing && _nameController.text != userName) {
+      _nameController.text = userName;
     }
-    if (!_isEditing && _emailController.text != providerEmail) {
-      _emailController.text = providerEmail;
+    if (!_isEditing && _emailController.text != userEmail) {
+      _emailController.text = userEmail;
     }
 
     return Scaffold(
