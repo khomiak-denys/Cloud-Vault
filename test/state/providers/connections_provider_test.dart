@@ -94,6 +94,24 @@ void main() {
       },
     );
 
+    test(
+      'ensureLoaded(includeMe: true) fetches only /me when cache is fresh and me is missing',
+      () async {
+        await provider.ensureConnectionsLoaded();
+
+        expect(_getCalls(client, '/me'), 0);
+        expect(_getCalls(client, '/connections'), 1);
+        expect(_getCalls(client, '/analytics/storage-usage'), 1);
+
+        await provider.ensureLoaded(includeMe: true);
+
+        expect(_getCalls(client, '/me'), 1);
+        expect(_getCalls(client, '/connections'), 1);
+        expect(_getCalls(client, '/analytics/storage-usage'), 1);
+        expect(provider.me?.uid, 'u1');
+      },
+    );
+
     test('error keeps previous data and sets error message', () async {
       await provider.ensureLoaded();
       client.getHandlers['/connections'] = (_, _) {

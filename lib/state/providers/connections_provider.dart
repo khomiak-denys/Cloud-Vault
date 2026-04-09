@@ -57,6 +57,17 @@ class ConnectionsProvider extends ChangeNotifier {
       }
     }
 
+    if (!forceRefresh && includeMe && _canFetchMeOnly) {
+      final meOnlyFuture = _loadMeOnly();
+      _inflight = meOnlyFuture;
+      await meOnlyFuture.whenComplete(() {
+        if (identical(_inflight, meOnlyFuture)) {
+          _inflight = null;
+        }
+      });
+      return;
+    }
+
     final loadFuture = _load(includeMe: includeMe);
     _inflight = loadFuture;
     await loadFuture.whenComplete(() {
@@ -177,6 +188,43 @@ class ConnectionsProvider extends ChangeNotifier {
     if (isStale) return false;
     if (!includeMe) return true;
     return _hasLoadedMe;
+  }
+
+  bool get _canFetchMeOnly => !isStale && !_hasLoadedMe;
+
+  Future<void> _loadMeOnly() async {
+    final int requestGeneration = _generation;
+    _isLoading = true;
+    _error = null;
+    notifyListeners();
+
+    try {
+      final me = await _repository.me();
+      if (!_isCurrentGeneration(requestGeneration)) {
+        return;
+      }
+
+      _me = me;
+      _hasLoadedMe = true;
+      _error = null;
+    } on ApiException catch (e) {
+      if (!_isCurrentGeneration(requestGeneration)) {
+        return;
+      }
+      _error = 'API error: ${e.statusCode ?? ''} ${e.message}'.trim();
+      rethrow;
+    } catch (_) {
+      if (!_isCurrentGeneration(requestGeneration)) {
+        return;
+      }
+      _error = 'Failed to load connections data';
+      rethrow;
+    } finally {
+      if (_isCurrentGeneration(requestGeneration)) {
+        _isLoading = false;
+        notifyListeners();
+      }
+    }
   }
 
   Future<ApiStorageUsageReport?> _loadUsageReportSafe() async {
