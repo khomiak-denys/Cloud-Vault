@@ -55,7 +55,7 @@ class _CloudVaultScreenState extends State<CloudVaultScreen> {
 
     try {
       await Future.wait<void>(<Future<void>>[
-        connectionsProvider.ensureLoaded(forceRefresh: forceRefresh),
+        connectionsProvider.ensureConnectionsLoaded(forceRefresh: forceRefresh),
         favoritesProvider.ensureLoaded(forceRefresh: forceRefresh),
       ]);
       _lastLoadSucceeded = true;

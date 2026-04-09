@@ -24,6 +24,7 @@ class ConnectionsProvider extends ChangeNotifier {
   String? _error;
   Future<void>? _inflight;
   int _generation = 0;
+  bool _hasLoadedMe = false;
 
   ApiUser? get me => _me;
   List<ApiConnection> get connections => _connections;
@@ -40,25 +41,43 @@ class ConnectionsProvider extends ChangeNotifier {
     return DateTime.now().difference(loadedAt) > _ttl;
   }
 
-  Future<void> ensureLoaded({bool forceRefresh = false}) {
-    if (!forceRefresh && !isStale) {
-      return Future<void>.value();
+  Future<void> ensureLoaded({
+    bool forceRefresh = false,
+    bool includeMe = true,
+  }) async {
+    if (!forceRefresh && _isCacheFreshFor(includeMe: includeMe)) {
+      return;
     }
-    final inflight = _inflight;
-    if (inflight != null) return inflight;
 
-    final loadFuture = _load();
+    final inflight = _inflight;
+    if (inflight != null) {
+      await inflight;
+      if (!forceRefresh && _isCacheFreshFor(includeMe: includeMe)) {
+        return;
+      }
+    }
+
+    final loadFuture = _load(includeMe: includeMe);
     _inflight = loadFuture;
-    return loadFuture.whenComplete(() {
+    await loadFuture.whenComplete(() {
       if (identical(_inflight, loadFuture)) {
         _inflight = null;
       }
     });
   }
 
+  Future<void> ensureConnectionsLoaded({bool forceRefresh = false}) {
+    return ensureLoaded(forceRefresh: forceRefresh, includeMe: false);
+  }
+
+  Future<void> refreshConnectionsOnly() {
+    return ensureConnectionsLoaded(forceRefresh: true);
+  }
+
   void invalidate() {
     _generation += 1;
     _lastLoadedAt = null;
+    _hasLoadedMe = false;
     _isLoading = false;
     _error = null;
     _inflight = null;
@@ -73,13 +92,14 @@ class ConnectionsProvider extends ChangeNotifier {
     _totalUsedBytes = 0;
     _totalBytes = 0;
     _lastLoadedAt = null;
+    _hasLoadedMe = false;
     _error = null;
     _isLoading = false;
     _inflight = null;
     notifyListeners();
   }
 
-  Future<void> _load() async {
+  Future<void> _load({required bool includeMe}) async {
     final int requestGeneration = _generation;
     _isLoading = true;
     _error = null;
@@ -87,8 +107,11 @@ class ConnectionsProvider extends ChangeNotifier {
 
     try {
       final usageReportFuture = _loadUsageReportSafe();
+      final meFuture = includeMe
+          ? _repository.me()
+          : Future<ApiUser?>.value(_me);
       final results = await Future.wait<dynamic>(<Future<dynamic>>[
-        _repository.me(),
+        meFuture,
         _repository.connections(),
         usageReportFuture,
       ]);
@@ -118,7 +141,10 @@ class ConnectionsProvider extends ChangeNotifier {
             (double acc, ApiConnection item) => acc + item.totalBytes,
           );
 
-      _me = me;
+      if (includeMe) {
+        _me = me;
+        _hasLoadedMe = true;
+      }
       _connections = mergedConnections;
       _profileUsedBytes = totalUsedBytes;
       _totalUsedBytes = totalUsedBytes;
@@ -146,6 +172,12 @@ class ConnectionsProvider extends ChangeNotifier {
   }
 
   bool _isCurrentGeneration(int generation) => _generation == generation;
+
+  bool _isCacheFreshFor({required bool includeMe}) {
+    if (isStale) return false;
+    if (!includeMe) return true;
+    return _hasLoadedMe;
+  }
 
   Future<ApiStorageUsageReport?> _loadUsageReportSafe() async {
     try {

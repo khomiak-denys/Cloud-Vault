@@ -45,7 +45,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _load();
-    _prefetchProfileUsage();
     _oauthCallbackSubscription = appOAuthDeepLinkService.events.listen(
       _handleOAuthCallback,
     );
@@ -70,21 +69,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     }
   }
 
-  Future<void> _prefetchProfileUsage({bool forceRefresh = false}) async {
-    try {
-      await context.read<ConnectionsProvider>().ensureLoaded(
-        forceRefresh: forceRefresh,
-      );
-    } catch (_) {
-      // Silent prefetch: settings UI should not fail if usage is unavailable.
-    }
-  }
-
   Future<bool> _refreshConnectionsOnly() async {
     try {
-      await context.read<ConnectionsProvider>().ensureLoaded(
-        forceRefresh: true,
-      );
+      await context.read<ConnectionsProvider>().refreshConnectionsOnly();
       return true;
     } on ApiException catch (e) {
       if (!mounted) return false;
