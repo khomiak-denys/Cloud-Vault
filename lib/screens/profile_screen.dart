@@ -1,33 +1,22 @@
 import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../api/api_exception.dart';
-import '../api/api_repository.dart';
-import '../data/cache_keys.dart';
-import '../data/app_services.dart';
 import '../data/storage_formatters.dart';
+import '../state/providers/connections_provider.dart';
 import '../theme/app_theme_colors.dart';
 import '../widgets/loading_skeletons.dart';
 import '../widgets/mobile_screen_shell.dart';
 
 class ProfileScreen extends StatefulWidget {
-  const ProfileScreen({
-    super.key,
-    this.initialUser,
-    this.initialConnections,
-  });
-
-  final ApiUser? initialUser;
-  final List<ApiConnection>? initialConnections;
+  const ProfileScreen({super.key});
 
   @override
   State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  static const _cacheKey = 'profile_bundle_v1';
-  static const _cacheTtl = Duration(minutes: 2);
-
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController(
@@ -35,120 +24,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
   );
 
   bool _isEditing = false;
-  bool _isLoading = true;
-
-  int _storagesCount = 0;
-  double _usedBytes = 0;
 
   @override
   void initState() {
     super.initState();
-    if (_hydrateFromInitialData()) {
-      _isLoading = false;
-      return;
-    }
     _loadProfileData();
   }
 
-  bool _hydrateFromInitialData() {
-    final initialUser = widget.initialUser;
-    final initialConnections = widget.initialConnections;
-    if (initialUser == null && initialConnections == null) {
-      return false;
-    }
-
-    final name = initialUser?.name ?? '';
-    final email = initialUser?.email ?? '';
-    final connections = initialConnections ?? const <ApiConnection>[];
-    final cachedUsedBytes = appCacheStore.get<double>(kProfileUsageCacheKey);
-
-    _nameController.text = name;
-    _emailController.text = email;
-    _storagesCount = connections.length;
-    _usedBytes = cachedUsedBytes ??
-        connections.fold<double>(0, (acc, item) => acc + item.usedBytes);
-
-    appCacheStore.set<_ProfileBundle>(
-      _cacheKey,
-      _ProfileBundle(
-        name: name,
-        email: email,
-        storagesCount: _storagesCount,
-        usedBytes: _usedBytes,
-      ),
-      ttl: _cacheTtl,
-    );
-    return true;
-  }
-
   Future<void> _loadProfileData({bool forceRefresh = false}) async {
-    if (!forceRefresh) {
-      final cached = appCacheStore.get<_ProfileBundle>(_cacheKey);
-      if (cached != null) {
-        setState(() {
-          _nameController.text = cached.name;
-          _emailController.text = cached.email;
-          _storagesCount = cached.storagesCount;
-          _usedBytes = cached.usedBytes;
-          _isLoading = false;
-        });
-        return;
-      }
-    }
-
-    setState(() => _isLoading = true);
-
     try {
-      final results = await Future.wait([
-        appApiRepository.me(),
-        appApiRepository.connections(),
-        appApiRepository.storageUsage(),
-      ]);
-
-      final me = results[0] as ApiUser?;
-      final connections = results[1] as List<ApiConnection>;
-      final storageUsage = results[2] as List<ApiConnection>;
-      final name = me?.name ?? '';
-      final email = me?.email ?? '';
-      final storagesCount = connections.length;
-      final usedBytes = storageUsage.fold<double>(
-        0,
-        (acc, item) => acc + item.usedBytes,
+      await context.read<ConnectionsProvider>().ensureLoaded(
+        forceRefresh: forceRefresh,
       );
-
-      appCacheStore.set<_ProfileBundle>(
-        _cacheKey,
-        _ProfileBundle(
-          name: name,
-          email: email,
-          storagesCount: storagesCount,
-          usedBytes: usedBytes,
-        ),
-        ttl: _cacheTtl,
-      );
-      appCacheStore.set<double>(
-        kProfileUsageCacheKey,
-        usedBytes,
-        ttl: _cacheTtl,
-      );
-
-      if (!mounted) return;
-      setState(() {
-        _nameController.text = name;
-        _emailController.text = email;
-        _storagesCount = storagesCount;
-        _usedBytes = usedBytes;
-      });
     } on ApiException catch (e) {
       if (!mounted) return;
       _showSnack('API error: ${e.statusCode ?? ''} ${e.message}'.trim());
     } catch (_) {
       if (!mounted) return;
       _showSnack('Failed to load profile');
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
     }
   }
 
@@ -177,6 +70,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final l10n = AppLocalizations.of(context)!;
     final colors = AppThemeColors.of(context);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final connectionsProvider = context.watch<ConnectionsProvider>();
+    final me = connectionsProvider.me;
+    final isLoading = connectionsProvider.isLoading;
+    final storagesCount = connectionsProvider.connections.length;
+    final usedBytes = connectionsProvider.profileUsedBytes;
+    final avatarInitial = _nameController.text.isNotEmpty
+        ? _nameController.text[0].toUpperCase()
+        : '?';
+
+    final userName = me?.name ?? '';
+    final userEmail = me?.email ?? '';
+    if (!_isEditing && _nameController.text != userName) {
+      _nameController.text = userName;
+    }
+    if (!_isEditing && _emailController.text != userEmail) {
+      _emailController.text = userEmail;
+    }
 
     return Scaffold(
       body: MobileScreenShell(
@@ -216,7 +126,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
             ),
             Expanded(
-              child: _isLoading
+              child: isLoading
                   ? const ProfileLoadingSkeleton()
                   : RefreshIndicator(
                       onRefresh: () => _loadProfileData(forceRefresh: true),
@@ -263,10 +173,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         ),
                                         child: Center(
                                           child: Text(
-                                            _nameController.text.isNotEmpty
-                                                ? _nameController.text[0]
-                                                    .toUpperCase()
-                                                : '?',
+                                            avatarInitial,
                                             style: const TextStyle(
                                               color: Colors.white,
                                               fontSize: 66,
@@ -308,7 +215,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         color: isDark
                                             ? const Color(0xFF1F3A65)
                                             : const Color(0xFFD9E8FF),
-                                        borderRadius: BorderRadius.circular(999),
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
                                       ),
                                       child: const Text(
                                         'Verified',
@@ -326,13 +235,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             Row(
                               children: [
                                 _StatTile(
-                                  value: '$_storagesCount',
+                                  value: '$storagesCount',
                                   label: l10n.profileStoragesStat,
                                   colors: colors,
                                 ),
                                 const SizedBox(width: 10),
                                 _StatTile(
-                                  value: formatBytes(_usedBytes),
+                                  value: formatBytes(usedBytes),
                                   label: l10n.used,
                                   colors: colors,
                                 ),
@@ -394,7 +303,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       ],
                                     ),
                                   ),
-                                  Divider(height: 1, color: colors.headerBorder),
+                                  Divider(
+                                    height: 1,
+                                    color: colors.headerBorder,
+                                  ),
                                   Padding(
                                     padding: const EdgeInsets.all(16),
                                     child: Column(
@@ -440,10 +352,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                       ),
                                                       behavior: SnackBarBehavior
                                                           .floating,
-                                                      duration:
-                                                          const Duration(
-                                                            seconds: 2,
-                                                          ),
+                                                      duration: const Duration(
+                                                        seconds: 2,
+                                                      ),
                                                     ),
                                                   );
                                               },
@@ -611,18 +522,4 @@ class _ProfileField extends StatelessWidget {
       ],
     );
   }
-}
-
-class _ProfileBundle {
-  const _ProfileBundle({
-    required this.name,
-    required this.email,
-    required this.storagesCount,
-    required this.usedBytes,
-  });
-
-  final String name;
-  final String email;
-  final int storagesCount;
-  final double usedBytes;
 }
