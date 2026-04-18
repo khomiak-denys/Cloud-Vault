@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -70,8 +69,8 @@ void main() {
 
       await AuthSession.instance.clearTokens();
 
-      expect(AuthSession.instance.bearerToken, isNot('token-1'));
-      expect(AuthSession.instance.appCheckToken, isNot('app-check-1'));
+      expect(AuthSession.instance.bearerToken, isNull);
+      expect(AuthSession.instance.appCheckToken, isNull);
     });
   });
 
@@ -92,17 +91,20 @@ void main() {
       expect(notifications, 1);
     });
 
-    test('setLocale ignores unsupported values and updates supported values', () async {
-      SharedPreferences.setMockInitialValues(<String, Object>{});
-      final LocaleController controller = LocaleController();
-      await controller.init();
+    test(
+      'setLocale ignores unsupported values and updates supported values',
+      () async {
+        SharedPreferences.setMockInitialValues(<String, Object>{});
+        final LocaleController controller = LocaleController();
+        await controller.init();
 
-      await controller.setLocale('de');
-      expect(controller.locale.languageCode, 'uk');
+        await controller.setLocale('de');
+        expect(controller.locale.languageCode, 'uk');
 
-      await controller.setLocale('en');
-      expect(controller.locale.languageCode, 'en');
-    });
+        await controller.setLocale('en');
+        expect(controller.locale.languageCode, 'en');
+      },
+    );
   });
 
   group('ThemeController', () {
@@ -131,48 +133,54 @@ void main() {
   });
 
   group('OAuth callback handler', () {
-    test('success event with connected storage shows success message', () async {
-      final List<String> messages = <String>[];
-      final List<String> errors = <String>[];
+    test(
+      'success event with connected storage shows success message',
+      () async {
+        final List<String> messages = <String>[];
+        final List<String> errors = <String>[];
 
-      await handleOAuthCallbackEvent(
-        event: const OAuthCallbackEvent(
-          status: 'success',
-          providerId: 'google-drive',
-          connectionId: 'c1',
-        ),
-        refreshOnSuccess: () async => true,
-        hasConnection: (_) => true,
-        showMessage: messages.add,
-        showErrorWithRetry: (message, _) => errors.add(message),
-        onRetry: () async {},
-      );
+        await handleOAuthCallbackEvent(
+          event: const OAuthCallbackEvent(
+            status: 'success',
+            providerId: 'google-drive',
+            connectionId: 'c1',
+          ),
+          refreshOnSuccess: () async => true,
+          hasConnection: (_) => true,
+          showMessage: messages.add,
+          showErrorWithRetry: (message, _) => errors.add(message),
+          onRetry: () async {},
+        );
 
-      expect(messages.single, 'Google Drive connected successfully');
-      expect(errors, isEmpty);
-    });
+        expect(messages.single, 'Google Drive connected successfully');
+        expect(errors, isEmpty);
+      },
+    );
 
-    test('success event with missing connection shows delayed callback message', () async {
-      final List<String> messages = <String>[];
+    test(
+      'success event with missing connection shows delayed callback message',
+      () async {
+        final List<String> messages = <String>[];
 
-      await handleOAuthCallbackEvent(
-        event: const OAuthCallbackEvent(
-          status: 'success',
-          providerId: 'dropbox',
-          connectionId: 'c1',
-        ),
-        refreshOnSuccess: () async => true,
-        hasConnection: (_) => false,
-        showMessage: messages.add,
-        showErrorWithRetry: (_, __) {},
-        onRetry: () async {},
-      );
+        await handleOAuthCallbackEvent(
+          event: const OAuthCallbackEvent(
+            status: 'success',
+            providerId: 'dropbox',
+            connectionId: 'c1',
+          ),
+          refreshOnSuccess: () async => true,
+          hasConnection: (_) => false,
+          showMessage: messages.add,
+          showErrorWithRetry: (_, _) {},
+          onRetry: () async {},
+        );
 
-      expect(
-        messages.single,
-        'Connection callback received, but storage is not available yet',
-      );
-    });
+        expect(
+          messages.single,
+          'Connection callback received, but storage is not available yet',
+        );
+      },
+    );
 
     test('cancelled event maps known and unknown error codes', () async {
       final List<String> messages = <String>[];
@@ -187,7 +195,7 @@ void main() {
         refreshOnSuccess: () async => true,
         hasConnection: (_) => false,
         showMessage: messages.add,
-        showErrorWithRetry: (_, __) {},
+        showErrorWithRetry: (_, _) {},
         onRetry: () async {},
       );
 
@@ -201,48 +209,51 @@ void main() {
         refreshOnSuccess: () async => true,
         hasConnection: (_) => false,
         showMessage: messages.add,
-        showErrorWithRetry: (_, __) {},
+        showErrorWithRetry: (_, _) {},
         onRetry: () async {},
       );
 
-      expect(
-        messages,
-        <String>['Authorization was cancelled', 'Connection was cancelled'],
-      );
+      expect(messages, <String>[
+        'Authorization was cancelled',
+        'Connection was cancelled',
+      ]);
     });
 
-    test('error event reports mapped message and exposes retry callback', () async {
-      final List<String> errors = <String>[];
-      int retryCalls = 0;
-      Future<void> Function()? capturedRetry;
+    test(
+      'error event reports mapped message and exposes retry callback',
+      () async {
+        final List<String> errors = <String>[];
+        int retryCalls = 0;
+        Future<void> Function()? capturedRetry;
 
-      Future<void> onRetry() async {
-        retryCalls += 1;
-      }
+        Future<void> onRetry() async {
+          retryCalls += 1;
+        }
 
-      await handleOAuthCallbackEvent(
-        event: const OAuthCallbackEvent(
-          status: 'error',
-          providerId: 'dropbox',
-          connectionId: 'c1',
-          error: 'invalid_state',
-        ),
-        refreshOnSuccess: () async => true,
-        hasConnection: (_) => false,
-        showMessage: (_) {},
-        showErrorWithRetry: (message, retry) {
-          errors.add(message);
-          capturedRetry = retry;
-        },
-        onRetry: onRetry,
-      );
+        await handleOAuthCallbackEvent(
+          event: const OAuthCallbackEvent(
+            status: 'error',
+            providerId: 'dropbox',
+            connectionId: 'c1',
+            error: 'invalid_state',
+          ),
+          refreshOnSuccess: () async => true,
+          hasConnection: (_) => false,
+          showMessage: (_) {},
+          showErrorWithRetry: (message, retry) {
+            errors.add(message);
+            capturedRetry = retry;
+          },
+          onRetry: onRetry,
+        );
 
-      expect(errors.single, 'Authorization state is invalid. Please retry');
-      expect(capturedRetry, isNotNull);
+        expect(errors.single, 'Authorization state is invalid. Please retry');
+        expect(capturedRetry, isNotNull);
 
-      await capturedRetry!.call();
-      expect(retryCalls, 1);
-    });
+        await capturedRetry!.call();
+        expect(retryCalls, 1);
+      },
+    );
 
     test('success event with failed refresh does nothing', () async {
       final List<String> messages = <String>[];
@@ -390,30 +401,36 @@ void main() {
       );
     });
 
-    test('401 response attempts refresh and still fails when refresh is unavailable', () async {
-      httpClient.enqueue((_) => streamedTextResponse(401, '{"error":"expired"}'));
+    test(
+      '401 response attempts refresh and still fails when refresh is unavailable',
+      () async {
+        httpClient.enqueue(
+          (_) => streamedTextResponse(401, '{"error":"expired"}'),
+        );
 
-      await expectLater(
-        apiClient.getJson('/test-401'),
-        throwsA(
-          isA<ApiException>().having(
-            (ApiException e) => e.statusCode,
-            'statusCode',
-            401,
+        await expectLater(
+          apiClient.getJson('/test-401'),
+          throwsA(
+            isA<ApiException>().having(
+              (ApiException e) => e.statusCode,
+              'statusCode',
+              401,
+            ),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
 
-    test('refreshBearerToken returns false without a valid firebase user context', () async {
-      final bool refreshed = await apiClient.refreshBearerToken();
-      expect(refreshed, isFalse);
-    });
+    test(
+      'refreshBearerToken returns false without a valid firebase user context',
+      () async {
+        final bool refreshed = await apiClient.refreshBearerToken();
+        expect(refreshed, isFalse);
+      },
+    );
 
     test('postBytes returns binary response payload', () async {
-      httpClient.enqueue(
-        (_) => streamedBytesResponse(200, <int>[1, 2, 3, 4]),
-      );
+      httpClient.enqueue((_) => streamedBytesResponse(200, <int>[1, 2, 3, 4]));
 
       final List<int> bytes = await apiClient.postBytes('/test-bytes');
 
@@ -421,24 +438,24 @@ void main() {
     });
 
     test('postBytes throws ApiException on non-2xx response', () async {
-      httpClient.enqueue(
-        (_) => streamedTextResponse(404, 'not-found'),
-      );
+      httpClient.enqueue((_) => streamedTextResponse(404, 'not-found'));
 
       await expectLater(
         apiClient.postBytes('/test-bytes-fail'),
         throwsA(
           isA<ApiException>()
               .having((ApiException e) => e.statusCode, 'statusCode', 404)
-              .having((ApiException e) => e.body, 'body', contains('not-found')),
+              .having(
+                (ApiException e) => e.body,
+                'body',
+                contains('not-found'),
+              ),
         ),
       );
     });
 
     test('postBytesCapped returns bytes when response fits max size', () async {
-      httpClient.enqueue(
-        (_) => streamedBytesResponse(200, <int>[9, 8, 7]),
-      );
+      httpClient.enqueue((_) => streamedBytesResponse(200, <int>[9, 8, 7]));
 
       final List<int> bytes = await apiClient.postBytesCapped(
         '/test-capped-ok',
@@ -448,50 +465,54 @@ void main() {
       expect(bytes, <int>[9, 8, 7]);
     });
 
-    test('postBytesCapped throws max size error when payload is too large', () async {
-      httpClient.enqueue(
-        (_) => http.StreamedResponse(
-          Stream<List<int>>.fromIterable(<List<int>>[
-            <int>[1, 2, 3],
-            <int>[4, 5, 6],
-          ]),
-          200,
-          contentLength: 6,
-        ),
-      );
+    test(
+      'postBytesCapped throws max size error when payload is too large',
+      () async {
+        httpClient.enqueue(
+          (_) => http.StreamedResponse(
+            Stream<List<int>>.fromIterable(<List<int>>[
+              <int>[1, 2, 3],
+              <int>[4, 5, 6],
+            ]),
+            200,
+            contentLength: 6,
+          ),
+        );
 
-      await expectLater(
-        apiClient.postBytesCapped('/test-capped-overflow', maxBytes: 4),
-        throwsA(
-          isA<ApiException>()
-              .having((ApiException e) => e.statusCode, 'statusCode', 413)
-              .having(
-                (ApiException e) => e.errorCode,
-                'errorCode',
-                'max_preview_size_exceeded',
-              ),
-        ),
-      );
-    });
+        await expectLater(
+          apiClient.postBytesCapped('/test-capped-overflow', maxBytes: 4),
+          throwsA(
+            isA<ApiException>()
+                .having((ApiException e) => e.statusCode, 'statusCode', 413)
+                .having(
+                  (ApiException e) => e.errorCode,
+                  'errorCode',
+                  'max_preview_size_exceeded',
+                ),
+          ),
+        );
+      },
+    );
 
-    test('postBytesCapped reads server error body for non-2xx responses', () async {
-      httpClient.enqueue(
-        (_) => streamedTextResponse(500, 'preview failed'),
-      );
+    test(
+      'postBytesCapped reads server error body for non-2xx responses',
+      () async {
+        httpClient.enqueue((_) => streamedTextResponse(500, 'preview failed'));
 
-      await expectLater(
-        apiClient.postBytesCapped('/test-capped-http-fail', maxBytes: 32),
-        throwsA(
-          isA<ApiException>()
-              .having((ApiException e) => e.statusCode, 'statusCode', 500)
-              .having(
-                (ApiException e) => e.body,
-                'body',
-                contains('preview failed'),
-              ),
-        ),
-      );
-    });
+        await expectLater(
+          apiClient.postBytesCapped('/test-capped-http-fail', maxBytes: 32),
+          throwsA(
+            isA<ApiException>()
+                .having((ApiException e) => e.statusCode, 'statusCode', 500)
+                .having(
+                  (ApiException e) => e.body,
+                  'body',
+                  contains('preview failed'),
+                ),
+          ),
+        );
+      },
+    );
 
     test('postBytesCapped maps send timeout into request_timeout', () async {
       httpClient.enqueue((_) async {
@@ -603,42 +624,50 @@ void main() {
       );
     });
 
-    test('postMultipart sends bytes payload and parses JSON response', () async {
-      await AuthSession.instance.setTokens(bearerToken: 'multipart-token');
-      httpClient.enqueue((http.BaseRequest request) {
-        expect(request, isA<http.MultipartRequest>());
-        final http.MultipartRequest multipart = request as http.MultipartRequest;
-        expect(multipart.fields['kind'], 'avatar');
-        expect(multipart.files, hasLength(1));
-        expect(multipart.files.single.filename, 'avatar.png');
-        expect(multipart.headers['Authorization'], 'Bearer multipart-token');
-        return streamedJsonResponse(200, <String, dynamic>{'ok': true});
-      });
+    test(
+      'postMultipart sends bytes payload and parses JSON response',
+      () async {
+        await AuthSession.instance.setTokens(bearerToken: 'multipart-token');
+        httpClient.enqueue((http.BaseRequest request) {
+          expect(request, isA<http.MultipartRequest>());
+          final http.MultipartRequest multipart =
+              request as http.MultipartRequest;
+          expect(multipart.fields['kind'], 'avatar');
+          expect(multipart.files, hasLength(1));
+          expect(multipart.files.single.filename, 'avatar.png');
+          expect(multipart.headers['Authorization'], 'Bearer multipart-token');
+          return streamedJsonResponse(200, <String, dynamic>{'ok': true});
+        });
 
-      final Map<String, dynamic> result = await apiClient.postMultipart(
-        '/multipart-success',
-        fields: const <String, String>{'kind': 'avatar'},
-        fileField: 'file',
-        fileBytes: Uint8List.fromList(<int>[1, 2, 3]),
-        fileName: 'avatar.png',
-      );
+        final Map<String, dynamic> result = await apiClient.postMultipart(
+          '/multipart-success',
+          fields: const <String, String>{'kind': 'avatar'},
+          fileField: 'file',
+          fileBytes: Uint8List.fromList(<int>[1, 2, 3]),
+          fileName: 'avatar.png',
+        );
 
-      expect(result['ok'], true);
-    });
+        expect(result['ok'], true);
+      },
+    );
 
     test('postMultipart supports filePath payload branch', () async {
+      final Directory tempDir = await Directory.systemTemp.createTemp(
+        'api_client_upload_test_',
+      );
       final File tempFile = File(
-        '${Directory.systemTemp.path}${Platform.pathSeparator}api_client_upload_test.txt',
+        '${tempDir.path}${Platform.pathSeparator}upload.txt',
       );
       addTearDown(() async {
-        if (await tempFile.exists()) {
-          await tempFile.delete();
+        if (await tempDir.exists()) {
+          await tempDir.delete(recursive: true);
         }
       });
       await tempFile.writeAsString('test-file');
 
       httpClient.enqueue((http.BaseRequest request) {
-        final http.MultipartRequest multipart = request as http.MultipartRequest;
+        final http.MultipartRequest multipart =
+            request as http.MultipartRequest;
         expect(multipart.files.single.filename, 'upload.txt');
         return streamedJsonResponse(200, <String, dynamic>{'path': 'ok'});
       });
@@ -656,7 +685,8 @@ void main() {
 
     test('postMultipart supports stream payload branch', () async {
       httpClient.enqueue((http.BaseRequest request) {
-        final http.MultipartRequest multipart = request as http.MultipartRequest;
+        final http.MultipartRequest multipart =
+            request as http.MultipartRequest;
         expect(multipart.files.single.length, 3);
         return streamedJsonResponse(200, <String, dynamic>{'stream': true});
       });
