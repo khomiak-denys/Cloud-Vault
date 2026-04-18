@@ -286,4 +286,262 @@ void main() {
     });
   });
 
+  group('ApiClient', () {
+    late QueuedHttpClient httpClient;
+    late ApiClient apiClient;
+
+    setUp(() async {
+      SharedPreferences.setMockInitialValues(<String, Object>{});
+      await AuthSession.instance.clearTokens();
+      httpClient = QueuedHttpClient();
+      apiClient = ApiClient(httpClient: httpClient);
+    });
+
+    test('getJson sends query and auth headers and parses JSON map', () async {
+      await AuthSession.instance.setTokens(
+        bearerToken: 'bearer-123',
+        appCheckToken: 'app-check-123',
+      );
+      httpClient.enqueue((http.BaseRequest request) {
+        expect(request.method, 'GET');
+        expect(request.url.path, '/v1/test-get');
+        expect(request.url.queryParameters['page'], '2');
+        expect(request.headers['Authorization'], 'Bearer bearer-123');
+        expect(request.headers['X-Firebase-AppCheck'], 'app-check-123');
+        expect(request.headers['Content-Type'], 'application/json');
+        return streamedJsonResponse(200, <String, dynamic>{'ok': true});
+      });
+
+      final Map<String, dynamic> response = await apiClient.getJson(
+        '/test-get',
+        query: const <String, String>{'page': '2'},
+      );
+
+      expect(response['ok'], true);
+    });
+
+    test('postJson wraps non-map json body into data field', () async {
+      httpClient.enqueue((http.BaseRequest request) async {
+        expect(request.method, 'POST');
+        final Map<String, dynamic> payload = await decodeJsonRequest(request);
+        expect(payload['query'], 'report');
+        return streamedTextResponse(200, '[1,2,3]');
+      });
+
+      final Map<String, dynamic> response = await apiClient.postJson(
+        '/test-post',
+        body: const <String, dynamic>{'query': 'report'},
+      );
+
+      expect(response['data'], <dynamic>[1, 2, 3]);
+    });
+
+    test('deleteJson handles empty body as empty map', () async {
+      httpClient.enqueue((http.BaseRequest request) {
+        expect(request.method, 'DELETE');
+        return streamedTextResponse(200, '');
+      });
+
+      final Map<String, dynamic> response = await apiClient.deleteJson(
+        '/test-delete',
+      );
+
+      expect(response, isEmpty);
+    });
+
+    test('postJson throws ApiException on non-2xx status', () async {
+      httpClient.enqueue(
+        (_) => streamedTextResponse(500, '{"error":"failed"}'),
+      );
+
+      await expectLater(
+        apiClient.postJson('/test-error'),
+        throwsA(
+          isA<ApiException>()
+              .having((ApiException e) => e.statusCode, 'statusCode', 500)
+              .having((ApiException e) => e.body, 'body', contains('failed')),
+        ),
+      );
+    });
+
+    test('postJson rethrows decode exceptions for invalid JSON', () async {
+      httpClient.enqueue((_) => streamedTextResponse(200, '{invalid-json'));
+
+      await expectLater(
+        apiClient.postJson('/test-invalid-json'),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('postJson maps network errors to ApiException', () async {
+      httpClient.enqueue((_) {
+        throw StateError('network failed');
+      });
+
+      await expectLater(
+        apiClient.postJson('/test-network-fail'),
+        throwsA(
+          isA<ApiException>().having(
+            (ApiException e) => e.message,
+            'message',
+            'Network request failed',
+          ),
+        ),
+      );
+    });
+
+    test('401 response attempts refresh and still fails when refresh is unavailable', () async {
+      httpClient.enqueue((_) => streamedTextResponse(401, '{"error":"expired"}'));
+
+      await expectLater(
+        apiClient.getJson('/test-401'),
+        throwsA(
+          isA<ApiException>().having(
+            (ApiException e) => e.statusCode,
+            'statusCode',
+            401,
+          ),
+        ),
+      );
+    });
+
+    test('refreshBearerToken returns false without a valid firebase user context', () async {
+      final bool refreshed = await apiClient.refreshBearerToken();
+      expect(refreshed, isFalse);
+    });
+
+    test('postBytes returns binary response payload', () async {
+      httpClient.enqueue(
+        (_) => streamedBytesResponse(200, <int>[1, 2, 3, 4]),
+      );
+
+      final List<int> bytes = await apiClient.postBytes('/test-bytes');
+
+      expect(bytes, <int>[1, 2, 3, 4]);
+    });
+
+    test('postBytes throws ApiException on non-2xx response', () async {
+      httpClient.enqueue(
+        (_) => streamedTextResponse(404, 'not-found'),
+      );
+
+      await expectLater(
+        apiClient.postBytes('/test-bytes-fail'),
+        throwsA(
+          isA<ApiException>()
+              .having((ApiException e) => e.statusCode, 'statusCode', 404)
+              .having((ApiException e) => e.body, 'body', contains('not-found')),
+        ),
+      );
+    });
+
+    test('postBytesCapped returns bytes when response fits max size', () async {
+      httpClient.enqueue(
+        (_) => streamedBytesResponse(200, <int>[9, 8, 7]),
+      );
+
+      final List<int> bytes = await apiClient.postBytesCapped(
+        '/test-capped-ok',
+        maxBytes: 16,
+      );
+
+      expect(bytes, <int>[9, 8, 7]);
+    });
+
+    test('postBytesCapped throws max size error when payload is too large', () async {
+      httpClient.enqueue(
+        (_) => http.StreamedResponse(
+          Stream<List<int>>.fromIterable(<List<int>>[
+            <int>[1, 2, 3],
+            <int>[4, 5, 6],
+          ]),
+          200,
+          contentLength: 6,
+        ),
+      );
+
+      await expectLater(
+        apiClient.postBytesCapped('/test-capped-overflow', maxBytes: 4),
+        throwsA(
+          isA<ApiException>()
+              .having((ApiException e) => e.statusCode, 'statusCode', 413)
+              .having(
+                (ApiException e) => e.errorCode,
+                'errorCode',
+                'max_preview_size_exceeded',
+              ),
+        ),
+      );
+    });
+
+    test('postBytesCapped reads server error body for non-2xx responses', () async {
+      httpClient.enqueue(
+        (_) => streamedTextResponse(500, 'preview failed'),
+      );
+
+      await expectLater(
+        apiClient.postBytesCapped('/test-capped-http-fail', maxBytes: 32),
+        throwsA(
+          isA<ApiException>()
+              .having((ApiException e) => e.statusCode, 'statusCode', 500)
+              .having(
+                (ApiException e) => e.body,
+                'body',
+                contains('preview failed'),
+              ),
+        ),
+      );
+    });
+
+    test('postBytesCapped maps send timeout into request_timeout', () async {
+      httpClient.enqueue((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 40));
+        return streamedBytesResponse(200, <int>[1]);
+      });
+
+      await expectLater(
+        apiClient.postBytesCapped(
+          '/test-capped-send-timeout',
+          maxBytes: 10,
+          timeout: const Duration(milliseconds: 5),
+        ),
+        throwsA(
+          isA<ApiException>().having(
+            (ApiException e) => e.errorCode,
+            'errorCode',
+            'request_timeout',
+          ),
+        ),
+      );
+    });
+
+    test('postBytesCapped maps stream timeout into request_timeout', () async {
+      httpClient.enqueue(
+        (_) => http.StreamedResponse(
+          Stream<List<int>>.fromFuture(
+            Future<List<int>>.delayed(
+              const Duration(milliseconds: 40),
+              () => <int>[1, 2, 3],
+            ),
+          ),
+          200,
+        ),
+      );
+
+      await expectLater(
+        apiClient.postBytesCapped(
+          '/test-capped-stream-timeout',
+          maxBytes: 20,
+          timeout: const Duration(milliseconds: 5),
+        ),
+        throwsA(
+          isA<ApiException>().having(
+            (ApiException e) => e.errorCode,
+            'errorCode',
+            'request_timeout',
+          ),
+        ),
+      );
+    });
+
 }
