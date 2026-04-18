@@ -454,7 +454,6 @@ void main() {
       expect(property.resolve(<WidgetState>{}), Colors.transparent);
     });
   });
-  });
 }
 Widget _testApp({required Widget child}) {
   return MaterialApp(

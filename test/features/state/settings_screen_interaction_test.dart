@@ -172,7 +172,6 @@ void main() {
       expect(find.byType(ProfileScreen), findsOneWidget);
     });
   });
-  });
 }
 Widget _buildTestApp({
   required List<SingleChildWidget> providers,
