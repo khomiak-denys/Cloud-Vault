@@ -303,6 +303,157 @@ void main() {
       expect(disconnectTapCount, 1);
     });
 
+    testWidgets('Analytics cards and charts render all major branches', (
+      WidgetTester tester,
+    ) async {
+      const List<StorageUsageItem> items = <StorageUsageItem>[
+        StorageUsageItem(
+          id: 's1',
+          name: 'Dropbox Storage',
+          color: Colors.blue,
+          totalBytes: 100,
+          usedBytes: 60,
+        ),
+        StorageUsageItem(
+          id: 's2',
+          name: 'Drive Storage',
+          color: Colors.green,
+          totalBytes: 200,
+          usedBytes: 20,
+        ),
+      ];
+
+      await tester.pumpWidget(
+        _testApp(
+          child: ListView(
+            children: const <Widget>[
+              AnalyticsStatCard(
+                icon: Icons.cloud,
+                label: 'Used',
+                value: '80 GB',
+                iconColor: Colors.blue,
+                iconBg: Colors.blue,
+              ),
+              AnalyticsWarningCard(storages: items),
+              AnalyticsSectionCard(
+                title: 'Distribution',
+                child: AnalyticsPieUsageChart(items: items),
+              ),
+              AnalyticsBarUsageChart(items: items),
+              AnalyticsTipCard(
+                emoji: 'A',
+                title: 'Tip title',
+                body: 'Tip body',
+                bg: Colors.black12,
+                titleColor: Colors.black,
+                bodyColor: Colors.black54,
+              ),
+            ],
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Used'), findsOneWidget);
+      expect(find.text('80 GB'), findsOneWidget);
+      expect(find.text('Distribution'), findsOneWidget);
+      expect(find.text('Tip title'), findsOneWidget);
+      expect(find.text('Tip body'), findsOneWidget);
+      expect(find.byType(CustomPaint), findsWidgets);
+      expect(find.textContaining('(GB)'), findsNWidgets(2));
+    });
+
+    testWidgets('AnalyticsBarUsageChart renders empty state for no items', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        _testApp(
+          child: const AnalyticsBarUsageChart(items: <StorageUsageItem>[]),
+        ),
+      );
+
+      expect(find.text('No data'), findsOneWidget);
+    });
+
+    testWidgets('showLanguageModal returns selected code and supports cancel', (
+      WidgetTester tester,
+    ) async {
+      String? selected;
+
+      await tester.pumpWidget(
+        _testApp(
+          child: Builder(
+            builder: (BuildContext context) {
+              return ElevatedButton(
+                onPressed: () async {
+                  selected = await showLanguageModal(context);
+                },
+                child: const Text('open-language'),
+              );
+            },
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('open-language'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('English'));
+      await tester.pumpAndSettle();
+
+      expect(selected, 'en');
+
+      selected = null;
+      await tester.tap(find.text('open-language'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Cancel'));
+      await tester.pumpAndSettle();
+
+      expect(selected, isNull);
+    });
+
+    testWidgets('showFileActionsModal executes action callback', (
+      WidgetTester tester,
+    ) async {
+      String? selectedAction;
+
+      await tester.pumpWidget(
+        _testApp(
+          child: Builder(
+            builder: (BuildContext context) {
+              return ElevatedButton(
+                onPressed: () async {
+                  await showFileActionsModal(
+                    context,
+                    _sampleFile(),
+                    onActionTap: (String actionId, RecentFileItem _) async {
+                      selectedAction = actionId;
+                    },
+                  );
+                },
+                child: const Text('open-actions'),
+              );
+            },
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('open-actions'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Copy to...'));
+      await tester.pumpAndSettle();
+
+      expect(selectedAction, 'copy');
+    });
+
+    test('pressOnlyOverlay returns color only for pressed state', () {
+      final WidgetStateProperty<Color?> property = pressOnlyOverlay(Colors.red);
+
+      expect(property.resolve(<WidgetState>{WidgetState.pressed}), Colors.red);
+      expect(property.resolve(<WidgetState>{WidgetState.focused}), Colors.transparent);
+      expect(property.resolve(<WidgetState>{}), Colors.transparent);
+    });
+  });
   });
 }
 Widget _testApp({required Widget child}) {
