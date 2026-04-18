@@ -675,4 +675,104 @@ void main() {
       expect(result['stream'], true);
     });
 
+    test('postMultipart throws ApiException for non-2xx responses', () async {
+      httpClient.enqueue((_) => streamedTextResponse(403, 'forbidden'));
+
+      await expectLater(
+        apiClient.postMultipart(
+          '/multipart-fail',
+          fields: const <String, String>{'kind': 'file'},
+          fileField: 'file',
+          fileBytes: Uint8List.fromList(<int>[1]),
+          fileName: 'x.bin',
+        ),
+        throwsA(
+          isA<ApiException>()
+              .having((ApiException e) => e.statusCode, 'statusCode', 403)
+              .having(
+                (ApiException e) => e.body,
+                'body',
+                contains('forbidden'),
+              ),
+        ),
+      );
+    });
+
+    test('postMultipart maps send timeout into request_timeout', () async {
+      httpClient.enqueue((_) async {
+        await Future<void>.delayed(const Duration(milliseconds: 40));
+        return streamedJsonResponse(200, <String, dynamic>{'ok': true});
+      });
+
+      await expectLater(
+        apiClient.postMultipart(
+          '/multipart-timeout',
+          fields: const <String, String>{},
+          fileField: 'file',
+          fileBytes: Uint8List.fromList(<int>[1]),
+          fileName: 'x.bin',
+          timeout: const Duration(milliseconds: 5),
+        ),
+        throwsA(
+          isA<ApiException>().having(
+            (ApiException e) => e.errorCode,
+            'errorCode',
+            'request_timeout',
+          ),
+        ),
+      );
+    });
+
+    test('postMultipart maps network failures into ApiException', () async {
+      httpClient.enqueue((_) {
+        throw StateError('socket error');
+      });
+
+      await expectLater(
+        apiClient.postMultipart(
+          '/multipart-network-fail',
+          fields: const <String, String>{},
+          fileField: 'file',
+          fileBytes: Uint8List.fromList(<int>[1]),
+          fileName: 'x.bin',
+        ),
+        throwsA(
+          isA<ApiException>().having(
+            (ApiException e) => e.message,
+            'message',
+            'Network request failed',
+          ),
+        ),
+      );
+    });
+
+    test('postMultipart rethrows decode exceptions for invalid JSON', () async {
+      httpClient.enqueue((_) => streamedTextResponse(200, '{broken-json'));
+
+      await expectLater(
+        apiClient.postMultipart(
+          '/multipart-invalid-json',
+          fields: const <String, String>{},
+          fileField: 'file',
+          fileBytes: Uint8List.fromList(<int>[1]),
+          fileName: 'x.bin',
+        ),
+        throwsA(isA<FormatException>()),
+      );
+    });
+
+    test('postMultipart returns empty map for empty response body', () async {
+      httpClient.enqueue((_) => streamedTextResponse(200, ''));
+
+      final Map<String, dynamic> result = await apiClient.postMultipart(
+        '/multipart-empty',
+        fields: const <String, String>{},
+        fileField: 'file',
+        fileBytes: Uint8List.fromList(<int>[1]),
+        fileName: 'x.bin',
+      );
+
+      expect(result, isEmpty);
+    });
+  });
 }
