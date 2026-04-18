@@ -105,6 +105,73 @@ void main() {
       await tester.pumpAndSettle();
     });
 
+    testWidgets('privacy and help rows show toasts', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        _buildTestApp(
+          providers: <SingleChildWidget>[
+            ChangeNotifierProvider<ConnectionsProvider>(
+              create: (_) => SpyConnectionsProvider(),
+            ),
+            ChangeNotifierProvider<FavoritesProvider>(
+              create: (_) => SpyFavoritesProvider(),
+            ),
+            ChangeNotifierProvider<AnalyticsProvider>(
+              create: (_) => SpyAnalyticsProvider(),
+            ),
+          ],
+          home: const SettingsScreen(),
+        ),
+      );
+      await tester.pump();
+
+      final AppLocalizations l10n = AppLocalizations.of(
+        tester.element(find.byType(SettingsScreen)),
+      )!;
+
+      await tester.ensureVisible(find.text(l10n.privacy));
+      await tester.tap(find.text(l10n.privacy));
+      await tester.pump();
+      expect(find.byType(SnackBar), findsOneWidget);
+
+      await tester.ensureVisible(find.text(l10n.helpSupport));
+      await tester.tap(find.text(l10n.helpSupport));
+      await tester.pump();
+      expect(find.byType(SnackBar), findsOneWidget);
+    });
+
+    testWidgets('profile row navigates to ProfileScreen', (
+      WidgetTester tester,
+    ) async {
+      await tester.pumpWidget(
+        _buildTestApp(
+          providers: <SingleChildWidget>[
+            ChangeNotifierProvider<ConnectionsProvider>(
+              create: (_) => SpyConnectionsProvider(),
+            ),
+            ChangeNotifierProvider<FavoritesProvider>(
+              create: (_) => SpyFavoritesProvider(),
+            ),
+            ChangeNotifierProvider<AnalyticsProvider>(
+              create: (_) => SpyAnalyticsProvider(),
+            ),
+          ],
+          home: const SettingsScreen(),
+        ),
+      );
+      await tester.pump();
+
+      final AppLocalizations l10n = AppLocalizations.of(
+        tester.element(find.byType(SettingsScreen)),
+      )!;
+
+      await tester.tap(find.text(l10n.profile));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ProfileScreen), findsOneWidget);
+    });
+  });
   });
 }
 Widget _buildTestApp({
