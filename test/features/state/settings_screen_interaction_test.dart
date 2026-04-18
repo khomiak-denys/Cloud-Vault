@@ -27,6 +27,14 @@ void main() {
       }
     });
 
+    tearDown(() async {
+      await _resetGlobalControllersToDefaults();
+    });
+
+    tearDownAll(() async {
+      await _resetGlobalControllersToDefaults();
+    });
+
     testWidgets('notification and theme rows show corresponding toasts', (
       WidgetTester tester,
     ) async {
@@ -35,7 +43,9 @@ void main() {
       await tester.pumpWidget(
         _buildTestApp(
           providers: <SingleChildWidget>[
-            ChangeNotifierProvider<ConnectionsProvider>.value(value: connections),
+            ChangeNotifierProvider<ConnectionsProvider>.value(
+              value: connections,
+            ),
             ChangeNotifierProvider<FavoritesProvider>(
               create: (_) => SpyFavoritesProvider(),
             ),
@@ -173,6 +183,19 @@ void main() {
     });
   });
 }
+
+Future<void> _resetGlobalControllersToDefaults() async {
+  SharedPreferences.setMockInitialValues(<String, Object>{});
+  await appLocaleController.init();
+  if (appLocaleController.locale.languageCode != 'uk') {
+    await appLocaleController.setLocale('uk');
+  }
+  await appThemeController.init();
+  if (!appThemeController.isDarkMode) {
+    await appThemeController.toggleTheme();
+  }
+}
+
 Widget _buildTestApp({
   required List<SingleChildWidget> providers,
   required Widget home,
