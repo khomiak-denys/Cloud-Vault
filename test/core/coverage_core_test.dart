@@ -544,4 +544,135 @@ void main() {
       );
     });
 
+    test('postMultipart validates missing payload', () async {
+      await expectLater(
+        apiClient.postMultipart(
+          '/multipart',
+          fields: const <String, String>{'a': '1'},
+          fileField: 'file',
+          fileName: 'x.bin',
+        ),
+        throwsA(
+          isA<ApiException>().having(
+            (ApiException e) => e.message,
+            'message',
+            contains('missing'),
+          ),
+        ),
+      );
+    });
+
+    test('postMultipart validates stream metadata', () async {
+      await expectLater(
+        apiClient.postMultipart(
+          '/multipart',
+          fields: const <String, String>{},
+          fileField: 'file',
+          fileStream: Stream<List<int>>.fromIterable(<List<int>>[
+            <int>[1],
+          ]),
+          fileName: 'x.bin',
+        ),
+        throwsA(
+          isA<ApiException>().having(
+            (ApiException e) => e.message,
+            'message',
+            contains('non-null fileLength'),
+          ),
+        ),
+      );
+
+      await expectLater(
+        apiClient.postMultipart(
+          '/multipart',
+          fields: const <String, String>{},
+          fileField: 'file',
+          fileStream: Stream<List<int>>.fromIterable(<List<int>>[
+            <int>[1],
+          ]),
+          fileLength: -1,
+          fileName: 'x.bin',
+        ),
+        throwsA(
+          isA<ApiException>().having(
+            (ApiException e) => e.message,
+            'message',
+            contains('invalid fileLength'),
+          ),
+        ),
+      );
+    });
+
+    test('postMultipart sends bytes payload and parses JSON response', () async {
+      await AuthSession.instance.setTokens(bearerToken: 'multipart-token');
+      httpClient.enqueue((http.BaseRequest request) {
+        expect(request, isA<http.MultipartRequest>());
+        final http.MultipartRequest multipart = request as http.MultipartRequest;
+        expect(multipart.fields['kind'], 'avatar');
+        expect(multipart.files, hasLength(1));
+        expect(multipart.files.single.filename, 'avatar.png');
+        expect(multipart.headers['Authorization'], 'Bearer multipart-token');
+        return streamedJsonResponse(200, <String, dynamic>{'ok': true});
+      });
+
+      final Map<String, dynamic> result = await apiClient.postMultipart(
+        '/multipart-success',
+        fields: const <String, String>{'kind': 'avatar'},
+        fileField: 'file',
+        fileBytes: Uint8List.fromList(<int>[1, 2, 3]),
+        fileName: 'avatar.png',
+      );
+
+      expect(result['ok'], true);
+    });
+
+    test('postMultipart supports filePath payload branch', () async {
+      final File tempFile = File(
+        '${Directory.systemTemp.path}${Platform.pathSeparator}api_client_upload_test.txt',
+      );
+      addTearDown(() async {
+        if (await tempFile.exists()) {
+          await tempFile.delete();
+        }
+      });
+      await tempFile.writeAsString('test-file');
+
+      httpClient.enqueue((http.BaseRequest request) {
+        final http.MultipartRequest multipart = request as http.MultipartRequest;
+        expect(multipart.files.single.filename, 'upload.txt');
+        return streamedJsonResponse(200, <String, dynamic>{'path': 'ok'});
+      });
+
+      final Map<String, dynamic> result = await apiClient.postMultipart(
+        '/multipart-path',
+        fields: const <String, String>{'kind': 'file'},
+        fileField: 'file',
+        filePath: '  ${tempFile.path}  ',
+        fileName: 'upload.txt',
+      );
+
+      expect(result['path'], 'ok');
+    });
+
+    test('postMultipart supports stream payload branch', () async {
+      httpClient.enqueue((http.BaseRequest request) {
+        final http.MultipartRequest multipart = request as http.MultipartRequest;
+        expect(multipart.files.single.length, 3);
+        return streamedJsonResponse(200, <String, dynamic>{'stream': true});
+      });
+
+      final Map<String, dynamic> result = await apiClient.postMultipart(
+        '/multipart-stream',
+        fields: const <String, String>{'kind': 'stream'},
+        fileField: 'file',
+        fileStream: Stream<List<int>>.fromIterable(<List<int>>[
+          <int>[1, 2, 3],
+        ]),
+        fileLength: 3,
+        fileName: 'stream.bin',
+      );
+
+      expect(result['stream'], true);
+    });
+
 }
