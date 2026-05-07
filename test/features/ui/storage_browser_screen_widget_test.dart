@@ -56,6 +56,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byIcon(Icons.sort_rounded), findsOneWidget);
   });
+
 }
 
 VaultItem _sampleVault() {
