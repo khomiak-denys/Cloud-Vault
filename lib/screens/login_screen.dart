@@ -2,16 +2,20 @@ import 'package:cloud_vault/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-import '../api/auth_session.dart';
+import '../api/auth_token_store.dart';
 import '../theme/app_theme_colors.dart';
 import '../widgets/auth_form_field.dart';
 import '../widgets/auth_screen_frame.dart';
 import 'register_screen.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, FirebaseAuth? auth, AuthTokenStore? tokenStore})
+    : _auth = auth,
+      _tokenStore = tokenStore;
 
   static const routeName = '/login';
+  final FirebaseAuth? _auth;
+  final AuthTokenStore? _tokenStore;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -169,7 +173,7 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     try {
-      final credentials = await FirebaseAuth.instance
+      final credentials = await (widget._auth ?? FirebaseAuth.instance)
           .signInWithEmailAndPassword(
             email: _emailController.text.trim(),
             password: _passwordController.text.trim(),
@@ -182,7 +186,8 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      await AuthSession.instance.setTokens(bearerToken: idToken);
+      await (widget._tokenStore ?? const AuthSessionTokenStore())
+          .setBearerToken(idToken);
     } on FirebaseAuthException catch (e) {
       if (!mounted) return;
       _showError('[${e.code}] ${e.message ?? 'Login failed'}');

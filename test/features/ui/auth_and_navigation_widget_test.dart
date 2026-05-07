@@ -1,12 +1,20 @@
 import 'package:cloud_vault/l10n/app_localizations.dart';
+import 'package:cloud_vault/api/auth_token_store.dart';
 import 'package:cloud_vault/models/recent_file_item.dart';
 import 'package:cloud_vault/screens/file_preview_screen.dart';
 import 'package:cloud_vault/screens/login_screen.dart';
 import 'package:cloud_vault/screens/register_screen.dart';
 import 'package:cloud_vault/widgets/bottom_nav_bar.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
+
+import 'auth_and_navigation_widget_test.mocks.dart';
+
+@GenerateMocks(<Type>[FirebaseAuth, UserCredential, User, AuthTokenStore])
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -60,6 +68,136 @@ void main() {
         expect(find.byType(LoginScreen), findsOneWidget);
         expect(find.text('home-destination'), findsNothing);
         expect(find.byType(SnackBar), findsNothing);
+      },
+    );
+
+    testWidgets('Login submit success stores token and navigates to home', (
+      WidgetTester tester,
+    ) async {
+      _setLargeViewport(tester);
+      final MockFirebaseAuth auth = MockFirebaseAuth();
+      final MockUserCredential credentials = MockUserCredential();
+      final MockUser user = MockUser();
+      final MockAuthTokenStore tokenStore = MockAuthTokenStore();
+
+      when(
+        auth.signInWithEmailAndPassword(
+          email: anyNamed('email'),
+          password: anyNamed('password'),
+        ),
+      ).thenAnswer((_) async => credentials);
+      when(credentials.user).thenReturn(user);
+      when(user.getIdToken()).thenAnswer((_) async => 'id-token-123');
+      when(tokenStore.setBearerToken(any)).thenAnswer((_) async {});
+
+      await tester.pumpWidget(
+        _buildRoutedTestApp(
+          initialRoute: '/login',
+          routes: <String, WidgetBuilder>{
+            '/login': (_) => LoginScreen(auth: auth, tokenStore: tokenStore),
+            '/': (_) => const Scaffold(body: Text('home-destination')),
+          },
+        ),
+      );
+      await tester.pump();
+
+      final Finder textFields = find.byType(TextField);
+      await tester.enterText(textFields.at(0), 'denys@example.com');
+      await tester.enterText(textFields.at(1), 'strong-password');
+      final Finder signInButton = find.byType(ElevatedButton).first;
+      await tester.tap(signInButton);
+      await tester.pumpAndSettle();
+
+      verify(
+        auth.signInWithEmailAndPassword(
+          email: 'denys@example.com',
+          password: 'strong-password',
+        ),
+      ).called(1);
+      verify(tokenStore.setBearerToken('id-token-123')).called(1);
+      expect(find.text('home-destination'), findsOneWidget);
+    });
+
+    testWidgets('Login submit with empty token shows error and stays on login', (
+      WidgetTester tester,
+    ) async {
+      _setLargeViewport(tester);
+      final MockFirebaseAuth auth = MockFirebaseAuth();
+      final MockUserCredential credentials = MockUserCredential();
+      final MockUser user = MockUser();
+      final MockAuthTokenStore tokenStore = MockAuthTokenStore();
+
+      when(
+        auth.signInWithEmailAndPassword(
+          email: anyNamed('email'),
+          password: anyNamed('password'),
+        ),
+      ).thenAnswer((_) async => credentials);
+      when(credentials.user).thenReturn(user);
+      when(user.getIdToken()).thenAnswer((_) async => '');
+
+      await tester.pumpWidget(
+        _buildRoutedTestApp(
+          initialRoute: '/login',
+          routes: <String, WidgetBuilder>{
+            '/login': (_) => LoginScreen(auth: auth, tokenStore: tokenStore),
+            '/': (_) => const Scaffold(body: Text('home-destination')),
+          },
+        ),
+      );
+      await tester.pump();
+
+      final Finder textFields = find.byType(TextField);
+      await tester.enterText(textFields.at(0), 'denys@example.com');
+      await tester.enterText(textFields.at(1), 'strong-password');
+      final Finder signInButton = find.byType(ElevatedButton).first;
+      await tester.tap(signInButton);
+      await tester.pumpAndSettle();
+
+      verifyNever(tokenStore.setBearerToken(any));
+      expect(find.byType(LoginScreen), findsOneWidget);
+      expect(find.text('home-destination'), findsNothing);
+      expect(find.text('Failed to get Firebase ID token'), findsOneWidget);
+    });
+
+    testWidgets(
+      'Login submit FirebaseAuthException shows error and stays on login',
+      (WidgetTester tester) async {
+        _setLargeViewport(tester);
+        final MockFirebaseAuth auth = MockFirebaseAuth();
+        final MockAuthTokenStore tokenStore = MockAuthTokenStore();
+
+        when(
+          auth.signInWithEmailAndPassword(
+            email: anyNamed('email'),
+            password: anyNamed('password'),
+          ),
+        ).thenThrow(
+          FirebaseAuthException(code: 'invalid-credential', message: 'Denied'),
+        );
+
+        await tester.pumpWidget(
+          _buildRoutedTestApp(
+            initialRoute: '/login',
+            routes: <String, WidgetBuilder>{
+              '/login': (_) => LoginScreen(auth: auth, tokenStore: tokenStore),
+              '/': (_) => const Scaffold(body: Text('home-destination')),
+            },
+          ),
+        );
+        await tester.pump();
+
+        final Finder textFields = find.byType(TextField);
+        await tester.enterText(textFields.at(0), 'denys@example.com');
+        await tester.enterText(textFields.at(1), 'wrong-password');
+        final Finder signInButton = find.byType(ElevatedButton).first;
+        await tester.tap(signInButton);
+        await tester.pumpAndSettle();
+
+        verifyNever(tokenStore.setBearerToken(any));
+        expect(find.byType(LoginScreen), findsOneWidget);
+        expect(find.text('home-destination'), findsNothing);
+        expect(find.text('[invalid-credential] Denied'), findsOneWidget);
       },
     );
 
