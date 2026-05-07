@@ -78,6 +78,18 @@ void main() {
 
     expect(find.textContaining('API error:'), findsOneWidget);
   });
+
+  testWidgets('FilePreview open external handles API failure gracefully', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(_app(file: _file('archive.bin', kind: 'file')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Open externally'), warnIfMissed: false);
+    await tester.pumpAndSettle();
+
+    expect(find.byType(FilePreviewScreen), findsOneWidget);
+  });
 }
 
 Widget _app({required RecentFileItem file}) {

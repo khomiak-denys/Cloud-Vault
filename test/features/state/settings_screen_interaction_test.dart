@@ -181,6 +181,50 @@ void main() {
 
       expect(find.byType(ProfileScreen), findsOneWidget);
     });
+
+    testWidgets('logout navigates to root route', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: <SingleChildWidget>[
+            ChangeNotifierProvider<ConnectionsProvider>(
+              create: (_) => SpyConnectionsProvider(),
+            ),
+            ChangeNotifierProvider<FavoritesProvider>(
+              create: (_) => SpyFavoritesProvider(),
+            ),
+            ChangeNotifierProvider<AnalyticsProvider>(
+              create: (_) => SpyAnalyticsProvider(),
+            ),
+          ],
+          child: MaterialApp(
+            locale: const Locale('en'),
+            localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
+              AppLocalizations.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: AppLocalizations.supportedLocales,
+            initialRoute: '/settings',
+            routes: <String, WidgetBuilder>{
+              '/settings': (_) => const SettingsScreen(),
+              '/': (_) => const Scaffold(body: Text('root-destination')),
+            },
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final AppLocalizations l10n = AppLocalizations.of(
+        tester.element(find.byType(SettingsScreen)),
+      )!;
+
+      await tester.ensureVisible(find.text(l10n.logout));
+      await tester.tap(find.text(l10n.logout));
+      await tester.pumpAndSettle();
+
+      expect(find.text('root-destination'), findsOneWidget);
+    });
   });
 }
 
